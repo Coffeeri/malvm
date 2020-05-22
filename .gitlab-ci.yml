@@ -1,0 +1,30 @@
+image: "python:3.7"
+
+before_script:
+  - python --version
+  - pip install -r requirements.txt
+
+stages:
+  - Code Quality
+
+black:
+  stage: Code Quality
+  script:
+  - black src
+
+flake8:
+  stage: Code Quality
+  script:
+  - flake8 src
+
+pylint:
+  stage: Code Quality
+  script:
+  - pylint src
+
+mypy:
+  stage: Code Quality
+  script:
+  - mypy src
+
+

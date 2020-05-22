@@ -8,13 +8,16 @@ Classes:
                              this interface.
 """
 import abc
+from typing import Tuple, List
 
 
 class AbstractCharacteristics(metaclass=abc.ABCMeta):
     """Interface for all characteristics."""
 
-    def check(self) -> bool:
+    @abc.abstractmethod
+    def check(self) -> List[Tuple[str, bool]]:
         """Checks if given characteristic is already satisfied."""
 
+    @abc.abstractmethod
     def fix(self) -> None:
         """Satisfies given characteristic."""

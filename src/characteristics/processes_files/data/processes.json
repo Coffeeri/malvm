@@ -1,0 +1,19 @@
+[
+  {
+    "hypervisor": "VMWare",
+    "process": [
+      "Vmtoolsd.exe",
+      "Vmwaretrat.exe",
+      "Vmwareuser.exe",
+      "Vmacthlp.exe",
+      "VGAuthService.exe"
+    ]
+  },
+  {
+    "hypervisor": "VirtualBox",
+    "process": [
+      "vboxservice.exe",
+      "vboxtray.exe"
+    ]
+  }
+]

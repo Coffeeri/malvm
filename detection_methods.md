@@ -137,7 +137,7 @@ These can also be retrieved in multiple ways WMIC, Win API and CMD
 Devices such as Network, CD-Roms etc have **MAC addresses** which can be reduced to VMware/ VirtualBox.
 
 - VMWare 00-05-69, 00-0c-29, 00-1c-14 or 00-50-56
-- VirtualBox 08-00-27
+- VirtualBox 08-00-27, Hyper-V with 00:03:FF
 
 The **BIOS serial number** does also reveal the existence of the hypervisor.
 

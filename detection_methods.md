@@ -8,12 +8,10 @@ The following concepts are restricted to **Windows 7/ 10**.
 
 Some registry entries set by hypervisor.
 
+### **Generic**
 
-- HKLM\SOFTWARE\Vmware Inc.\\\Vmware Tools
-- HKEY_LOCAL_MACHINE\HARDWARE\DEVICEMAP\Scsi\Scsi Port 2\Scsi Bus 0\Target Id 0\Logical Unit Id 0\Identifier
-- SYSTEM\CurrentControlSet\Enum\SCSI\Disk&Ven_VMware_&Prod_VMware_Virtual_S
-- SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\root#vmwvmcihostdev
-- SYSTEM\CurrentControlSet\Control\VirtualDeviceDrivers
+- \HKEY_LOCAL_MACHINE\HARDWARE\DEVICEMAP\Scsi\Scsi Port 0\Scsi Bus 0\Target Id 0\Logical Unit Id 0\”Identifier”; ”<value>”
+- \HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\SystemBiosVersion\ SystemBiosVersion”;”<value>”
 
 ### **VMware**
 
@@ -21,14 +19,21 @@ Some registry entries set by hypervisor.
     - VMware SCSI Controller
 - HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0000\ProviderName
     - VMware, Inc.
-
+- HKLM\SOFTWARE\Vmware Inc.\\\Vmware Tools
+- HKEY_LOCAL_MACHINE\HARDWARE\DEVICEMAP\Scsi\Scsi Port 2\Scsi Bus 0\Target Id 0\Logical Unit Id 0\Identifier
+- SYSTEM\CurrentControlSet\Enum\SCSI\Disk&Ven_VMware_&Prod_VMware_Virtual_S
+- SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\root#vmwvmcihostdev
+- SYSTEM\CurrentControlSet\Control\VirtualDeviceDrivers
 
 
     
 
 ### **VirtualBox**
-
-Coming soon.
+- \HKEY_LOCAL_MACHINE\HARDWARE\ACPI\DSDT\VBOX__
+- \HKEY_LOCAL_MACHINE\HARDWARE\ACPI\FADT\VBOX__
+- \HKEY_LOCAL_MACHINE\HARDWARE\ACPI\RSDT\VBOX__
+- \HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\VBox*
+- \HKEY_LOCAL_MACHINE\SOFTWARE\Oracle\VirtualBox Guest Additions\*
 
 ---
 
@@ -74,6 +79,8 @@ via WMIC, Win API and CMD. WMIC (wmic -> process list), Win API (Process32First,
   - Vmwaretrat.exe
   - Vmwareuser.exe
   - Vmacthlp.exe
+  - VGAuthService.exe
+
 - VirtualBox
   - vboxservice.exe
   - vboxtray.exe
@@ -93,8 +100,17 @@ These can also be retrieved in multiple ways WMIC, Win API and CMD
 - Vmscsi
 - Vmxnet
 - vmx_svga
-- Vmware Tools
-- Vmware Physical Disk Helper Service
+
+- **VMWare**
+  - MTools
+  - vmvss
+  - VGAuthService
+  - VMware Physical Disk Helper Service
+  - Vmware Tools
+
+- **VirtualBox**
+  - VBoxService
+
 
 ### Files
 
@@ -110,6 +126,8 @@ These can also be retrieved in multiple ways WMIC, Win API and CMD
   - C:\windows\System32\Drivers\vmGuestLib.dll
   - C:\windows\System32\Drivers\VmGuestLibJava.dll
   - C:\windows\System32\Driversvmhgfs.dll
+  - C:\Windows\System32\drivers\vmmemctl.sys
+  - C:\Windows\System32\drivers\vmrawdsk.sys
 
 - VirtualBox
   - C:\windows\System32\Drivers\VBoxMouse.sys
@@ -153,3 +171,4 @@ Malware queries various attributes like SerialNo, SocketDesignation..
 
 - https://resources.infosecinstitute.com/how-malware-detects-virtualized-environment-and-its-countermeasures-an-overview/
 - https://www.cyberbit.com/blog/endpoint-security/anti-vm-and-anti-sandbox-explained/
+- https://www.deepinstinct.com/2019/10/29/malware-evasion-techniques-part-2-anti-vm-blog/

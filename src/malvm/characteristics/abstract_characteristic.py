@@ -8,7 +8,8 @@ Classes:
                              this interface.
 """
 import abc
-from typing import List, Tuple, Union
+import types
+from typing import List, Tuple, Union, Dict, Any
 
 CheckType = Union[Tuple[str, bool], List[Tuple[str, bool]]]
 
@@ -19,6 +20,16 @@ class Characteristic(metaclass=abc.ABCMeta):
     def __init__(self, slug: str = "", description: str = ""):
         self.__slug = slug
         self.__description = description
+        self.__characteristics: Dict[str, types.FunctionType] = {}
+
+    @property
+    def characteristics(self) -> Dict[str, types.FunctionType]:
+        """Returns all sub-characteristics.
+
+        Returns:
+            str: Unique slug referring to given characteristic.
+        """
+        return self.__characteristics
 
     @property
     def slug(self) -> str:
@@ -65,3 +76,33 @@ class Characteristic(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def fix(self) -> CheckType:
         """Satisfies given characteristic."""
+
+
+class LambdaCharacteristic(Characteristic):
+    """A LambdaCharacteristic is used as a sub-characteristic.
+
+    LambdaCharacteristics live from function pointers.
+    """
+
+    def __init__(
+            self,
+            slug: str,
+            description: str,
+            value: Any,
+            check_func: types.FunctionType,
+            fix_func: types.FunctionType,
+    ):
+        """Initializes function pointers of LambdaCharacteristic."""
+        super().__init__()
+        self.__check = check_func
+        self.__fix = fix_func
+        self.__value = value
+
+    def check(self) -> CheckType:
+        """Checks if given characteristic is already satisfied."""
+        return self.__check(self.__value)
+
+    def fix(self) -> CheckType:
+        """Satisfies given characteristic."""
+        self.__fix()
+        return self.check()

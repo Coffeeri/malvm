@@ -4,32 +4,36 @@ A characteristic is an indication of the existence/ being inside
 a virtual machine.
 
 Classes:
+    CharacteristicBase: Baseclass with data for inheriting classes, such as
+                        Characteristic class oder LambdaCharacteristic
     Characteristic: All characteristics classes will inherit from
                              this interface.
+    LambdaCharacteristic: Sub-characteristic with flexible function pointers as check
+                          and fix methods.
 """
+from __future__ import annotations
 import abc
 import types
-from typing import List, Tuple, Union, Dict, Any
+from typing import List, Tuple, Any, Generator
 
-CheckType = Union[Tuple[str, bool], List[Tuple[str, bool]]]
+CheckType = Tuple[str, bool]
+GeneratorCheckType = Generator[CheckType, None, None]
 
 
-class Characteristic(metaclass=abc.ABCMeta):
-    """Interface for all characteristics."""
+class CharacteristicBase:
+    """Base class for Characteristic class or any sub-characteristic class."""
 
     def __init__(self, slug: str = "", description: str = ""):
         self.__slug = slug
         self.__description = description
-        self.__characteristics: Dict[str, types.FunctionType] = {}
 
-    @property
-    def characteristics(self) -> Dict[str, types.FunctionType]:
-        """Returns all sub-characteristics.
+    @abc.abstractmethod
+    def check(self) -> Any:
+        """Checks if given characteristic is already satisfied."""
 
-        Returns:
-            str: Unique slug referring to given characteristic.
-        """
-        return self.__characteristics
+    @abc.abstractmethod
+    def fix(self) -> Any:
+        """Satisfies given characteristic."""
 
     @property
     def slug(self) -> str:
@@ -69,16 +73,39 @@ class Characteristic(metaclass=abc.ABCMeta):
         # add some checks for "description"-style
         self.__description = description
 
-    @abc.abstractmethod
-    def check(self) -> CheckType:
+
+class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
+    """Interface for all characteristics."""
+
+    def __init__(self, slug: str = "", description: str = ""):
+        super().__init__(slug, description)
+        self.__slug = slug
+        self.__description = description
+        self.__sub_characteristics: List[CharacteristicBase] = []
+
+    @property
+    def sub_characteristics(self) -> List[CharacteristicBase]:
+        """Returns all sub-characteristics.
+
+        Returns:
+            str: Unique slug referring to given characteristic.
+        """
+        return self.__sub_characteristics
+
+    def check(self) -> GeneratorCheckType:
         """Checks if given characteristic is already satisfied."""
+        if self.sub_characteristics:
+            for sub_characteristic in self.sub_characteristics:
+                yield sub_characteristic.check()
 
-    @abc.abstractmethod
-    def fix(self) -> CheckType:
+    def fix(self) -> GeneratorCheckType:
         """Satisfies given characteristic."""
+        if self.sub_characteristics:
+            for sub_characteristic in self.sub_characteristics:
+                yield sub_characteristic.fix()
 
 
-class LambdaCharacteristic(Characteristic):
+class LambdaCharacteristic(CharacteristicBase):
     """A LambdaCharacteristic is used as a sub-characteristic.
 
     LambdaCharacteristics live from function pointers.

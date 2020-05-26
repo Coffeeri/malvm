@@ -8,33 +8,36 @@ Classes:
                              this interface.
 """
 import abc
+from typing import List, Tuple, Union
+
+CheckType = Union[Tuple[str, bool], List[Tuple[str, bool]]]
 
 
 class Characteristic(metaclass=abc.ABCMeta):
     """Interface for all characteristics."""
 
-    def __init__(self):
-        self.__code = ""
-        self.__description = ""
+    def __init__(self, slug: str = "", description: str = ""):
+        self.__slug = slug
+        self.__description = description
 
     @property
-    def code(self) -> str:
-        """Unique code referring to given characteristic.
+    def slug(self) -> str:
+        """Unique slug referring to given characteristic.
 
         Returns:
-            str: Unique code referring to given characteristic.
+            str: Unique slug referring to given characteristic.
         """
-        return self.__code
+        return self.__slug
 
-    @code.setter
-    def code(self, code: str) -> None:
-        """Sets unique code referring to given characteristic.
+    @slug.setter
+    def slug(self, slug: str) -> None:
+        """Sets unique slug referring to given characteristic.
 
         Args:
-            code (str): Unique code referring to given characteristic.
+            slug (str): Unique slug referring to given characteristic.
         """
-        # add some checks for "code"-style
-        self.__code = code
+        # add some checks for "slug"-style
+        self.__slug = slug
 
     @property
     def description(self) -> str:
@@ -42,7 +45,7 @@ class Characteristic(metaclass=abc.ABCMeta):
 
         Giving some context to the given characteristic.
         """
-        return self.description
+        return self.__description
 
     @description.setter
     def description(self, description: str) -> None:
@@ -53,10 +56,12 @@ class Characteristic(metaclass=abc.ABCMeta):
                                characteristic.
         """
         # add some checks for "description"-style
-        self.description = description
+        self.__description = description
 
-    def check(self) -> bool:
+    @abc.abstractmethod
+    def check(self) -> CheckType:
         """Checks if given characteristic is already satisfied."""
 
-    def fix(self) -> None:
+    @abc.abstractmethod
+    def fix(self) -> CheckType:
         """Satisfies given characteristic."""

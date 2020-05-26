@@ -1,0 +1,23 @@
+"""This initializes the characteristics package and automatically loads all of them."""
+import sys
+import inspect
+import pkgutil
+from pathlib import Path
+from importlib import import_module
+
+from .abstract_characteristic import Characteristic
+
+loaded_characteristics = []
+for (_, name, _) in pkgutil.iter_modules([str(Path(__file__).parent)]):
+    imported_module = import_module("." + name, package=__name__)
+    imported_module = import_module(f"{__name__}.{name}")
+    for i in dir(imported_module):
+        attribute = getattr(imported_module, i)
+
+        if (
+                inspect.isclass(attribute)
+                and issubclass(attribute, Characteristic)
+                and attribute is not Characteristic
+        ):
+            setattr(sys.modules[__name__], name, attribute)
+            loaded_characteristics.append(attribute)

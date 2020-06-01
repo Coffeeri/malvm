@@ -25,8 +25,11 @@ class CharacteristicBase:
     """Base class for Characteristic class or any sub-characteristic class."""
 
     def __init__(self, slug: str = "", description: str = ""):
+        if not slug.isupper():
+            raise ValueError("Slug of characteristic must be uppercase.")
         self.__slug = slug
         self.__description = description
+        self.__sub_characteristics: Dict[str, CharacteristicBase] = {}
 
     @abc.abstractmethod
     def check(self) -> Any:
@@ -74,6 +77,53 @@ class CharacteristicBase:
         # add some checks for "description"-style
         self.__description = description
 
+    @property
+    def sub_characteristics(self) -> Dict[str, CharacteristicBase]:
+        """Returns all sub-characteristics.
+
+        Returns:
+            Dict[str, CharacteristicBase]: A dict of all sub-characteristics.
+        """
+        return self.__sub_characteristics
+
+    def add_sub_characteristic(self, sub_characteristic: CharacteristicBase) -> None:
+        """Add a sub-characteristic.
+
+        Args:
+            sub_characteristic (CharacteristicBase): Sub characteristic which will be
+                                                     added.
+        """
+        self.__sub_characteristics[sub_characteristic.slug] = sub_characteristic
+
+    def add_sub_characteristic_list(
+        self, sub_characteristic_list: List[CharacteristicBase]
+    ) -> None:
+        """Add a list of sub-characteristics.
+
+        Args:
+            sub_characteristic_list (List[CharacteristicBase]): Sub characteristics
+                                        which will be added.
+        """
+        for characteristic in sub_characteristic_list:
+            self.add_sub_characteristic(characteristic)
+
+    def find(self, slug: str) -> Optional[CharacteristicBase]:
+        """Finds an returns characteristic by slug.
+
+        Returns:
+            str:
+
+
+        """
+        if slug in self.sub_characteristics:
+            return self.sub_characteristics[slug]
+
+        for characteristic in self.sub_characteristics.values():
+            check_result: Optional[CharacteristicBase] = characteristic.find(slug)
+            if check_result:
+                return check_result
+        return None
+
 
 class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
     """Interface for all characteristics."""
@@ -82,27 +132,17 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
         super().__init__(slug, description)
         self.__slug = slug
         self.__description = description
-        self.__sub_characteristics: List[CharacteristicBase] = []
-
-    @property
-    def sub_characteristics(self) -> List[CharacteristicBase]:
-        """Returns all sub-characteristics.
-
-        Returns:
-            str: Unique slug referring to given characteristic.
-        """
-        return self.__sub_characteristics
 
     def check(self) -> GeneratorCheckType:
         """Checks if given characteristic is already satisfied."""
         if self.sub_characteristics:
-            for sub_characteristic in self.sub_characteristics:
+            for sub_characteristic in self.sub_characteristics.values():
                 yield sub_characteristic.check()
 
     def fix(self) -> GeneratorCheckType:
         """Satisfies given characteristic."""
         if self.sub_characteristics:
-            for sub_characteristic in self.sub_characteristics:
+            for sub_characteristic in self.sub_characteristics.values():
                 yield sub_characteristic.fix()
 
 
@@ -113,15 +153,15 @@ class LambdaCharacteristic(CharacteristicBase):
     """
 
     def __init__(
-            self,
-            slug: str,
-            description: str,
-            value: Any,
-            check_func: types.FunctionType,
-            fix_func: types.FunctionType,
+        self,
+        slug: str,
+        description: str,
+        value: Any,
+        check_func: types.FunctionType,
+        fix_func: types.FunctionType,
     ):
         """Initializes function pointers of LambdaCharacteristic."""
-        super().__init__()
+        super().__init__(slug, description)
         self.__check = check_func
         self.__fix = fix_func
         self.__value = value
@@ -132,5 +172,5 @@ class LambdaCharacteristic(CharacteristicBase):
 
     def fix(self) -> CheckType:
         """Satisfies given characteristic."""
-        self.__fix()
+        self.__fix(self.__value)
         return self.check()

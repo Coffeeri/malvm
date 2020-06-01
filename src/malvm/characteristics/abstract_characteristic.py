@@ -12,11 +12,12 @@ Classes:
                           and fix methods.
 """
 from __future__ import annotations
+
 import abc
 import types
-from typing import List, Tuple, Any, Generator
+from typing import Any, Dict, Generator, List, Optional, Tuple
 
-CheckType = Tuple[str, bool]
+CheckType = Tuple[str, bool]  # check_value, checked_status
 GeneratorCheckType = Generator[CheckType, None, None]
 
 

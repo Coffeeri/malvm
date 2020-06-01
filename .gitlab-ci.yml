@@ -10,17 +10,17 @@ stages:
 black:
   stage: Code Quality
   script:
-  - black src
+  - black src/malvm
 
 flake8:
   stage: Code Quality
   script:
-  - flake8 src
+    - flake8 src/malvm
 
 pylint:
   stage: Code Quality
   script:
-  - pylint src
+    - pylint src/malvm
 
 mypy:
   stage: Code Quality

@@ -1,6 +1,6 @@
 [MESSAGES CONTROL]
 enable=all
-disable=bad-continuation
+disable=suppressed-message,locally-disabled,bad-continuation
 
 [REPORTS]
 reports=yes

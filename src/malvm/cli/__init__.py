@@ -1,4 +1,5 @@
 """This module contains the CLI for the malvm-tool."""
+import sys
 
 import click
 
@@ -35,23 +36,26 @@ def check(characteristic: str) -> None:
     controller: Controller = Controller()
     if characteristic:
         try:
-            slug, description, (_, return_values) = controller.run_check(
-                characteristic.capitalize()
-            )
+            for slug, description, (value, status) in controller.run_check(
+                characteristic.upper()
+            ):
+                return_value_styled = return_bool_styled(status)
+                click.echo(
+                    f"[{click.style(slug, fg='yellow')}] "
+                    f"{description} {value} "
+                    f"{return_value_styled}"
+                )
         except ValueError as error_value:
             click.echo(click.style(str(error_value), fg="red"))
-            exit(1)
+            sys.exit(1)
 
-        return_bool = return_values
-        return_value_styled = return_bool_styled(return_values[-1] if)
-        click.echo(
-            f"[{click.style(slug, fg='yellow')}] {description} {return_value_styled}"
-        )
     else:
-        for slug, description, (_, return_values) in controller.run_checks():
-            return_value_styled = return_bool_styled(return_values[-1])
+        for slug, description, (value, status) in controller.run_checks():
+            return_value_styled = return_bool_styled(status)
             click.echo(
-                f"[{click.style(slug, fg='yellow')}] {description} {return_value_styled}"
+                f"[{click.style(slug, fg='yellow')}] "
+                f"{description} "
+                f"{return_value_styled}"
             )
 
 
@@ -59,24 +63,38 @@ def check(characteristic: str) -> None:
 @click.argument("characteristic", required=False)
 def fix(characteristic: str) -> None:
     """Fixes satisfaction of CHARACTERISTIC."""
-    characteristic_styled = (
-        click.style(characteristic, fg="yellow")
-        if characteristic
-        else click.style("all", fg="yellow")
-    )
-    characteristic_sentence = (
-        f"characteristic {characteristic_styled}"
-        if characteristic
-        else f"{characteristic_styled} characteristics"
-    )
-    click.echo(click.style("> Fixing ", fg="yellow") + characteristic_sentence)
+    controller: Controller = Controller()
+    if characteristic:
+        try:
+            for slug, description, (value, status) in controller.run_fix(
+                characteristic.upper()
+            ):
+                return_value_styled = return_bool_styled(status)
+                click.echo(
+                    f"[{click.style(slug, fg='yellow')}] "
+                    f"{description} {value} "
+                    f"{return_value_styled}"
+                )
+        except ValueError as error_value:
+            click.echo(click.style(str(error_value), fg="red"))
+            sys.exit(1)
+
+    else:
+        for slug, description, (value, status) in controller.run_fixes():
+            return_value_styled = return_bool_styled(status)
+            click.echo(
+                f"[{click.style(slug, fg='yellow')}] "
+                f"{description} "
+                f"{return_value_styled}"
+            )
 
 
 @malvm.command()
-def list() -> None:
+def show() -> None:
     """Lists all characteristics."""
     controller: Controller = Controller()
-    for characteristic in controller.get_characteristics():
+    for characteristic in controller.get_characteristic_list():
         click.echo(
-            f"[{click.style(characteristic.slug, fg='yellow')}] {characteristic.description}"
+            f"[{click.style(characteristic.slug, fg='yellow')}] "
+            f"{characteristic.description}"
         )

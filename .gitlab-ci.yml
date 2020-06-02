@@ -26,9 +26,3 @@ mypy:
   stage: Code Quality
   script:
     - mypy src/malvm
-
-isort:
-  stage: Code Quality
-  script:
-    - isort --recursive src/malvm
-    - isort --recursive tests

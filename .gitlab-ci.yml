@@ -6,6 +6,7 @@ before_script:
 
 stages:
   - Code Quality
+  - Testing
 
 black:
   stage: Code Quality
@@ -26,3 +27,8 @@ mypy:
   stage: Code Quality
   script:
     - mypy src/malvm
+
+pytest:
+  stage: Testing
+  script:
+    - pytest tests

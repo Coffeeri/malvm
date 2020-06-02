@@ -42,5 +42,5 @@ Options:
 Commands:
   check  [Optional: code] Checks satisfaction of CHARACTERISTIC.
   fix    [Optional: code] Fixes satisfaction of CHARACTERISTIC.
-  list   Lists all characteristics.
+  show   [Optional: -a --show-all to include sub characteristics] Lists all characteristics.
 ```

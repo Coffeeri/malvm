@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import List, Dict, Tuple
 
-from ..abstract_characteristics import AbstractCharacteristics
+from ..abstract_characteristic import Characteristic
 
 
 def read_files_file(path: Path) -> List[Dict[str, List[str]]]:
@@ -20,7 +20,7 @@ def read_files_file(path: Path) -> List[Dict[str, List[str]]]:
         return json.load(json_file)
 
 
-class FileCharacteristic(AbstractCharacteristics):
+class FileCharacteristic(Characteristic):
     """Checks and Fixes for existence of striking files."""
 
     def check(self) -> List[Tuple[str, bool]]:

@@ -3,28 +3,33 @@ image: "python:3.7"
 before_script:
   - python --version
   - pip install -r requirements.txt
+  - python setup.py install
 
 stages:
   - Code Quality
+  - Testing
 
 black:
   stage: Code Quality
   script:
-  - black src
+  - black src/malvm
 
 flake8:
   stage: Code Quality
   script:
-  - flake8 src
+    - flake8 src/malvm
 
 pylint:
   stage: Code Quality
   script:
-  - pylint src
+    - pylint src/malvm
 
 mypy:
   stage: Code Quality
   script:
-  - mypy src
+    - mypy src/malvm
 
-
+pytest:
+  stage: Testing
+  script:
+    - pytest tests

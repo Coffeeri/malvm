@@ -1,0 +1,11 @@
+[MESSAGES CONTROL]
+enable=all
+disable=suppressed-message,locally-disabled,bad-continuation
+
+[REPORTS]
+reports=yes
+
+[FORMAT]
+max-line-length=88
+max-args=8
+max-attributes=8

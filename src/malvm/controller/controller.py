@@ -4,15 +4,11 @@ Classes:
     SingletonMeta: Singleton Metaclass.
     Controller: Controls the checks and fixes of characteristics.
 """
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, Generator, List, Optional
 
 from ..characteristics import loaded_characteristics
 from ..characteristics.abstract_characteristic import CharacteristicBase, CheckType
 from ..utils.metaclasses import SingletonMeta
-
-RunCheckType = Tuple[
-    str, str, CheckType
-]  # slug, description, (check_value, checked_status)
 
 
 class Controller(metaclass=SingletonMeta):
@@ -31,6 +27,10 @@ class Controller(metaclass=SingletonMeta):
             self.characteristics = {
                 **self.characteristics,
                 characteristic().slug: characteristic(),
+            }
+            self.characteristics_with_sub_characteristics = {
+                **self.characteristics,
+                characteristic().slug: characteristic(),
                 **sub_characteristics,
             }
 
@@ -38,13 +38,22 @@ class Controller(metaclass=SingletonMeta):
         """Returns all characteristics.
 
         Returns:
-            List[CharacteristicBase]: List of all characteristics,
-                                      including all sub-characteristics.
+            List[CharacteristicBase]: List of all characteristics.
         """
 
         return list(self.characteristics.values())
 
-    def run_check(self, slug_searched: str) -> Generator[RunCheckType, None, None]:
+    def get_characteristic_list_all(self) -> List[CharacteristicBase]:
+        """Returns all characteristics, including sub-characteristics.
+
+        Returns:
+            List[CharacteristicBase]: List of all characteristics,
+                                      including all sub-characteristics.
+        """
+
+        return list(self.characteristics_with_sub_characteristics.values())
+
+    def run_check(self, slug_searched: str) -> Generator[CheckType, None, None]:
         """Runs a check for a specified characteristic.
 
         Args:
@@ -63,20 +72,12 @@ class Controller(metaclass=SingletonMeta):
         if not isinstance(  # pylint: disable=isinstance-second-argument-not-valid-type
             characteristic_return_value, Generator,
         ):
-            yield (
-                characteristic.slug,
-                characteristic.description,
-                characteristic_return_value,
-            )
+            yield characteristic_return_value
         else:
-            for value, status in characteristic.check():
-                yield (
-                    slug_searched,
-                    characteristic.description,
-                    (value, status),
-                )
+            for result in characteristic.check():
+                yield result
 
-    def run_checks(self) -> Generator[RunCheckType, None, None]:
+    def run_checks(self) -> Generator[CheckType, None, None]:
         """Runs all checks and returns their results.
 
         Returns:
@@ -84,10 +85,10 @@ class Controller(metaclass=SingletonMeta):
                                      and result of check.
         """
         for characteristic_slug in self.characteristics.keys():
-            for characteristics in self.run_check(characteristic_slug):
-                yield characteristics
+            for result in self.run_check(characteristic_slug):
+                yield result
 
-    def run_fix(self, slug_searched: str) -> Generator[RunCheckType, None, None]:
+    def run_fix(self, slug_searched: str) -> Generator[CheckType, None, None]:
         """Runs a fix for a specified characteristic.
 
         Args:
@@ -108,20 +109,12 @@ class Controller(metaclass=SingletonMeta):
         if not isinstance(  # pylint: disable=isinstance-second-argument-not-valid-type
             characteristic_return_value, Generator,
         ):
-            yield (
-                characteristic.slug,
-                characteristic.description,
-                characteristic_return_value,
-            )
+            yield characteristic_return_value
         else:
-            for value, status in characteristic.fix():
-                yield (
-                    slug_searched,
-                    characteristic.description,
-                    (value, status),
-                )
+            for result in characteristic.fix():
+                yield result
 
-    def run_fixes(self) -> Generator[RunCheckType, None, None]:
+    def run_fixes(self) -> Generator[CheckType, None, None]:
         """Runs fixes for all characteristics and returns their success.
 
         Returns:

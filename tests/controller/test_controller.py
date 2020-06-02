@@ -19,12 +19,11 @@ def test_run_check(
         fixture_test_characteristic,
         fixture_hello_world_lambda,
     ]
-    for slug, description, (value, status) in fixture_test_controller.run_check(
+    for slug, description, value, status in fixture_test_controller.run_check(
         fixture_hello_world_lambda.slug
     ):
-        assert slug == fixture_hello_world_lambda.slug
-        assert description == fixture_hello_world_lambda.description
-        assert value, status == fixture_hello_world_lambda.check()
+
+        assert (slug, description, value, status) == fixture_hello_world_lambda.check()
 
 
 def test_run_checks(
@@ -32,7 +31,7 @@ def test_run_checks(
 ) -> None:
     """Test if controller runs all checks"""
     controller = fixture_test_controller
-    for slug, description, (value, status) in controller.run_checks():
+    for slug, description, value, status in controller.run_checks():
         pass
         # print(f"{slug} - {description} -- {value} - {status}")
 

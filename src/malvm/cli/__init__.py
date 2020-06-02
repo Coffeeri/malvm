@@ -36,7 +36,7 @@ def check(characteristic: str) -> None:
     controller: Controller = Controller()
     if characteristic:
         try:
-            for slug, description, (value, status) in controller.run_check(
+            for slug, description, value, status in controller.run_check(
                 characteristic.upper()
             ):
                 return_value_styled = return_bool_styled(status)
@@ -50,7 +50,7 @@ def check(characteristic: str) -> None:
             sys.exit(1)
 
     else:
-        for slug, description, (value, status) in controller.run_checks():
+        for slug, description, value, status in controller.run_checks():
             return_value_styled = return_bool_styled(status)
             click.echo(
                 f"[{click.style(slug, fg='yellow')}] "
@@ -66,7 +66,7 @@ def fix(characteristic: str) -> None:
     controller: Controller = Controller()
     if characteristic:
         try:
-            for slug, description, (value, status) in controller.run_fix(
+            for slug, description, value, status in controller.run_fix(
                 characteristic.upper()
             ):
                 return_value_styled = return_bool_styled(status)
@@ -80,7 +80,7 @@ def fix(characteristic: str) -> None:
             sys.exit(1)
 
     else:
-        for slug, description, (value, status) in controller.run_fixes():
+        for slug, description, value, status in controller.run_fixes():
             return_value_styled = return_bool_styled(status)
             click.echo(
                 f"[{click.style(slug, fg='yellow')}] "
@@ -90,10 +90,20 @@ def fix(characteristic: str) -> None:
 
 
 @malvm.command()
-def show() -> None:
-    """Lists all characteristics."""
+@click.option("-a", "--show-all", "show_all", type=bool, is_flag=True, default=False)
+def show(show_all: bool) -> None:
+    """Lists all characteristics.
+
+    Args:
+        show_all: Returns a list of all characteristics, including sub characteristics.
+    """
     controller: Controller = Controller()
-    for characteristic in controller.get_characteristic_list():
+    characteristic_list = (
+        controller.get_characteristic_list_all()
+        if show_all
+        else controller.get_characteristic_list()
+    )
+    for characteristic in characteristic_list:
         click.echo(
             f"[{click.style(characteristic.slug, fg='yellow')}] "
             f"{characteristic.description}"

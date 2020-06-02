@@ -15,9 +15,18 @@ from __future__ import annotations
 
 import abc
 import types
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from typing import Any, Dict, Generator, List, Optional, NamedTuple
 
-CheckType = Tuple[str, bool]  # check_value, checked_status
+
+class CheckType(NamedTuple):
+    """Return-Type for check and fix functions."""
+
+    slug: str
+    description: str
+    check_value: str
+    check_status: bool
+
+
 GeneratorCheckType = Generator[CheckType, None, None]
 
 
@@ -79,10 +88,10 @@ class CharacteristicBase:
 
     @property
     def sub_characteristics(self) -> Dict[str, CharacteristicBase]:
-        """Returns all sub-characteristics.
+        """Returns a sub-characteristics.
 
         Returns:
-            Dict[str, CharacteristicBase]: A dict of all sub-characteristics.
+            Dict[str, CharacteristicBase]: A dict of a sub-characteristics.
         """
         return self.__sub_characteristics
 
@@ -108,12 +117,13 @@ class CharacteristicBase:
             self.add_sub_characteristic(characteristic)
 
     def find(self, slug: str) -> Optional[CharacteristicBase]:
-        """Finds an returns characteristic by slug.
+        """Finds and returns a characteristic by slug.
+
+        Args:
+            slug(str): A unique slug, which is associated with the characteristic.
 
         Returns:
-            str:
-
-
+            Optional[CharacteristicBase]: A characteristic object.
         """
         if slug in self.sub_characteristics:
             return self.sub_characteristics[slug]
@@ -126,7 +136,7 @@ class CharacteristicBase:
 
 
 class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
-    """Interface for all characteristics."""
+    """Interface for a characteristics."""
 
     def __init__(self, slug: str = "", description: str = ""):
         super().__init__(slug, description)
@@ -135,15 +145,37 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
 
     def check(self) -> GeneratorCheckType:
         """Checks if given characteristic is already satisfied."""
+        no_errors = True
+        result_list: List[CheckType] = []
         if self.sub_characteristics:
             for sub_characteristic in self.sub_characteristics.values():
-                yield sub_characteristic.check()
+                result = sub_characteristic.check()
+                if not result[-1]:
+                    no_errors = False
+                result_list.append(result)
+        yield CheckType(self.slug, self.description, "Summary", no_errors)
+        for result in result_list:
+            result = list(result)
+            result[0] = "|-- " + result[0]
+            result = tuple(result)
+            yield result
 
     def fix(self) -> GeneratorCheckType:
         """Satisfies given characteristic."""
+        no_errors = True
+        result_list: List[CheckType] = []
         if self.sub_characteristics:
             for sub_characteristic in self.sub_characteristics.values():
-                yield sub_characteristic.fix()
+                result = sub_characteristic.fix()
+                if not result[-1]:
+                    no_errors = False
+                result_list.append(result)
+        yield CheckType(self.slug, self.description, "Summary", no_errors)
+        for result in result_list:
+            result = list(result)
+            result[0] = "|-- " + result[0]
+            result = tuple(result)
+            yield result
 
 
 class LambdaCharacteristic(CharacteristicBase):

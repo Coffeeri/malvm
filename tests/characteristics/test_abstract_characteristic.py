@@ -1,9 +1,12 @@
 """PyTest tests for Characteristic class."""
+from typing import List
+
 import pytest
 
 from malvm.characteristics.abstract_characteristic import (
     Characteristic,
     LambdaCharacteristic,
+    CheckType,
 )
 
 
@@ -60,8 +63,14 @@ def test_combine_characteristic_lambda(
     assert test_characteristic.sub_characteristics == {
         fixture_hello_world_lambda.slug: fixture_hello_world_lambda
     }
-    for value, status in test_characteristic.check():
-        assert value, status == ("Hello world.", True)
+    result_list: List[CheckType] = []
+    for result in test_characteristic.check():
+        result_list.append(result)
+    slug, description, value, status = result_list[1]
+    assert slug == "|-- " + fixture_hello_world_lambda.slug
+    assert description == fixture_hello_world_lambda.description
+    assert value == "Hello world."
+    assert status
 
 
 @pytest.fixture
@@ -81,6 +90,11 @@ def fixture_hello_world_lambda() -> LambdaCharacteristic:
         "HWORLD",
         "This is an example LambdaCharacteristic.",
         "Hello world.",
-        lambda x: ("Hello world.", True),
+        lambda x: (
+            "HWORLD",
+            "This is an example LambdaCharacteristic.",
+            "Hello world.",
+            True,
+        ),
         lambda x: None,
     )

@@ -1,6 +1,10 @@
 """PyTest tests for controller class."""
 import pytest
 
+from ..characteristics.test_abstract_characteristic import (
+    fixture_test_characteristic,
+    fixture_hello_world_lambda,
+)
 from malvm.controller.controller import Controller
 
 

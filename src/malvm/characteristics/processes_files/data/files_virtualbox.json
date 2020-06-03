@@ -1,0 +1,22 @@
+{
+  "hypervisor": "VirtualBox",
+  "files": [
+    ["FVB001", "C:\\windows\\System32\\Drivers\\VBoxGuest.sys"],
+    ["FVB002", "C:\\windows\\System32\\Drivers\\VBoxMouse.sys"],
+    ["FVB003", "C:\\windows\\System32\\Drivers\\VBoxSF.sys"],
+    ["FVB004", "C:\\windows\\System32\\Drivers\\VBoxVideo.sys"],
+    ["FVB005", "C:\\windows\\System32\\vboxdisp.dll"],
+    ["FVB006", "C:\\windows\\System32\\vboxhook.dll"],
+    ["FVB007", "C:\\windows\\System32\\vboxmrxnp.dll"],
+    ["FVB008", "C:\\windows\\System32\\vboxogl.dll"],
+    ["FVB009", "C:\\windows\\System32\\vboxoglarrayspu.dll"],
+    ["FVB010", "C:\\windows\\System32\\vboxoglcrutil.dll"],
+    ["FVB011", "C:\\windows\\System32\\vboxoglerrorspu.dll"],
+    ["FVB012", "C:\\windows\\System32\\vboxoglfeedbackspu.dll"],
+    ["FVB013", "C:\\windows\\System32\\vboxoglpackspu.dll"],
+    ["FVB014", "C:\\windows\\System32\\vboxoglpassthroughspu.dll"],
+    ["FVB015", "C:\\windows\\System32\\vboxservice.exe"],
+    ["FVB016", "C:\\windows\\System32\\vboxtray.exe"],
+    ["FVB017", "C:\\windows\\System32\\VBoxControl.exe"]
+  ]
+}

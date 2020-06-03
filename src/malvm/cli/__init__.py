@@ -5,6 +5,8 @@ import click
 
 from ..controller.controller import Controller
 
+controller: Controller = Controller()
+
 
 @click.group()
 def malvm():
@@ -33,16 +35,13 @@ def check(characteristic: str) -> None:
     [characteristic-code] for checking specific characteristic.
     All characteristics will be checked if not mentioned.
     """
-    controller: Controller = Controller()
     if characteristic:
         try:
-            for slug, description, value, status in controller.run_check(
-                characteristic.upper()
-            ):
+            for slug, _, value, status in controller.run_check(characteristic.upper()):
                 return_value_styled = return_bool_styled(status)
                 click.echo(
                     f"[{click.style(slug, fg='yellow')}] "
-                    f"{description} {value} "
+                    f"{value} "
                     f"{return_value_styled}"
                 )
         except ValueError as error_value:
@@ -50,11 +49,11 @@ def check(characteristic: str) -> None:
             sys.exit(1)
 
     else:
-        for slug, description, value, status in controller.run_checks():
+        for slug, _, value, status in controller.run_checks():
             return_value_styled = return_bool_styled(status)
             click.echo(
                 f"[{click.style(slug, fg='yellow')}] "
-                f"{description} "
+                f"{value} "
                 f"{return_value_styled}"
             )
 
@@ -63,16 +62,13 @@ def check(characteristic: str) -> None:
 @click.argument("characteristic", required=False)
 def fix(characteristic: str) -> None:
     """Fixes satisfaction of CHARACTERISTIC."""
-    controller: Controller = Controller()
     if characteristic:
         try:
-            for slug, description, value, status in controller.run_fix(
-                characteristic.upper()
-            ):
+            for slug, _, value, status in controller.run_fix(characteristic.upper()):
                 return_value_styled = return_bool_styled(status)
                 click.echo(
                     f"[{click.style(slug, fg='yellow')}] "
-                    f"{description} {value} "
+                    f"{value} "
                     f"{return_value_styled}"
                 )
         except ValueError as error_value:
@@ -80,11 +76,11 @@ def fix(characteristic: str) -> None:
             sys.exit(1)
 
     else:
-        for slug, description, value, status in controller.run_fixes():
+        for slug, _, value, status in controller.run_fixes():
             return_value_styled = return_bool_styled(status)
             click.echo(
                 f"[{click.style(slug, fg='yellow')}] "
-                f"{description} "
+                f"{value} "
                 f"{return_value_styled}"
             )
 
@@ -97,7 +93,6 @@ def show(show_all: bool) -> None:
     Args:
         show_all: Returns a list of all characteristics, including sub characteristics.
     """
-    controller: Controller = Controller()
     characteristic_list = (
         controller.get_characteristic_list_all()
         if show_all

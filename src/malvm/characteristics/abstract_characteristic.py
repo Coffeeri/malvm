@@ -129,9 +129,9 @@ class CharacteristicBase:
             return self.sub_characteristics[slug]
 
         for characteristic in self.sub_characteristics.values():
-            check_result: Optional[CharacteristicBase] = characteristic.find(slug)
-            if check_result:
-                return check_result
+            result: Optional[CharacteristicBase] = characteristic.find(slug)
+            if result:
+                return result
         return None
 
 
@@ -149,10 +149,10 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
         result_list: List[CheckType] = []
         if self.sub_characteristics:
             for sub_characteristic in self.sub_characteristics.values():
-                result = sub_characteristic.check()
-                if not result[-1]:
+                check_result = sub_characteristic.check()
+                if not check_result[-1]:
                     no_errors = False
-                result_list.append(result)
+                result_list.append(check_result)
         yield CheckType(self.slug, self.description, "Summary", no_errors)
         for result in result_list:
             result = list(result)
@@ -192,7 +192,17 @@ class LambdaCharacteristic(CharacteristicBase):
         check_func: types.FunctionType,
         fix_func: types.FunctionType,
     ):
-        """Initializes function pointers of LambdaCharacteristic."""
+        """Initializes function pointers of LambdaCharacteristic.
+
+        Args:
+            slug(str): Unique identifier of characteristic.
+            description(str): Short description of characteristic.
+            value(Any): Value used in object for check-/ fix-method.
+            check_func(types.FunctionType): Method executed for checks.
+                                            Method receives one parameter - value.
+            fix_func(types.FunctionType): Method executed for fixes.
+                                          Method receives one parameter - value.
+        """
         super().__init__(slug, description)
         self.__check = check_func
         self.__fix = fix_func
@@ -200,9 +210,21 @@ class LambdaCharacteristic(CharacteristicBase):
 
     def check(self) -> CheckType:
         """Checks if given characteristic is already satisfied."""
-        return self.__check(self.__value)
+        return CheckType(
+            self.slug, self.description, self.__value, self.__check(self.__value)
+        )
 
     def fix(self) -> CheckType:
         """Satisfies given characteristic."""
-        self.__fix(self.__value)
-        return self.check()
+        return CheckType(
+            self.slug, self.description, self.__value, self.__fix(self.__value)
+        )
+
+    @property
+    def value(self) -> Any:
+        """Returns the stored value of object.
+
+        Returns:
+            Any: Stored value of object, used for check-/ fix-method.
+        """
+        return self.__value

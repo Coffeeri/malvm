@@ -5,19 +5,14 @@ from typing import List, Tuple
 from malvm.characteristics.abstract_characteristic import LambdaCharacteristic
 from malvm.characteristics.files import FileVBCharacteristic
 from malvm.characteristics.files.file_task import read_json_file
+from malvm.utils.helper_methods import get_project_root
 
 
 def test_characteristic_init() -> None:
     """Tests if FileVBCharacteristic initializes the correct sub_characteristics."""
     characteristic = FileVBCharacteristic()
     sub_characteristics_from_file = read_json_file(
-        (
-            Path(__file__)
-            / Path(
-                "../../../../"
-                "src/malvm/characteristics/files/data/files_virtualbox.json"
-            )
-        )
+        (Path(Path(get_project_root() / "data/files_virtualbox.json")).absolute())
     )
     sub_characteristics_from_file = list(sub_characteristics_from_file["files"])
     sub_characteristics: List[Tuple[str, LambdaCharacteristic]] = [

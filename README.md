@@ -40,7 +40,13 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  check  [Optional: code] Checks satisfaction of CHARACTERISTIC.
-  fix    [Optional: code] Fixes satisfaction of CHARACTERISTIC.
-  show   [Optional: -a --show-all to include sub characteristics] Lists all characteristics.
+  check        Checks satisfaction of ALL characteristics.
+  check <code> Checks a specific characteristic.
+  
+  fix          Fixes all characteristics.
+  fix   <code> Fixes a specific characteristic.
+  
+  show         Lists all loaded characteristics.
+  show  -a     Lists all loaded characteristics, including sub characteristics.
+        --show-all
 ```

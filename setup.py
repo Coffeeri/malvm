@@ -15,7 +15,7 @@ setuptools.setup(
     python_requires=">=3.6",
     packages=setuptools.find_packages(where="src"),
     package_dir={"malvm": "src/malvm"},
-    package_data={"files": ["data/files_virtualbox.json", "data/files_vmware.json"]},
+    package_data={"": ["data/*.json"]},
     install_requires=["click"],
     entry_points={"console_scripts": ["malvm = malvm.__main__:main",]},
 )

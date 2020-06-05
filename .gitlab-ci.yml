@@ -31,5 +31,4 @@ mypy:
 pytest:
   stage: Testing
   script:
-    - ls -ahl /builds/shk_fkie/analysevm/src/malvm/data
     - pytest tests

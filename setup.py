@@ -16,6 +16,6 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     package_dir={"malvm": "src/malvm"},
     install_requires=["click"],
-    package_data={"characteristics.files": ["data/*.json"]},
+    package_data={"malvm": ["data/*.json"]},
     entry_points={"console_scripts": ["malvm = malvm.__main__:main"]},
 )

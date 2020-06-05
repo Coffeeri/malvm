@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List, Dict, Union
 
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
+from ...utils.helper_methods import get_project_root
 
 
 def read_json_file(path: Path) -> Dict[str, Union[str, List[str], List[List[str]]]]:
@@ -49,14 +50,14 @@ def remove_path(path: str) -> bool:
 
 def get_virtualbox_files():
     """Returns all files uncovering VirtualBoxs existencee."""
-    return read_json_file((Path(__file__) / Path("../data/files_virtualbox.json")))[
+    return read_json_file(Path(get_project_root() / "data/files_virtualbox.json"))[
         "files"
     ]
 
 
 def get_vmware_files():
     """Returns all files uncovering VirtualBoxs existencee."""
-    return read_json_file((Path(__file__) / Path("../data/files_vmware.json")))["files"]
+    return read_json_file(Path(get_project_root() / "data/files_vmware.json"))["files"]
 
 
 def sub_characteristics_virtualbox() -> List[LambdaCharacteristic]:

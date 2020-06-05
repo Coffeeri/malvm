@@ -6,30 +6,30 @@ before_script:
   - python setup.py install
 
 stages:
-  - Code Quality
   - Testing
 
 black:
-  stage: Code Quality
+  stage: Testing
   script:
   - black src/malvm
 
 flake8:
-  stage: Code Quality
+  stage: Testing
   script:
     - flake8 src/malvm
 
 pylint:
-  stage: Code Quality
+  stage: Testing
   script:
     - pylint src/malvm
 
 mypy:
-  stage: Code Quality
+  stage: Testing
   script:
     - mypy src/malvm
 
 pytest:
   stage: Testing
   script:
+    - ls -ahl /builds/shk_fkie/analysevm/src/malvm/characteristics/files/
     - pytest tests

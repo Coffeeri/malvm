@@ -1,7 +1,6 @@
 {
   "hypervisor": "VMWare",
   "files": [
-    ["C:\\windows\\System32\\Drivers\\Vmmouse.sys"],
     ["FVMW001","C:\\windows\\System32\\Drivers\\vm3dgl.dll"],
     ["FVMW002","C:\\windows\\System32\\Drivers\\vmdum.dll"],
     ["FVMW003","C:\\windows\\System32\\Drivers\\vm3dver.dll"],
@@ -13,6 +12,7 @@
     ["FVMW009","C:\\windows\\System32\\Drivers\\VmGuestLibJava.dll"],
     ["FVMW010","C:\\windows\\System32\\Driversvmhgfs.dll"],
     ["FVMW011","C:\\Windows\\System32\\drivers\\vmmemctl.sys"],
-    ["FVMW012","C:\\Windows\\System32\\drivers\\vmrawdsk.sys"]
+    ["FVMW012","C:\\Windows\\System32\\drivers\\vmrawdsk.sys"],
+    ["FVMW013","C:\\windows\\System32\\Drivers\\Vmmouse.sys"]
   ]
 }

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import abc
 import types
-from typing import Any, Dict, Generator, List, Optional, NamedTuple
+from typing import Any, Dict, Generator, List, Optional, NamedTuple, Callable
 
 
 class CheckType(NamedTuple):
@@ -155,10 +155,9 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
                 result_list.append(check_result)
         yield CheckType(self.slug, self.description, "Summary", no_errors)
         for result in result_list:
-            result = list(result)
-            result[0] = "|-- " + result[0]
-            result = tuple(result)
-            yield result
+            result_modified = list(result)
+            result_modified[0] = f"|-- {result_modified[0]}"
+            yield CheckType(*result_modified)  # type: ignore
 
     def fix(self) -> GeneratorCheckType:
         """Satisfies given characteristic."""
@@ -189,8 +188,8 @@ class LambdaCharacteristic(CharacteristicBase):
         slug: str,
         description: str,
         value: Any,
-        check_func: types.FunctionType,
-        fix_func: types.FunctionType,
+        check_func: Callable[[Any], bool],
+        fix_func: Callable[[Any], bool],
     ):
         """Initializes function pointers of LambdaCharacteristic.
 

@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import List, Tuple
 
 from malvm.characteristics.abstract_characteristic import LambdaCharacteristic
-from malvm.characteristics.processes_files import FileVBCharacteristic
-from malvm.characteristics.processes_files.file_task import read_json_file
+from malvm.characteristics.files import FileVBCharacteristic
+from malvm.characteristics.files.file_task import read_json_file
 
 
 def test_characteristic_init() -> None:
@@ -15,7 +15,7 @@ def test_characteristic_init() -> None:
             Path(__file__)
             / Path(
                 "../../../../"
-                "src/malvm/characteristics/processes_files/data/files_virtualbox.json"
+                "src/malvm/characteristics/files/data/files_virtualbox.json"
             )
         )
     )

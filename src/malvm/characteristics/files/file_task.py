@@ -97,7 +97,7 @@ class FileVBCharacteristic(Characteristic):
     def __init__(self) -> None:
         super().__init__("FVB", "Files uncovering VirtualBox.")
         sub_characteristics = sub_characteristics_virtualbox()
-        self.add_sub_characteristic_list(sub_characteristics)
+        self.add_sub_characteristic_list(list(sub_characteristics))
 
 
 class FileVMWCharacteristic(Characteristic):
@@ -106,4 +106,4 @@ class FileVMWCharacteristic(Characteristic):
     def __init__(self) -> None:
         super().__init__("FVMW", "Files uncovering VMWare.")
         sub_characteristics = sub_characteristics_vmware()
-        self.add_sub_characteristic_list(sub_characteristics)
+        self.add_sub_characteristic_list(list(sub_characteristics))

@@ -28,10 +28,10 @@ def test_characteristic_attribute(slug, description) -> None:
             "TEST",
             "This characteristic checks is just an example.",
             "Hello world",
-            lambda x: (x, False),
+            lambda x: False,
             lambda x: f"{x} all!",
-            ("Hello world", False),
-            ("Hello world", False),
+            False,
+            "Hello world all!",
         )
     ],
 )
@@ -50,8 +50,12 @@ def test_lambda_characteristic_basic(
     )
     assert lambda_characteristic.slug == slug
     assert lambda_characteristic.description == description
-    assert lambda_characteristic.check() == expected_return_check
-    assert lambda_characteristic.fix() == expected_return_fix
+    assert lambda_characteristic.check() == CheckType(
+        slug, description, value, expected_return_check
+    )
+    assert lambda_characteristic.fix() == CheckType(
+        slug, description, value, expected_return_fix
+    )
 
 
 def test_combine_characteristic_lambda(

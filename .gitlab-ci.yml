@@ -32,4 +32,6 @@ mypy:
 pytest:
   stage: Testing
   script:
+    - pwd
+    - ls -l
     - pytest tests

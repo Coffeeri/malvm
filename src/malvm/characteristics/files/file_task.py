@@ -50,14 +50,16 @@ def remove_path(path: str) -> bool:
 
 def get_virtualbox_files():
     """Returns all files uncovering VirtualBoxs existencee."""
-    return read_json_file(Path(get_project_root() / "data/files_virtualbox.json"))[
-        "files"
-    ]
+    return read_json_file(
+        Path(Path(get_project_root() / "data/files_virtualbox.json")).absolute()
+    )["files"]
 
 
 def get_vmware_files():
     """Returns all files uncovering VirtualBoxs existencee."""
-    return read_json_file(Path(get_project_root() / "data/files_vmware.json"))["files"]
+    return read_json_file(
+        Path(Path(get_project_root() / "data/files_vmware.json")).absolute()
+    )["files"]
 
 
 def sub_characteristics_virtualbox() -> List[LambdaCharacteristic]:

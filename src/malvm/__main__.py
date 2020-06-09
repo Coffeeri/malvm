@@ -1,4 +1,5 @@
 """Malvm Entrypoint."""
+
 from malvm.cli.main import malvm
 
 

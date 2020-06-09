@@ -18,6 +18,12 @@ Sub-Characteristic.
 
 Clone this repository and install the package.
 
+### Development
+```shell
+./bootstrap.sh
+```
+
+### Normal User
 ```shell
 git clone git@gitlab.com:shk_fkie/analysevm.git
 
@@ -31,16 +37,29 @@ Now you are able to use the commandline.
 
 ## Commandline
 
+### Build VMs
 ```shell
-Usage: malvm [OPTIONS] COMMAND [ARGS]...
+malvm box build # Select template interactive or as Argument
+malvm box run <TEMPLATE> <VM NAME>
 
-  Base CLI-command for malvm.
+# Example:
+malvm box build win10_1607_x64_analyst 
+malvm box run win10_1607_x64_analyst AnalysisVM01
 
-Options:
-  --help  Show this message and exit.
+# (Chained)
+malvm box build win10_1607_x64_analyst run win10_1607_x64_analyst AnalysisVM01
+```
 
-Commands:
-  check  [Optional: code] Checks satisfaction of CHARACTERISTIC.
-  fix    [Optional: code] Fixes satisfaction of CHARACTERISTIC.
-  show   [Optional: -a --show-all to include sub characteristics] Lists all characteristics.
+### Check and Fix VM characteristics
+
+To check and/ or fix given characteristics, run:
+
+```shell
+malvm check <None | characteristics>
+
+# check and fix
+malvm fix <None | characteristics>
+
+# Example:
+malvm fix # Checks and fixes all characteristics
 ```

@@ -15,7 +15,11 @@ setuptools.setup(
     python_requires=">=3.6",
     packages=setuptools.find_packages(where="src"),
     package_dir={"malvm": "src/malvm"},
-    install_requires=["click"],
+    install_requires=[
+        "click",
+        "inquirer",
+        "malboxes @ git+https://github.com/GoSecure/malboxes.git#egg=malboxes",
+    ],
     package_data={"malvm": ["data/*.json"]},
     entry_points={"console_scripts": ["malvm = malvm.__main__:main"]},
 )

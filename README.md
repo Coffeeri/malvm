@@ -14,16 +14,18 @@ Each Characteristic-Module can have multiple Sub-Characteristics.
 In the example of `FilesCharacteristic` - each File would be its own
 Sub-Characteristic.
 
-## Installation
+## Quickstart
+
+### Installation
 
 Clone this repository and install the package.
 
-### Development
+#### Development
 ```shell
 ./bootstrap.sh
 ```
 
-### Normal User
+#### Normal User
 ```shell
 git clone git@gitlab.com:shk_fkie/analysevm.git
 
@@ -35,9 +37,9 @@ python setup.py install
 
 Now you are able to use the commandline.
 
-## Commandline
+### Commandline
 
-### Build VMs
+#### Build VMs
 ```shell
 malvm box build # Select template interactive or as Argument
 malvm box run <TEMPLATE> <VM NAME>
@@ -50,7 +52,7 @@ malvm box run win10_1607_x64_analyst AnalysisVM01
 malvm box build win10_1607_x64_analyst run win10_1607_x64_analyst AnalysisVM01
 ```
 
-### Check and Fix VM characteristics
+#### Check and Fix VM characteristics
 
 To check and/ or fix given characteristics, run:
 

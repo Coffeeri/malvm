@@ -3,6 +3,9 @@
 The tool malvm is used to create sanitized virtual environments, such that a
 Maleware is not able to determine, if it's in a virtual machine or not.
 
+VMs are build and installed with the [malboxes](https://github.com/GoSecure/malboxes) 
+gqtool.
+
 ## Characteristics
 
 malvm uses different characteristics. Each having its own `check` and `fix` method.
@@ -14,10 +17,25 @@ Each Characteristic-Module can have multiple Sub-Characteristics.
 In the example of `FilesCharacteristic` - each File would be its own
 Sub-Characteristic.
 
-## Installation
+## Quickstart
+
+### Prerequisite
+1. [Python3](https://www.python.org/)
+2. [git](https://git-scm.com/)
+3. [Vagrant](https://www.vagrantup.com/)
+4. [Packer](https://www.packer.io/)
+5. [Virtualbox](https://www.virtualbox.org/) 
+
+### Installation
 
 Clone this repository and install the package.
 
+#### Development
+```shell
+./bootstrap.sh
+```
+
+#### Normal User
 ```shell
 git clone git@gitlab.com:shk_fkie/analysevm.git
 
@@ -29,24 +47,31 @@ python setup.py install
 
 Now you are able to use the commandline.
 
-## Commandline
+### Commandline
+
+#### Build VMs
+```shell
+malvm box build # Select template interactive or as Argument
+malvm box run <TEMPLATE> <VM NAME>
+
+# Example:
+malvm box build win10_1607_x64_analyst 
+malvm box run win10_1607_x64_analyst AnalysisVM01
+
+# (Chained)
+malvm box build win10_1607_x64_analyst run win10_1607_x64_analyst AnalysisVM01
+```
+
+#### Check and Fix VM characteristics
+
+To check and/ or fix given characteristics, run:
 
 ```shell
-Usage: malvm [OPTIONS] COMMAND [ARGS]...
+malvm check <None | characteristics>
 
-  Base CLI-command for malvm.
+# check and fix
+malvm fix <None | characteristics>
 
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  check        Checks satisfaction of ALL characteristics.
-  check <code> Checks a specific characteristic.
-  
-  fix          Fixes all characteristics.
-  fix   <code> Fixes a specific characteristic.
-  
-  show         Lists all loaded characteristics.
-  show  -a     Lists all loaded characteristics, including sub characteristics.
-        --show-all
+# Example:
+malvm fix # Checks and fixes all characteristics
 ```

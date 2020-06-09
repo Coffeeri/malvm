@@ -6,7 +6,6 @@ Classes:
 """
 from typing import Dict, Generator, List, Optional
 
-
 from ..characteristics import loaded_characteristics
 from ..characteristics.abstract_characteristic import CharacteristicBase, CheckType
 from ..utils.metaclasses import SingletonMeta
@@ -21,6 +20,9 @@ class Controller(metaclass=SingletonMeta):
     def __init__(self) -> None:
         """Initialize Controller and load characteristics."""
         self.characteristics: Dict[str, CharacteristicBase] = {}
+        self.characteristics_with_sub_characteristics: Dict[
+            str, CharacteristicBase
+        ] = {}
         for characteristic in loaded_characteristics:
             sub_characteristics = {
                 c.slug: c for c in characteristic().sub_characteristics.values()
@@ -30,7 +32,7 @@ class Controller(metaclass=SingletonMeta):
                 characteristic().slug: characteristic(),
             }
             self.characteristics_with_sub_characteristics = {
-                **self.characteristics,
+                **self.characteristics_with_sub_characteristics,
                 characteristic().slug: characteristic(),
                 **sub_characteristics,
             }
@@ -41,7 +43,6 @@ class Controller(metaclass=SingletonMeta):
         Returns:
             List[CharacteristicBase]: List of all characteristics.
         """
-
         return list(self.characteristics.values())
 
     def get_characteristic_list_all(self) -> List[CharacteristicBase]:

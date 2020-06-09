@@ -3,6 +3,9 @@
 The tool malvm is used to create sanitized virtual environments, such that a
 Maleware is not able to determine, if it's in a virtual machine or not.
 
+VMs are build and installed with the [malboxes](https://github.com/GoSecure/malboxes) 
+gqtool.
+
 ## Characteristics
 
 malvm uses different characteristics. Each having its own `check` and `fix` method.

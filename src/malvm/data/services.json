@@ -1,0 +1,33 @@
+[
+  {
+    "hypervisor": "generic",
+    "services": [
+      "VMTools",
+      "Vmhgfs",
+      "VMMEMCTL",
+      "Vmmouse",
+      "Vmrawdsk",
+      "Vmusbmouse",
+      "Vmvss",
+      "Vmscsi",
+      "Vmxnet",
+      "vmx_svga"
+    ]
+  },
+  {
+    "hypervisor": "VMWare",
+    "services": [
+      "MTools",
+      "vmvss",
+      "VGAuthService",
+      "VMware Physical Disk Helper Service",
+      "Vmware Tools"
+    ]
+  },
+  {
+    "hypervisor": "VirtualBox",
+    "services": [
+      "VBoxService"
+    ]
+  }
+]

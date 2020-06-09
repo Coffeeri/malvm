@@ -6,6 +6,7 @@ Classes:
 """
 from typing import Dict, Generator, List, Optional
 
+import malvm.cli.main
 from ..characteristics import loaded_characteristics
 from ..characteristics.abstract_characteristic import CharacteristicBase, CheckType
 from ..utils.metaclasses import SingletonMeta
@@ -68,13 +69,13 @@ class Controller(metaclass=SingletonMeta):
         if slug_searched not in self.characteristics:
             raise ValueError("Characteristic was not found.")
         characteristic = self.characteristics[slug_searched]
-        characteristic_return_value = characteristic.check()
+        characteristic_return_value = malvm.cli.main.check()
         if not isinstance(  # pylint: disable=isinstance-second-argument-not-valid-type
             characteristic_return_value, Generator,
         ):
             yield characteristic_return_value
         else:
-            for result in characteristic.check():
+            for result in malvm.cli.main.check():
                 yield result
 
     def run_checks(self) -> Generator[CheckType, None, None]:
@@ -105,13 +106,13 @@ class Controller(metaclass=SingletonMeta):
         if slug_searched not in self.characteristics:
             raise ValueError("Characteristic was not found.")
         characteristic = self.characteristics[slug_searched]
-        characteristic_return_value = characteristic.fix()
+        characteristic_return_value = malvm.cli.main.fix()
         if not isinstance(  # pylint: disable=isinstance-second-argument-not-valid-type
             characteristic_return_value, Generator,
         ):
             yield characteristic_return_value
         else:
-            for result in characteristic.fix():
+            for result in malvm.cli.main.fix():
                 yield result
 
     def run_fixes(self) -> Generator[CheckType, None, None]:

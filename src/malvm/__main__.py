@@ -1,5 +1,5 @@
 """Malvm Entrypoint."""
-from .cli import malvm
+from malvm.cli.main import malvm
 
 
 def main() -> None:  # pragma: no cover

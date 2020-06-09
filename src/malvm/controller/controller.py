@@ -43,7 +43,6 @@ class Controller(metaclass=SingletonMeta):
         Returns:
             List[CharacteristicBase]: List of all characteristics.
         """
-
         return list(self.characteristics.values())
 
     def get_characteristic_list_all(self) -> List[CharacteristicBase]:

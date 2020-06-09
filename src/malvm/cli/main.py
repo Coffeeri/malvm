@@ -1,3 +1,4 @@
+"""This module is the entrypoint for the commandline."""
 import sys
 
 import click

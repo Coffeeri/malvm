@@ -1,3 +1,4 @@
+"""This module is the entrypoint for the commandline."""
 import click
 
 from .malboxes.malboxes import box

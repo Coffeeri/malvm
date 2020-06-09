@@ -5,23 +5,24 @@ import subprocess
 from pathlib import Path
 from typing import List
 import click
-import inquirer
+import inquirer  # type: ignore
 
 
 def malboxes_list() -> List[str]:
     """Returns list of all possible malbox templates."""
-    malboxes_process = subprocess.run(["malboxes", "list"], stdout=subprocess.PIPE)
+    malboxes_process = subprocess.run(
+        ["malboxes", "list"], stdout=subprocess.PIPE, check=True
+    )
     malboxes_return = malboxes_process.stdout.decode("utf-8")
     regex = re.compile(r"\S*_analyst")
     match: List[str] = regex.findall(malboxes_return)
     if match:
         return match
-    else:
-        raise ProcessLookupError(
-            "Malboxes could not be found. \n"
-            "Make sure to install Malboxes and have a working \n"
-            "internet connection."
-        )
+    raise ProcessLookupError(
+        "Malboxes could not be found. \n"
+        "Make sure to install Malboxes and have a working \n"
+        "internet connection."
+    )
 
 
 MALBOX_TEMPLATE_CHOICES = malboxes_list()
@@ -51,7 +52,7 @@ def build(template: str):
             f"> Building template {click.style(template, fg='yellow')}:", fg="green"
         )
     )
-    subprocess.run(["malboxes", "build", template])
+    subprocess.run(["malboxes", "build", template], check=True)
 
 
 @box.command()
@@ -76,7 +77,7 @@ def run(template, name):
             fg="green",
         )
     )
-    subprocess.run(["malboxes", "spin", template, name])
+    subprocess.run(["malboxes", "spin", template, name], check=True)
 
     if not Path("Vagrantfile").exists():
         click.echo(
@@ -87,4 +88,4 @@ def run(template, name):
             )
         )
     else:
-        subprocess.run(["vagrant", "up"])
+        subprocess.run(["vagrant", "up"], check=True)

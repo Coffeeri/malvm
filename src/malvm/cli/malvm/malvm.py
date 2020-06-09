@@ -1,3 +1,4 @@
+"""This module contians cli for the malvm core."""
 import sys
 
 import click

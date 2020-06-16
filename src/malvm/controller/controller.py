@@ -4,7 +4,7 @@ Classes:
     SingletonMeta: Singleton Metaclass.
     Controller: Controls the checks and fixes of characteristics.
 """
-from typing import Dict, Generator, List, Optional
+from typing import Dict, Generator, List
 
 from ..characteristics import loaded_characteristics
 from ..characteristics.abstract_characteristic import CharacteristicBase, CheckType
@@ -38,21 +38,11 @@ class Controller(metaclass=SingletonMeta):
             }
 
     def get_characteristic_list(self) -> List[CharacteristicBase]:
-        """Returns all characteristics.
-
-        Returns:
-            List[CharacteristicBase]: List of all characteristics.
-        """
+        """Returns all characteristics."""
         return list(self.characteristics.values())
 
     def get_characteristic_list_all(self) -> List[CharacteristicBase]:
-        """Returns all characteristics, including sub-characteristics.
-
-        Returns:
-            List[CharacteristicBase]: List of all characteristics,
-                                      including all sub-characteristics.
-        """
-
+        """Returns all characteristics, including sub-characteristics."""
         return list(self.characteristics_with_sub_characteristics.values())
 
     def run_check(self, slug_searched: str) -> Generator[CheckType, None, None]:
@@ -63,13 +53,11 @@ class Controller(metaclass=SingletonMeta):
                                        Read more about it in the docs on Gitlab.
 
         Returns:
-            RunCheckType:  Characteristic-Code, description and result of check.
+            RunCheckType:  Characteristic Slug, description and result of check.
         """
-        if not isinstance(slug_searched, str):
-            raise TypeError("Characteristic Code is not of type `str`.")
-        if slug_searched not in self.characteristics:
+        if slug_searched not in self.characteristics_with_sub_characteristics:
             raise ValueError("Characteristic was not found.")
-        characteristic = self.characteristics[slug_searched]
+        characteristic = self.characteristics_with_sub_characteristics[slug_searched]
         characteristic_return_value = characteristic.check()
         if not isinstance(  # pylint: disable=isinstance-second-argument-not-valid-type
             characteristic_return_value, Generator,
@@ -83,7 +71,7 @@ class Controller(metaclass=SingletonMeta):
         """Runs all checks and returns their results.
 
         Returns:
-            Generator[RunCheckType]: Generator of Characteristic-Code, description
+            Generator[RunCheckType]: Generator of Characteristic Slug, description
                                      and result of check.
         """
         for characteristic_slug in self.characteristics.keys():
@@ -98,12 +86,12 @@ class Controller(metaclass=SingletonMeta):
                                        Read more about it in the docs on Gitlab.
 
         Returns:
-            RunCheckType:  Characteristic-Code, description and result of fix.
+            RunCheckType:  Characteristic Slug, description and result of fix.
                                The result consists of Tuple of a message and a bool,
                                which indicates the status.
         """
         if not isinstance(slug_searched, str):
-            raise TypeError("Characteristic Code is not of type `str`.")
+            raise TypeError("Characteristic Slug is not of type `str`.")
         if slug_searched not in self.characteristics:
             raise ValueError("Characteristic was not found.")
         characteristic = self.characteristics[slug_searched]
@@ -120,7 +108,7 @@ class Controller(metaclass=SingletonMeta):
         """Runs fixes for all characteristics and returns their success.
 
         Returns:
-            List[RunCheckType]: List of Characteristic-Code, description
+            List[RunCheckType]: List of Characteristic Slug, description
                                 and result of fix.
                                 The result consists of Tuple of a message and a bool,
                                 which indicates the success.
@@ -128,21 +116,3 @@ class Controller(metaclass=SingletonMeta):
         for characteristic_slug in self.characteristics.keys():
             for characteristics in self.run_fix(characteristic_slug):
                 yield characteristics
-
-    def find(self, slug: str) -> Optional[CharacteristicBase]:
-        """Finds and returns a characteristic by slug.
-
-        Args:
-            slug(str): A unique slug, which is associated with the characteristic.
-
-        Returns:
-            Optional[CharacteristicBase]: A characteristic object.
-        """
-        if slug in self.characteristics:
-            return self.characteristics[slug]
-
-        for characteristic in self.characteristics.values():
-            check_result: Optional[CharacteristicBase] = characteristic.find(slug)
-            if check_result:
-                return check_result
-        return None

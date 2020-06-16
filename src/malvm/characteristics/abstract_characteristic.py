@@ -14,7 +14,7 @@ Classes:
 from __future__ import annotations
 
 import abc
-from typing import Any, Dict, Generator, List, Optional, NamedTuple, Callable
+from typing import Any, Dict, Generator, List, NamedTuple, Callable
 
 
 class CheckType(NamedTuple):
@@ -39,6 +39,16 @@ class CharacteristicBase:
         self.__description = description
         self.__sub_characteristics: Dict[str, CharacteristicBase] = {}
 
+    def __eq__(self, other: Any) -> bool:
+        """Returns true if compared characteristic is equal."""
+        if not isinstance(other, CharacteristicBase):
+            raise TypeError("Parameter `other` must be of type `CharacteristicBase`.")
+        return (
+            self.slug == other.slug
+            and self.description == other.description
+            and self.sub_characteristics == other.sub_characteristics
+        )
+
     @abc.abstractmethod
     def check(self) -> Any:
         """Checks if given characteristic is already satisfied."""
@@ -58,11 +68,7 @@ class CharacteristicBase:
 
     @slug.setter
     def slug(self, slug: str) -> None:
-        """Sets unique slug referring to given characteristic.
-
-        Args:
-            slug (str): Unique slug referring to given characteristic.
-        """
+        """Sets unique slug referring to given characteristic."""
         # add some checks for "slug"-style
         self.__slug = slug
 
@@ -76,21 +82,18 @@ class CharacteristicBase:
 
     @description.setter
     def description(self, description: str) -> None:
-        """Setter for description method.
-
-        Args:
-            description (str): Description or content for context of
-                               characteristic.
-        """
+        """Setter for description method."""
         # add some checks for "description"-style
         self.__description = description
 
     @property
     def sub_characteristics(self) -> Dict[str, CharacteristicBase]:
-        """Returns a sub-characteristics.
+        """Returns a dict of sub-characteristics.
 
         Returns:
-            Dict[str, CharacteristicBase]: A dict of a sub-characteristics.
+            Dict[str, CharacteristicBase]: Key represent the slug and the value of the
+                                           dict consists of the related Characteristic,
+                                           inheriting from `CharacteristicBase`.
         """
         return self.__sub_characteristics
 
@@ -114,24 +117,6 @@ class CharacteristicBase:
         """
         for characteristic in sub_characteristic_list:
             self.add_sub_characteristic(characteristic)
-
-    def find(self, slug: str) -> Optional[CharacteristicBase]:
-        """Finds and returns a characteristic by slug.
-
-        Args:
-            slug(str): A unique slug, which is associated with the characteristic.
-
-        Returns:
-            Optional[CharacteristicBase]: A characteristic object.
-        """
-        if slug in self.sub_characteristics:
-            return self.sub_characteristics[slug]
-
-        for characteristic in self.sub_characteristics.values():
-            result: Optional[CharacteristicBase] = characteristic.find(slug)
-            if result:
-                return result
-        return None
 
 
 class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):

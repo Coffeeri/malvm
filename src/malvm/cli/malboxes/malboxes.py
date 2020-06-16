@@ -2,10 +2,14 @@
 
 import re
 import subprocess
+import sys
 from pathlib import Path
+from platform import system
 from typing import List
 import click
 import inquirer  # type: ignore
+
+from ...utils.helper_methods import get_project_root
 
 
 def malboxes_list() -> List[str]:
@@ -37,6 +41,7 @@ def box():
 @click.argument("template", type=click.Choice(MALBOX_TEMPLATE_CHOICES), required=False)
 def build(template: str):
     """Builds a Malbox template."""
+    update_malboxes_config()
     if not template:
         questions = [
             inquirer.List(
@@ -53,6 +58,22 @@ def build(template: str):
         )
     )
     subprocess.run(["malboxes", "build", "--force", template], check=True)
+
+
+def update_malboxes_config() -> None:
+    """Inserts custom malbox config."""
+    click.echo("> Update Malboxes config.")
+    if system() == "Linux":
+        Path(get_project_root() / "data/malboxes_config.js").replace(
+            Path.home() / ".config/malboxes/config.js"
+        )
+    else:
+        click.echo(
+            click.style(
+                "Sorry, currently Linux is the only supported platform.", bg="red"
+            )
+        )
+        sys.exit(1)
 
 
 @box.command()

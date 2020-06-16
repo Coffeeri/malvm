@@ -82,4 +82,36 @@ def run(template, name):
             )
         )
         subprocess.run(["malboxes", "spin", template, name], check=True)
+        add_provisioning_vagrantfile()
     subprocess.run(["vagrant", "up"], check=True)
+
+
+def add_provisioning_vagrantfile() -> None:
+    """Adds provisioning for malvm into Vagrantfile."""
+    additional_provisioning = """
+    # Install choco, python and git
+    config.vm.provision "shell", privileged: "true", powershell_elevated_interactive: "true", inline: <<-SHELL
+    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    choco install python3 git -y
+    SHELL
+    
+    # Install malvm
+    config.vm.provision "shell", privileged: "true", powershell_elevated_interactive: "true", inline: <<-SHELL
+    cd C:/Users/max/Desktop/host/
+    pip install -r requirements.txt
+    python setup.py install
+    malvm fix
+    SHELL
+end
+    """  # noqa: E501, W293
+    append_to_vagrantfile(additional_provisioning)
+
+
+def append_to_vagrantfile(text: str) -> None:
+    """Removes last line and appends text to Vagrantfile."""
+    with Path("Vagrantfile").open(mode="r") as file:
+        lines = file.readlines()
+        lines = lines[:-1]
+    with Path("Vagrantfile").open(mode="w+") as file:
+        lines.append(text)
+        file.writelines(lines)

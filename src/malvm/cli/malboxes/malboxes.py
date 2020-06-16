@@ -52,7 +52,7 @@ def build(template: str):
             f"> Building template {click.style(template, fg='yellow')}:", fg="green"
         )
     )
-    subprocess.run(["malboxes", "build", template], check=True)
+    subprocess.run(["malboxes", "build", "--force", template], check=True)
 
 
 @box.command()
@@ -70,22 +70,16 @@ def run(template, name):
 
         $ malvm box run win7_x86_analyst 20160519.cryptolocker.xyz
     """
-    click.echo(
-        click.style(
-            f"> Spin up VM {click.style(name, fg='yellow')} "
-            f"with template {click.style(template, fg='yellow')}:",
-            fg="green",
-        )
-    )
-    subprocess.run(["malboxes", "spin", template, name], check=True)
 
     if not Path("Vagrantfile").exists():
+        click.echo(click.style("> Vagrantfile does not exist.", fg="red",))
+
         click.echo(
             click.style(
-                "> Vagrantfile does not exist. "
-                "Please use `malvm box build` to generate one.",
-                fg="red",
+                f"> Spin up VM {click.style(name, fg='yellow')} "
+                f"with template {click.style(template, fg='yellow')}:",
+                fg="green",
             )
         )
-    else:
-        subprocess.run(["vagrant", "up"], check=True)
+        subprocess.run(["malboxes", "spin", template, name], check=True)
+    subprocess.run(["vagrant", "up"], check=True)

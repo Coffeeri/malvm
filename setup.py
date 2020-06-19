@@ -20,6 +20,6 @@ setuptools.setup(
         "inquirer",
         "malboxes @ git+https://github.com/GoSecure/malboxes.git#egg=malboxes",
     ],
-    package_data={"malvm": ["data/*.json"]},
+    package_data={"malvm": ["data/*.json", "data/*.js"]},
     entry_points={"console_scripts": ["malvm = malvm.__main__:main"]},
 )

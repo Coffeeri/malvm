@@ -4,18 +4,11 @@ Classes:
     FileVBCharacteristic: Checks and Fixes for files referring to VirtualBox.
     FileVMWCharacteristic: Checks and Fixes for files referring to VMWare.
 """
-import json
 from pathlib import Path
-from typing import List, Dict, Union
+from typing import List
 
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
-from ...utils.helper_methods import get_project_root
-
-
-def read_json_file(path: Path) -> Dict[str, Union[str, List[str], List[List[str]]]]:
-    """Returns json of a given file."""
-    with path.open(mode="r") as json_file:
-        return json.load(json_file)
+from ...utils.helper_methods import get_project_root, read_json_file
 
 
 def check_path_not_exists(path: str) -> bool:
@@ -50,14 +43,14 @@ def remove_path(path: str) -> bool:
 
 
 def get_virtualbox_files():
-    """Returns all files uncovering VirtualBoxs existencee."""
+    """Returns all files identifying VirtualBoxs existencee."""
     return read_json_file(
         Path(Path(get_project_root() / "data/files_virtualbox.json")).absolute()
     )["files"]
 
 
 def get_vmware_files():
-    """Returns all files uncovering VirtualBoxs existencee."""
+    """Returns all files identifying VirtualBoxs existencee."""
     return read_json_file(
         Path(Path(get_project_root() / "data/files_vmware.json")).absolute()
     )["files"]
@@ -71,7 +64,7 @@ def sub_characteristics_virtualbox() -> List[LambdaCharacteristic]:
     file_characteristics: List[LambdaCharacteristic] = []
     data: List[List[str]] = get_virtualbox_files()
     for slug, file_path in data:
-        description = f"File uncovering VirtualBox existence: {file_path}"
+        description = f"File identifying VirtualBox existence: {file_path}"
         characteristic = LambdaCharacteristic(
             slug, description, file_path, check_path_not_exists, remove_path,
         )
@@ -87,7 +80,7 @@ def sub_characteristics_vmware() -> List[LambdaCharacteristic]:
     file_characteristics: List[LambdaCharacteristic] = []
     data: List[List[str]] = get_vmware_files()
     for slug, file_path in data:
-        description = f"File uncovering VMWare existence: {file_path}"
+        description = f"File identifying VMWare existence: {file_path}"
         characteristic = LambdaCharacteristic(
             slug, description, file_path, check_path_not_exists, remove_path,
         )
@@ -99,7 +92,7 @@ class FileVBCharacteristic(Characteristic):
     """Checks and Fixes for existence of striking files."""
 
     def __init__(self) -> None:
-        super().__init__("FVB", "Files uncovering VirtualBox.")
+        super().__init__("FVB", "Files identifying VirtualBox.")
         sub_characteristics = sub_characteristics_virtualbox()
         self.add_sub_characteristic_list(list(sub_characteristics))
 
@@ -108,6 +101,6 @@ class FileVMWCharacteristic(Characteristic):
     """Checks and Fixes for existence of striking files."""
 
     def __init__(self) -> None:
-        super().__init__("FVMW", "Files uncovering VMWare.")
+        super().__init__("FVMW", "Files identifying VMWare.")
         sub_characteristics = sub_characteristics_vmware()
         self.add_sub_characteristic_list(list(sub_characteristics))

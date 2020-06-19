@@ -1,0 +1,1 @@
+from .registry_task import RegistryVBCharacteristic

@@ -69,7 +69,7 @@ Next `maleware box run win10_1607_x64_analyst malewareVM` spins up a VirtualMach
 
 ### Checks and Fixes 
 
-Malvm analyses its environment. It includes [Characteristics](https://gitlab.com/shk_fkie/analysevm/-/wikis/Characteristics) which reveal the existence of being in a VM-environment.
+Malvm analyses its environment. It includes [Characteristics](https://gitlab.com/shk_fkie/analysevm/-/wikis/2.-Characteristics) which reveal the existence of being in a VM-environment.
 
 Those characteristics can be checked with:
 

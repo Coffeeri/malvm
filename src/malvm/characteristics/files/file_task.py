@@ -1,7 +1,8 @@
-"""This module contains classes for characteristics of files and processes.
+"""This module contains classes for characteristics of files.
 
 Classes:
-    FileCharacteristic: Checks and Fixes for existence of striking files.
+    FileVBCharacteristic: Checks and Fixes for files referring to VirtualBox.
+    FileVMWCharacteristic: Checks and Fixes for files referring to VMWare.
 """
 import json
 from pathlib import Path
@@ -12,11 +13,7 @@ from ...utils.helper_methods import get_project_root
 
 
 def read_json_file(path: Path) -> Dict[str, Union[str, List[str], List[List[str]]]]:
-    """Returns json of a given file.
-
-    Args:
-        path (Path): Path to json-file.
-    """
+    """Returns json of a given file."""
     with path.open(mode="r") as json_file:
         return json.load(json_file)
 
@@ -41,10 +38,14 @@ def remove_path(path: str) -> bool:
     if check_path_not_exists(path):
         return True
     path_obj = Path(path)
-    if path_obj.is_file():
-        path_obj.unlink()
-    elif path_obj.is_dir():
-        path_obj.rmdir()
+    try:
+
+        if path_obj.is_file():
+            path_obj.unlink()
+        elif path_obj.is_dir():
+            path_obj.rmdir()
+    except PermissionError:
+        return False
     return check_path_not_exists(path)
 
 

@@ -17,61 +17,68 @@ Each Characteristic-Module can have multiple Sub-Characteristics.
 In the example of `FilesCharacteristic` - each File would be its own
 Sub-Characteristic.
 
-## Quickstart
+## Getting Started
+### Table of Content
+
+1. [Prerequisite](#prerequisite)
+2. [Installation](#install-malvm)
+3. [Quick start: Create your first VM](#first-vm)
+4. [Quick start: Check and Fix your VM-Environment](#checks-and-fixes)
 
 ### Prerequisite
-1. [Python3](https://www.python.org/)
-2. [git](https://git-scm.com/)
-3. [Vagrant](https://www.vagrantup.com/)
-4. [Packer](https://www.packer.io/)
-5. [Virtualbox](https://www.virtualbox.org/) 
+Please make sure that the following dependencies are installed:
 
-### Installation
+1. [Python3](https://www.python.org/downloads/)
+2. [git](https://git-scm.com/downloads)
+3. [Vagrant](https://www.vagrantup.com/downloads)
+4. [Packer](https://learn.hashicorp.com/packer/getting-started/install)
+5. [VirtualBox](https://www.virtualbox.org/wiki/Downloads) 
 
-Clone this repository and install the package.
+### Install malvm
 
-#### Development
+#### **1. Clone the Repository and open a shell in the folder.**
 ```shell
-./bootstrap.sh
+▶ git clone git@gitlab.com:shk_fkie/analysevm.git && cd analysevm
 ```
 
-#### Normal User
+#### **2. Install package**
+
+**2.1 Install package (Normal User)**
+
 ```shell
-git clone git@gitlab.com:shk_fkie/analysevm.git
-
-cd analysevm
-
-python setup.py install
-
+▶ python setup.py install
 ```
 
-Now you are able to use the commandline.
+**2.1 Install package (Developer)**
 
-### Commandline
-
-#### Build VMs
 ```shell
-malvm box build # Select template interactive or as Argument
-malvm box run <TEMPLATE> <VM NAME>
-
-# Example:
-malvm box build win10_1607_x64_analyst 
-malvm box run win10_1607_x64_analyst AnalysisVM01
-
-# (Chained)
-malvm box build win10_1607_x64_analyst run win10_1607_x64_analyst AnalysisVM01
+▶ ./bootstrap.sh
 ```
 
-#### Check and Fix VM characteristics
+### First VM
 
-To check and/ or fix given characteristics, run:
+In the following we are going to create a Windows 10 VM called "malewareVM".
+We use two commands chained together.
+
+First `maleware box build win10_1607_x64_analyst` builds the image.
+Next `maleware box run win10_1607_x64_analyst malewareVM` spins up a VirtualMachine instance of the previously created image.
 
 ```shell
-malvm check <None | characteristics>
+▶ malvm box build win10_1607_x64_analyst run win10_1607_x64_analyst malewareVM
+```
 
-# check and fix
-malvm fix <None | characteristics>
+### Checks and Fixes 
 
-# Example:
-malvm fix # Checks and fixes all characteristics
+Malvm analyses its environment. It includes characteristics (ADD link to List of Characteristics here) which reveal the existence of being in a VM-environment.
+
+Those characteristics can be checked with:
+
+```shell
+▶ malvm check
+```
+
+If those failed ones should be fixed, simply run:
+
+```shell
+▶ malvm fix
 ```

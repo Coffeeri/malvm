@@ -3,19 +3,31 @@
 Classes:
     RegistryVBCharacteristic: Checks and Fixes registry entries referring to VirtualBox.
 """
+import platform
 from enum import Enum
 from pathlib import Path
 from typing import List, Dict, Tuple, NamedTuple, Union
-from winreg import (
-    HKEY_LOCAL_MACHINE,
-    OpenKey,
-    KEY_ALL_ACCESS,
-    QueryInfoKey,
-    EnumKey,
-    DeleteKey,
-    KEY_WOW64_64KEY,
-    KEY_WOW64_32KEY,
-    SetValue, REG_SZ, QueryValueEx, CreateKey, SetValueEx)
+
+from ...cli.utils import print_warning
+
+try:
+    from winreg import (
+        HKEY_LOCAL_MACHINE,
+        OpenKey,
+        KEY_ALL_ACCESS,
+        QueryInfoKey,
+        EnumKey,
+        DeleteKey,
+        KEY_WOW64_64KEY,
+        KEY_WOW64_32KEY,
+        SetValue,
+        REG_SZ,
+        QueryValueEx,
+        CreateKey,
+        SetValueEx,
+    )
+except ModuleNotFoundError:
+    print_warning("Registrycharacteristic can be only run on Windows machines.")
 
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 from ...utils.helper_methods import get_project_root, read_json_file
@@ -37,11 +49,26 @@ class RegistryTask(NamedTuple):
 
 def check_registry_key(task: RegistryTask) -> bool:
     """Checks if registry task is already satisfied."""
+    if platform.system() != "Windows":
+        print_warning(f"Skipped [{task.slug}] - Not running Windows.")
+        return False
     if task.action == RegistryAction.REMOVE:
         return not check_registry_key_exists(task)
     elif task.action == RegistryAction.CHANGE:
         return check_registry_key_value(task)
     return False
+
+
+def fix_registry_key(task: RegistryTask) -> bool:
+    """Fixes registry key entry."""
+    if platform.system() != "Windows":
+        print_warning(f"Skipped [{task.slug}] - Not running Windows.")
+        return False
+    if task.action == RegistryAction.REMOVE:
+        remove_key(task)
+    elif task.action == RegistryAction.CHANGE:
+        set_key_value(task)
+    return check_registry_key(task)
 
 
 def check_registry_key_exists(task: RegistryTask) -> bool:
@@ -83,15 +110,6 @@ def split_key(key: str) -> Tuple[int, str]:
         key_base = HKEY_LOCAL_MACHINE
         key_path = key_path.replace("HKEY_LOCAL_MACHINE\\", "")
     return key_base, key_path
-
-
-def fix_registry_key(task: RegistryTask) -> bool:
-    """Fixes registry key entry."""
-    if task.action == RegistryAction.REMOVE:
-        remove_key(task)
-    elif task.action == RegistryAction.CHANGE:
-        set_key_value(task)
-    return check_registry_key(task)
 
 
 def set_key_value(task: RegistryTask):

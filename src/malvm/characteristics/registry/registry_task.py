@@ -6,12 +6,13 @@ Classes:
 import platform
 from enum import Enum
 from pathlib import Path
-from typing import List, Dict, Tuple, NamedTuple, Union
+from typing import List, Dict, Tuple, NamedTuple, Union, Optional
 
 from ...cli.utils import print_warning
 
 try:
-    from winreg import (
+    # type: ignore
+    from winreg import (  # type: ignore  # pylint: disable=E0401,I0023
         HKEY_LOCAL_MACHINE,
         OpenKey,
         KEY_ALL_ACCESS,
@@ -20,7 +21,6 @@ try:
         DeleteKey,
         KEY_WOW64_64KEY,
         KEY_WOW64_32KEY,
-        SetValue,
         REG_SZ,
         QueryValueEx,
         CreateKey,
@@ -34,17 +34,21 @@ from ...utils.helper_methods import get_project_root, read_json_file
 
 
 class RegistryAction(Enum):
+    """Action to be execute in fix stage."""
+
     REMOVE = 1
     CHANGE = 2
 
 
 class RegistryTask(NamedTuple):
+    """Data of a registry sub characteristic instance."""
+
     slug: str
     action: RegistryAction
     hypervisor: str
     key: str
-    parameter: str
-    value: str
+    parameter: Optional[str]
+    value: Optional[str]
 
 
 def check_registry_key(task: RegistryTask) -> bool:
@@ -54,9 +58,7 @@ def check_registry_key(task: RegistryTask) -> bool:
         return False
     if task.action == RegistryAction.REMOVE:
         return not check_registry_key_exists(task)
-    elif task.action == RegistryAction.CHANGE:
-        return check_registry_key_value(task)
-    return False
+    return check_registry_key_value(task)
 
 
 def fix_registry_key(task: RegistryTask) -> bool:
@@ -97,14 +99,14 @@ def check_registry_key_value(task: RegistryTask) -> bool:
 
 def normalize_key_value(key_value: Union[str, List[str]]) -> str:
     """Returns normalize string of registry key value."""
-    if isinstance(key_value, List):
+    if isinstance(key_value, list):
         key_value = "\n".join(key_value)
     return key_value
 
 
 def split_key(key: str) -> Tuple[int, str]:
     """Returns key-base and remaining key-path."""
-    key_base = None
+    key_base = 0
     key_path = key
     if key.startswith("HKEY_LOCAL_MACHINE\\"):
         key_base = HKEY_LOCAL_MACHINE
@@ -130,15 +132,15 @@ def remove_key(task: RegistryTask) -> None:
     for arch_key in arch_keys:
         try:
             delete_sub_key(key_base, key_path, arch_key)
-        except OSError as e:
-            print(e)
+        except OSError as exception:
+            print(exception)
 
 
 def delete_sub_key(key0: int, current_key: str, arch_key: int = 0) -> None:
     """Deletes registry key including all sub-keys."""
     open_key = OpenKey(key0, current_key, 0, KEY_ALL_ACCESS | arch_key)
     info_key = QueryInfoKey(open_key)
-    for x in range(0, info_key[0]):
+    for _ in range(0, info_key[0]):
         sub_key = EnumKey(open_key, 0)
         try:
             DeleteKey(open_key, sub_key)

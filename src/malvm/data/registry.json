@@ -29,7 +29,7 @@
     "slug":  "RVB004",
     "action": "remove",
     "hypervisor": "VirtualBox",
-    "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\ACPI\\DSDT\\VBOX__"
+    "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\ACPI\\SSDT\\VBOX__"
   },
   {
     "slug":  "RVB005",

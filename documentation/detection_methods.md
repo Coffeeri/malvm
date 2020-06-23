@@ -172,3 +172,5 @@ Malware queries various attributes like SerialNo, SocketDesignation..
 - https://resources.infosecinstitute.com/how-malware-detects-virtualized-environment-and-its-countermeasures-an-overview/
 - https://www.cyberbit.com/blog/endpoint-security/anti-vm-and-anti-sandbox-explained/
 - https://www.deepinstinct.com/2019/10/29/malware-evasion-techniques-part-2-anti-vm-blog/
+- https://handlers.sans.org/tliston/ThwartingVMDetection_Liston_Skoudis.pdf
+- http://unprotect.tdgt.org/images/2/23/Sandbox-Cheatsheet-1.1.pdf

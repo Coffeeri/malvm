@@ -1,5 +1,4 @@
 """This Module contains helper metaclasses."""
-from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Type
 
@@ -10,11 +9,11 @@ class SingletonMeta(type):
     All classes inheriting from SingletonMeta can be instantiated once.
     """
 
-    _instances: Dict[SingletonMeta, Type[SingletonMeta]] = {}
+    _instances: Dict["SingletonMeta", Type["SingletonMeta"]] = {}
 
     def __call__(
         cls, *args: Sequence[Any], **kwargs: Mapping[Any, Any]
-    ) -> Type[SingletonMeta]:
+    ) -> Type["SingletonMeta"]:
         """Returns the instance of the class.
 
         Creates an instance of a class if it does not exist yet.

@@ -11,7 +11,6 @@ Classes:
     LambdaCharacteristic: Sub-characteristic with flexible function pointers as check
                           and fix methods.
 """
-from __future__ import annotations
 
 import abc
 from typing import Any, Dict, Generator, List, NamedTuple, Callable
@@ -87,7 +86,7 @@ class CharacteristicBase:
         self.__description = description
 
     @property
-    def sub_characteristics(self) -> Dict[str, CharacteristicBase]:
+    def sub_characteristics(self) -> Dict[str, "CharacteristicBase"]:
         """Returns a dict of sub-characteristics.
 
         Returns:
@@ -97,7 +96,7 @@ class CharacteristicBase:
         """
         return self.__sub_characteristics
 
-    def add_sub_characteristic(self, sub_characteristic: CharacteristicBase) -> None:
+    def add_sub_characteristic(self, sub_characteristic: "CharacteristicBase") -> None:
         """Add a sub-characteristic.
 
         Args:
@@ -107,7 +106,7 @@ class CharacteristicBase:
         self.__sub_characteristics[sub_characteristic.slug] = sub_characteristic
 
     def add_sub_characteristic_list(
-        self, sub_characteristic_list: List[CharacteristicBase]
+        self, sub_characteristic_list: List["CharacteristicBase"]
     ) -> None:
         """Add a list of sub-characteristics.
 

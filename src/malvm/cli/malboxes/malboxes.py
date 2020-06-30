@@ -1,6 +1,7 @@
 """This module contains the CLI for the malboxes-tool."""
 
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -63,17 +64,24 @@ def build(template: str):
 def update_malboxes_config() -> None:
     """Inserts custom malbox config."""
     click.echo("> Update Malboxes config.")
+    from_path = get_project_root() / "data/malboxes_config.js"
     if system() == "Linux":
-        Path(get_project_root() / "data/malboxes_config.js").replace(
-            Path.home() / ".config/malboxes/config.js"
-        )
+        to_path = Path.home() / ".config/malboxes/config.js"
+
+    elif system() == "Windows":
+        to_path = Path.home() / "AppData/Local/malboxes/malboxes/config.js"
     else:
         click.echo(
             click.style(
-                "Sorry, currently Linux is the only supported platform.", bg="red"
+                "Sorry, currently Linux and Windows is the only supported platform.",
+                bg="red",
             )
         )
         sys.exit(1)
+
+    if to_path.exists():
+        to_path.unlink()
+    shutil.copy(str(from_path), str(to_path))
 
 
 @box.command()

@@ -13,7 +13,7 @@ Classes:
 """
 
 import abc
-from typing import Any, Dict, Generator, List, NamedTuple, Callable
+from typing import Any, Callable, Dict, Generator, List, NamedTuple
 
 
 class CheckType(NamedTuple):

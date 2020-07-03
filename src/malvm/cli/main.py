@@ -2,7 +2,7 @@
 import click
 
 from .malboxes.malboxes import box
-from .malvm.malvm import show, check, fix
+from .malvm.malvm import check, fix, show
 
 
 @click.group()

@@ -6,9 +6,12 @@ Classes:
 import platform
 from enum import Enum
 from pathlib import Path
-from typing import List, Dict, Tuple, NamedTuple, Union, Optional
+from typing import Dict, List, NamedTuple, Optional, Tuple, Union
 
 from ...cli.utils import print_warning
+from ...utils.helper_methods import get_project_root, read_json_file
+from ..abstract_characteristic import Characteristic, LambdaCharacteristic
+
 
 try:
     # type: ignore
@@ -29,8 +32,14 @@ try:
 except ModuleNotFoundError:
     print_warning("Registrycharacteristic can be only run on Windows machines.")
 
-from ..abstract_characteristic import Characteristic, LambdaCharacteristic
-from ...utils.helper_methods import get_project_root, read_json_file
+
+class RegistryVBCharacteristic(Characteristic):
+    """Checks and Fixes for existence of identifiable registry entries."""
+
+    def __init__(self) -> None:
+        super().__init__("RVB", "Registry entries identifying VirtualBox.")
+        sub_characteristics = sub_characteristics_virtualbox()
+        self.add_sub_characteristic_list(list(sub_characteristics))
 
 
 class RegistryAction(Enum):
@@ -174,12 +183,3 @@ def sub_characteristics_virtualbox() -> List[LambdaCharacteristic]:
         )
         registry_characteristics.append(characteristic)
     return registry_characteristics
-
-
-class RegistryVBCharacteristic(Characteristic):
-    """Checks and Fixes for existence of identifiable registry entries."""
-
-    def __init__(self) -> None:
-        super().__init__("RVB", "Registry entries identifying VirtualBox.")
-        sub_characteristics = sub_characteristics_virtualbox()
-        self.add_sub_characteristic_list(list(sub_characteristics))

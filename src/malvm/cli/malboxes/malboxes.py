@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from platform import system
 from typing import List
+
 import click
 import inquirer  # type: ignore
 

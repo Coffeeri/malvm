@@ -1,6 +1,6 @@
 [
   {
-    "slug":  "RGEN001",
+    "slug": "RGEN001",
     "action": "change",
     "hypervisor": "Generic",
     "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System",
@@ -8,64 +8,72 @@
     "value": ""
   },
   {
-    "slug":  "RVB001",
+    "slug": "RVB001",
     "action": "remove",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\ACPI\\DSDT\\VBOX__"
   },
   {
-    "slug":  "RVB002",
+    "slug": "RVB002",
     "action": "remove",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\ACPI\\FADT\\VBOX__"
   },
   {
-    "slug":  "RVB003",
+    "slug": "RVB003",
     "action": "remove",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\ACPI\\RSDT\\VBOX__"
   },
   {
-    "slug":  "RVB004",
+    "slug": "RVB004",
     "action": "remove",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\ACPI\\SSDT\\VBOX__"
   },
   {
-    "slug":  "RVB005",
+    "slug": "RVB005",
     "action": "remove",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxGuest"
   },
   {
-    "slug":  "RVB006",
+    "slug": "RVB006",
     "action": "remove",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxMouse"
   },
   {
-    "slug":  "RVB007",
+    "slug": "RVB007",
     "action": "remove",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxService"
   },
   {
-    "slug":  "RVB008",
+    "slug": "RVB008",
     "action": "remove",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxSF"
   },
   {
-    "slug":  "RVB009",
+    "slug": "RVB009",
     "action": "remove",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxWddm"
   },
   {
-    "slug":  "RVB010",
+    "slug": "RVB010",
     "action": "remove",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\VirtualBox Guest Additions"
+  },
+  {
+    "slug": "MACVB01",
+    "action": "change",
+    "hypervisor": "VirtualBox",
+    "key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\0001",
+    "parameter": "NetworkAddress",
+    "value": "9C79F0ECA4AF"
   }
 ]
 

@@ -7,8 +7,8 @@ Classes:
 from pathlib import Path
 from typing import List
 
-from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 from ...utils.helper_methods import get_project_root, read_json_file
+from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 
 
 def check_path_not_exists(path: str) -> bool:

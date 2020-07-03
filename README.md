@@ -31,14 +31,18 @@ Please make sure that the following dependencies are installed:
 1. [Python3](https://www.python.org/downloads/)
 2. [git](https://git-scm.com/downloads)
 3. [Vagrant](https://www.vagrantup.com/downloads)
-4. [Packer](https://learn.hashicorp.com/packer/getting-started/install)
+4. [Packer](https://learn.hashicorp.com/packer/getting-started/install) (<1.6.0 like version 1.5.6)
 5. [VirtualBox](https://www.virtualbox.org/wiki/Downloads) 
 
 ### Install malvm
 
 #### **1. Clone the Repository and open a shell in the folder.**
 ```shell
-▶ git clone git@gitlab.com:shk_fkie/analysevm.git && cd analysevm
+▶ git clone git@gitlab.com:shk_fkie/analysevm.git
+```
+
+```shell
+▶ cd analysevm
 ```
 
 #### **2. Install package**

@@ -15,8 +15,7 @@ from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 
 try:
     # type: ignore
-
-    from winreg import (  # type: ignore  # pylint: disable=E0401,I0023
+    from winreg import (  # type: ignore  # pylint: disable=E0401,I0023,I0021
         HKEY_LOCAL_MACHINE,
         OpenKey,
         KEY_ALL_ACCESS,

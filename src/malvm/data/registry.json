@@ -1,6 +1,6 @@
 [
   {
-    "slug": "RGEN001",
+    "slug": "RGEN01",
     "action": "change",
     "hypervisor": "Generic",
     "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System",
@@ -68,7 +68,7 @@
     "key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\VirtualBox Guest Additions"
   },
   {
-    "slug": "MACVB01",
+    "slug": "MACVB1",
     "action": "change",
     "hypervisor": "VirtualBox",
     "key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\0001",

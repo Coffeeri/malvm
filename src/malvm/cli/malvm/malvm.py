@@ -29,15 +29,17 @@ def fix(characteristic: str) -> None:
     """Fixes satisfaction of CHARACTERISTIC."""
     if characteristic:
         try:
-            for slug, _, value, status in controller.run_fix(characteristic.upper()):
-                print_result(slug, status, value)
+            for slug, description, _, status in controller.run_fix(
+                characteristic.upper()
+            ):
+                print_result(slug, status, description)
         except ValueError as error_value:
             click.echo(click.style(str(error_value), fg="red"))
             sys.exit(1)
 
     else:
-        for slug, _, value, status in controller.run_fixes():
-            print_result(slug, status, value)
+        for slug, description, _, status in controller.run_fixes():
+            print_result(slug, status, description)
 
 
 @click.command()
@@ -62,14 +64,16 @@ def show(show_all: bool) -> None:
 
 def run_all_checks() -> None:
     """Runs checks for all characteristics."""
-    for slug, _, value, status in controller.run_checks():
-        print_result(slug, status, value)
+    for slug, description, _, status in controller.run_checks():
+        print_result(slug, status, description)
 
 
-def print_result(slug: str, status: bool, value: str):
+def print_result(slug: str, status: bool, description: str):
     """Prints formatted result via Click."""
     return_value_styled = return_bool_styled(status)
-    click.echo(f"[{click.style(slug, fg='yellow')}]  {return_value_styled} - {value}")
+    click.echo(
+        f"[{click.style(slug, fg='yellow')}]  {return_value_styled} - {description}"
+    )
 
 
 def run_specific_check(characteristic: str) -> None:

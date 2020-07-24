@@ -64,11 +64,16 @@ Please make sure that the following dependencies are installed:
 In the following we are going to create a Windows 10 VM called "malewareVM".
 We use two commands chained together.
 
-First `maleware box build win10_1607_x64_analyst` builds the image.
-Next `maleware box run win10_1607_x64_analyst malewareVM` spins up a VirtualMachine instance of the previously created image.
-
 ```shell
-▶ malvm box build win10_1607_x64_analyst run win10_1607_x64_analyst malewareVM
+▶ maleware box build windows_10
+▶ maleware box run windows_10 malewareVM
+```
+First `maleware box build windows_10` builds the Windows 10 image for Vagrant.
+Next `maleware box run windows_10 malewareVM` spins up a VirtualMachine instance of the previously created image.
+
+Both commands can be chained into a single command:
+```shell
+▶ malvm box build windows_10 run windows_10 malewareVM
 ```
 
 ### Checks and Fixes 

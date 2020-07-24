@@ -1,7 +1,7 @@
 """This module is the entrypoint for the commandline."""
 import click
 
-from .malboxes.malboxes import box
+from .packer.vm_builder import box
 from .malvm.malvm import check, fix, show
 
 

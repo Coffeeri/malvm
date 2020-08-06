@@ -20,8 +20,8 @@ def get_config_root() -> Path:
     platform = sys.platform.lower()
     if platform in ["linux", "linux2", "darwin"]:
         config_path = Path.home() / ".local/share/malvm"
-    elif platform == "windows":
-        config_path = Path.home() / "/AppData/Local/malvm"
+    elif platform in ["windows", "win32"]:
+        config_path = Path.home().absolute() / "/AppData/Local/malvm"
     else:
         raise OSError(f"Your platform <{platform}> is not supported by malvm.")
 

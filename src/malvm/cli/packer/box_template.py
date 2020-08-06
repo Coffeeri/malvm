@@ -50,6 +50,7 @@ def edit_last_line_of_text(file: Path, text):
 
 class PackerTemplate:
     """VM template creation class for Packer."""
+
     def __init__(self, name: str, configuration: BoxConfiguration):
         self.name = name
         self.configuration = configuration

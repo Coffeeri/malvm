@@ -24,7 +24,10 @@ def get_config_root() -> Path:
     return config_path
 
 
-DATA_FILES = [str(file.absolute()) for file in (Path(__file__).parent / "src/malvm/data").rglob("*")]
+DATA_FILES = [
+    str(file.absolute())
+    for file in (Path(__file__).parent / "src/malvm/data").rglob("*")
+]
 
 setuptools.setup(
     name="malvm",

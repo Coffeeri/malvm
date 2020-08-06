@@ -29,6 +29,7 @@ class BoxConfiguration(NamedTuple):
 
 
 def replace_text_in_file(file_path: Path, replacements: Dict[str, str]):
+    """Searches and replaces text in a file."""
     with file_path.open("r+") as opened_file:
         text = opened_file.read()
         for searched_text, replacement in replacements.items():
@@ -39,6 +40,7 @@ def replace_text_in_file(file_path: Path, replacements: Dict[str, str]):
 
 
 def edit_last_line_of_text(file: Path, text):
+    """Overwrites last line of textfile."""
     with file.open(mode="r+") as opened_file:
         lines = opened_file.readlines()
         lines = lines[:-1]
@@ -47,16 +49,18 @@ def edit_last_line_of_text(file: Path, text):
 
 
 class PackerTemplate:
+    """VM template creation class for Packer."""
     def __init__(self, name: str, configuration: BoxConfiguration):
         self.name = name
         self.configuration = configuration
         self.config_path = get_config_root() / f"data/{self.name}/"
-        self.LOCAL_PACKER_TEMPLATE_PATH = (
+        self.local_packer_template_path = (
             self.config_path / self.configuration.packer_template_path.name
         )
         self.configured = False
 
     def configure(self):
+        """Configures template with necessary parameters."""
         self.copy_necessary_files()
         self.configure_packer_config()
         self.configure_autounattend_config()
@@ -64,33 +68,46 @@ class PackerTemplate:
         self.configured = True
 
     def configure_autounattend_config(self):
-        AUTOUNATTEND_CONFIG = {
+        """Configures Windows Autounattend file."""
+        autounattend_config = {
             "insert_username": self.configuration.username,
             "insert_password": self.configuration.password,
             "insert_language_code": self.configuration.language_code,
             "insert_computer_name": self.configuration.computer_name,
         }
-        replace_text_in_file(self.get_autounattend_filepath(), AUTOUNATTEND_CONFIG)
+        replace_text_in_file(self.get_autounattend_filepath(), autounattend_config)
 
     def configure_packer_config(self):
-        PACKER_CONFIG = {
-            "insert_analysevm_path": str(get_vm_malvm_egg().absolute()),
+        """Configures packers template json file."""
+        egg_path = str(get_vm_malvm_egg().absolute())
+        print(f"EGG: {egg_path}")
+
+        egg_path = egg_path.replace("\\", "/")
+        packer_config = {
+            "insert_analysevm_path": egg_path,
             "insert_username": self.configuration.username,
             "insert_password": self.configuration.password,
         }
-        replace_text_in_file(self.LOCAL_PACKER_TEMPLATE_PATH, PACKER_CONFIG)
+        print(f"EGG: {egg_path}")
+        replace_text_in_file(self.local_packer_template_path, packer_config)
 
     def configure_vagrantfile_template(self):
-        VAGRANTFILE_TEMPLATE_CONFIG = {
+        """Inserts parameter into Vagrantfile."""
+        vagrantfile_template_config = {
             "insert_username": self.configuration.username,
             "insert_password": self.configuration.password,
         }
         vagrantfile_template_path = (
             self.config_path / f"vagrantfile-{self.name.lower()}.template"
         )
-        replace_text_in_file(vagrantfile_template_path, VAGRANTFILE_TEMPLATE_CONFIG)
+        replace_text_in_file(vagrantfile_template_path, vagrantfile_template_config)
 
     def build(self):
+        """Builds Vagrant box with Packer.
+
+        Malvm will sanitize the initial box out-of-the-box from
+        possible characteristics.
+        """
         if not self.configured:
             raise RuntimeError("Box must be configured before build.")
         os.chdir(str(self.config_path.absolute()))
@@ -99,12 +116,13 @@ class PackerTemplate:
                 "packer",
                 "build",
                 "--only=virtualbox-iso",
-                str(self.LOCAL_PACKER_TEMPLATE_PATH.absolute()),
+                str(self.local_packer_template_path.absolute()),
             ],
             check=True,
         )
 
     def add_to_vagrant(self):
+        """Adds box build by Packer to Vagrant environment."""
         subprocess.run(
             [
                 "vagrant",
@@ -117,6 +135,7 @@ class PackerTemplate:
         )
 
     def init_vagrantfile(self, vm_name: str):
+        """Initialize Vagrantfile for virtual machine."""
         subprocess.run(
             ["vagrant", "init", self.configuration.vagrant_box_name], check=True,
         )
@@ -135,6 +154,11 @@ end
         edit_last_line_of_text(Path("Vagrantfile"), ignore_vbguest_additions)
 
     def setup_virtualmachine(self, vm_name: str, vagrantfile_output: Path = Path.cwd()):
+        """Setup and start virtual machine with vagrant.
+
+        This method initializes the Vagrantfile, starts the virtual machine,
+        fixes all characteristics and saves a snapshot of the clean state.
+        """
         os.chdir(
             str(vagrantfile_output.absolute())
             if vagrantfile_output.is_dir()
@@ -152,8 +176,9 @@ end
         )
 
     def copy_necessary_files(self):
-        files_deduplicated = self.get_necessary_files()
-        for file in files_deduplicated:
+        """Copies all data and configuration files for Packer and Vagrant."""
+        files = self.get_necessary_files()
+        for file in files:
             Path(self.config_path / file).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(
                 str((PACKER_FILE_DIR / file).absolute()),
@@ -161,6 +186,7 @@ end
             )
 
     def get_necessary_files(self) -> List[str]:
+        """Returns list of all files, needed to configure the template."""
         with self.configuration.packer_template_path.open() as file_opened:
             text = file_opened.read()
         files = re.findall(r"\"\./(.*)\"", text)
@@ -169,6 +195,7 @@ end
         return files_deduplicated
 
     def get_autounattend_filepath(self) -> Path:
+        """Returns path of Autounattend.xml."""
         if not self.configuration.packer_template_path.exists():
             raise FileNotFoundError("Packer Template Path was not found.")
         json_text = read_json_file(self.configuration.packer_template_path)

@@ -81,15 +81,12 @@ class PackerTemplate:
     def configure_packer_config(self):
         """Configures packers template json file."""
         egg_path = str(get_vm_malvm_egg().absolute())
-        print(f"EGG: {egg_path}")
-
         egg_path = egg_path.replace("\\", "/")
         packer_config = {
             "insert_analysevm_path": egg_path,
             "insert_username": self.configuration.username,
             "insert_password": self.configuration.password,
         }
-        print(f"EGG: {egg_path}")
         replace_text_in_file(self.local_packer_template_path, packer_config)
 
     def configure_vagrantfile_template(self):

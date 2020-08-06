@@ -6,4 +6,3 @@ mypy==0.780
 black==19.10b0
 setuptools==47.1.1
 inquirer~=2.7.0
-git+https://github.com/GoSecure/malboxes.git#egg=malboxes

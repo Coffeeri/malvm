@@ -76,6 +76,14 @@
     "value": "90.16.48.00.A2"
   },
   {
+    "slug": "RVB012",
+    "action": "change",
+    "hypervisor": "VirtualBox",
+    "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System",
+    "parameter": "SystemBiosDate",
+    "value": "11/11/11"
+  },
+  {
     "slug": "MACVB1",
     "action": "change",
     "hypervisor": "VirtualBox",

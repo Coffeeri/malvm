@@ -68,6 +68,14 @@
     "key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Oracle\\VirtualBox Guest Additions"
   },
   {
+    "slug": "RVB011",
+    "action": "change",
+    "hypervisor": "VirtualBox",
+    "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System",
+    "parameter": "VideoBiosVersion",
+    "value": "90.16.48.00.A2"
+  },
+  {
     "slug": "MACVB1",
     "action": "change",
     "hypervisor": "VirtualBox",

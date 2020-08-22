@@ -30,7 +30,7 @@ try:
         SetValueEx,
     )
 except ModuleNotFoundError:
-    print_warning("Registrycharacteristic can be only run on Windows machines.")
+    print_warning("Registry characteristic can be only run on Windows machines.")
 
 
 class RegistryVBCharacteristic(Characteristic):

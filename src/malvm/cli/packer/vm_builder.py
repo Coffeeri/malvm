@@ -9,6 +9,8 @@ import inquirer  # type: ignore
 
 from .box_template import BoxConfiguration, PackerTemplate
 from ..utils import print_warning
+from ...characteristics.abstract_characteristic import VMType
+from ...controller import Controller
 from ...utils.helper_methods import get_data_dir
 
 PACKER_PATH = get_data_dir() / "packer"
@@ -76,6 +78,29 @@ def run(template, name, output: str):
 
         $ malvm box run windows_10 win10-vm01
     """
+    controller: Controller = Controller()
+    click.echo(
+        click.style("> Checking and fixing pre boot characteristics...", fg="yellow",)
+    )
+
+    for characteristic in controller.pre_boot_characteristics.values():
+        characteristic.set_vm_info(VMType(name=name))
+        if not characteristic.check():
+            if not characteristic.fix():
+                click.echo(
+                    click.style(
+                        f"> {characteristic.slug} could not be fixed.", fg="red",
+                    )
+                )
+                click.echo(
+                    click.style(
+                        f"> {characteristic.slug} could not be fixed.", fg="red",
+                    )
+                )
+            else:
+                click.echo(click.style(f"> {characteristic.slug} fixed.", fg="green",))
+        else:
+            click.echo(click.style(f"> {characteristic.slug} fixed.", fg="green",))
 
     if not Path("Vagrantfile").exists():
         click.echo(click.style("> Vagrantfile does not exist.", fg="red",))

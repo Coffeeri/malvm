@@ -13,7 +13,7 @@ Classes:
 """
 
 import abc
-from typing import Any, Callable, Dict, Generator, List, NamedTuple
+from typing import Any, Callable, Dict, Generator, List, NamedTuple, Optional
 
 
 class CheckType(NamedTuple):
@@ -23,6 +23,12 @@ class CheckType(NamedTuple):
     description: str
     check_value: str
     check_status: bool
+
+
+class VMType(NamedTuple):
+    """Attributes of a virtual machine."""
+
+    name: str
 
 
 GeneratorCheckType = Generator[CheckType, None, None]
@@ -210,3 +216,19 @@ class LambdaCharacteristic(CharacteristicBase):
             Any: Stored value of object, used for check-/ fix-method.
         """
         return self.__value
+
+
+class PreBootVMCharacteristic(CharacteristicBase):
+    def __init__(self, slug: str, description: str):
+        super().__init__(slug, description)
+
+    def set_vm_info(self, vm: VMType):
+        self.vm = vm
+
+    @abc.abstractmethod
+    def fix(self) -> Any:
+        pass
+
+    @abc.abstractmethod
+    def check(self) -> Any:
+        pass

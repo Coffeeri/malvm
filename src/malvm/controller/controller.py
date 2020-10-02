@@ -6,8 +6,12 @@ Classes:
 """
 from typing import Dict, Generator, List
 
-from ..characteristics import loaded_characteristics
-from ..characteristics.abstract_characteristic import CharacteristicBase, CheckType
+from ..characteristics import loaded_characteristics, loaded_pre_boot_characteristics
+from ..characteristics.abstract_characteristic import (
+    CharacteristicBase,
+    CheckType,
+    PreBootVMCharacteristic,
+)
 from ..utils.metaclasses import SingletonMeta
 
 
@@ -19,6 +23,10 @@ class Controller(metaclass=SingletonMeta):
 
     def __init__(self) -> None:
         """Initialize Controller and load characteristics."""
+        self.pre_boot_characteristics: Dict[str, PreBootVMCharacteristic] = {
+            characteristic.slug: characteristic()
+            for characteristic in loaded_pre_boot_characteristics
+        }
         self.characteristics: Dict[str, CharacteristicBase] = {}
         self.characteristics_with_sub_characteristics: Dict[
             str, CharacteristicBase
@@ -39,7 +47,9 @@ class Controller(metaclass=SingletonMeta):
 
     def get_characteristic_list(self) -> List[CharacteristicBase]:
         """Returns all characteristics."""
-        return list(self.characteristics.values())
+        return list(self.characteristics.values()) + list(
+            self.pre_boot_characteristics.values()
+        )
 
     def get_characteristic_list_all(self) -> List[CharacteristicBase]:
         """Returns all characteristics, including sub-characteristics."""

@@ -29,7 +29,7 @@ def test_run_check(
     assert fixture_test_controller.get_characteristic_list() == [
         fixture_test_characteristic,
     ]
-    assert fixture_test_controller.get_characteristic_list_all() == [
+    assert fixture_test_controller.get_characteristic_list(True) == [
         fixture_test_characteristic,
         fixture_hello_world_lambda,
     ]
@@ -50,7 +50,7 @@ def test_get_characteristic_list_all():
         for characteristic in characteristics
         for sub_characteristic in characteristic.sub_characteristics.values()
     ]
-    found_all_characteristics = controller.get_characteristic_list_all()
+    found_all_characteristics = controller.get_characteristic_list(True)
     expected_all_characteristics = characteristics.copy()
     expected_all_characteristics.extend(sub_characteristics)
     assert all(

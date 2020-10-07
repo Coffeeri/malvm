@@ -1,12 +1,17 @@
 """Module containing a generic template with configuration for virtual machines."""
 import os
+import platform
 import re
 import shutil
 import subprocess
 from pathlib import Path
 from typing import NamedTuple, List, Dict
 
-from malvm.utils.helper_methods import (
+import click
+
+from ...cli.malvm.malvm import print_result
+from ...controller import Controller
+from ...utils.helper_methods import (
     get_config_root,
     get_data_dir,
     read_json_file,
@@ -167,6 +172,13 @@ end
             ["vagrant", "up"], check=True,
         )
         subprocess.run(
+            ["vagrant", "halt"], check=True,
+        )
+        run_pre_boot_fixes(vm_name)
+        subprocess.run(
+            ["vagrant", "up"], check=True,
+        )
+        subprocess.run(
             ["vagrant", "winrm", "-e", "-c", "malvm fix"], check=True,
         )
         subprocess.run(
@@ -205,3 +217,13 @@ end
             )
         autounattend_filepath = json_text["variables"]["autounattend"]
         return Path(self.config_path / autounattend_filepath)
+
+
+def run_pre_boot_fixes(name: str):
+    controller: Controller = Controller()
+    click.echo(
+        click.style("> Checking and fixing pre boot characteristics...", fg="yellow",)
+    )
+    environment = {"os": platform.system(), "vm_name": name}
+    for characteristic, return_status in controller.run_pre_boot_fixes(environment):
+        print_result(characteristic, return_status)

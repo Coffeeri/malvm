@@ -63,7 +63,6 @@ class RegistryTask(NamedTuple):
 def check_registry_key(task: RegistryTask) -> bool:
     """Checks if registry task is already satisfied."""
     if platform.system() != "Windows":
-        print_warning(f"Skipped [{task.slug}] - Not running Windows.")
         return False
     if task.action == RegistryAction.REMOVE:
         return not check_registry_key_exists(task)
@@ -73,7 +72,6 @@ def check_registry_key(task: RegistryTask) -> bool:
 def fix_registry_key(task: RegistryTask) -> bool:
     """Fixes registry key entry."""
     if platform.system() != "Windows":
-        print_warning(f"Skipped [{task.slug}] - Not running Windows.")
         return False
     if task.action == RegistryAction.REMOVE:
         remove_key(task)

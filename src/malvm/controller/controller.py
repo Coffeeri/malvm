@@ -4,13 +4,14 @@ Classes:
     SingletonMeta: Singleton Metaclass.
     Controller: Controls the checks and fixes of characteristics.
 """
-from typing import Dict, Generator, List
+from typing import Dict, Generator, List, Optional, Tuple, Any
 
-from ..characteristics import loaded_characteristics, loaded_pre_boot_characteristics
+from ..characteristics import loaded_characteristics
 from ..characteristics.abstract_characteristic import (
     CharacteristicBase,
     CheckType,
-    PreBootVMCharacteristic,
+    Runtime,
+    GeneratorCheckType,
 )
 from ..utils.metaclasses import SingletonMeta
 
@@ -23,10 +24,6 @@ class Controller(metaclass=SingletonMeta):
 
     def __init__(self) -> None:
         """Initialize Controller and load characteristics."""
-        self.pre_boot_characteristics: Dict[str, PreBootVMCharacteristic] = {
-            characteristic.slug: characteristic()
-            for characteristic in loaded_pre_boot_characteristics
-        }
         self.characteristics: Dict[str, CharacteristicBase] = {}
         self.characteristics_with_sub_characteristics: Dict[
             str, CharacteristicBase
@@ -45,17 +42,30 @@ class Controller(metaclass=SingletonMeta):
                 **sub_characteristics,
             }
 
-    def get_characteristic_list(self) -> List[CharacteristicBase]:
-        """Returns all characteristics."""
-        return list(self.characteristics.values()) + list(
-            self.pre_boot_characteristics.values()
+    def get_characteristic_list(
+        self,
+        include_sub_characteristics: bool = False,
+        runtime: Optional[Runtime] = Runtime.DEFAULT,
+    ) -> List[CharacteristicBase]:
+        """Returns all characteristics.
+
+        Args:
+            include_sub_characteristics (bool): Select True if sub characteristics
+                                                should be included.
+            runtime (Runtime): Enum, defining the time and location when check and fix
+                               methods will be executed.
+        """
+        if include_sub_characteristics:
+            characteristics = self.characteristics_with_sub_characteristics
+        else:
+            characteristics = self.characteristics
+        return list(
+            characteristic
+            for characteristic in characteristics.values()
+            if ((characteristic.attributes.runtime == runtime) or (runtime is None))
         )
 
-    def get_characteristic_list_all(self) -> List[CharacteristicBase]:
-        """Returns all characteristics, including sub-characteristics."""
-        return list(self.characteristics_with_sub_characteristics.values())
-
-    def run_check(self, slug_searched: str) -> Generator[CheckType, None, None]:
+    def run_check(self, slug_searched: str) -> GeneratorCheckType:
         """Runs a check for a specified characteristic.
 
         Args:
@@ -63,7 +73,7 @@ class Controller(metaclass=SingletonMeta):
                                        Read more about it in the docs on Gitlab.
 
         Returns:
-            RunCheckType:  Characteristic Slug, description and result of check.
+            GeneratorCheckType: Generator of characteristic and result of check.
         """
         if slug_searched not in self.characteristics_with_sub_characteristics:
             raise ValueError("Characteristic was not found.")
@@ -77,18 +87,17 @@ class Controller(metaclass=SingletonMeta):
             for result in characteristic.check():
                 yield result
 
-    def run_checks(self) -> Generator[CheckType, None, None]:
+    def run_checks(self) -> GeneratorCheckType:
         """Runs all checks and returns their results.
 
         Returns:
-            Generator[RunCheckType]: Generator of Characteristic Slug, description
-                                     and result of check.
+            GeneratorCheckType: Generator of characteristic and result of check.
         """
         for characteristic_slug in self.characteristics.keys():
             for result in self.run_check(characteristic_slug):
                 yield result
 
-    def run_fix(self, slug_searched: str) -> Generator[CheckType, None, None]:
+    def run_fix(self, slug_searched: str) -> GeneratorCheckType:
         """Runs a fix for a specified characteristic.
 
         Args:
@@ -96,9 +105,7 @@ class Controller(metaclass=SingletonMeta):
                                        Read more about it in the docs on Gitlab.
 
         Returns:
-            RunCheckType:  Characteristic Slug, description and result of fix.
-                               The result consists of Tuple of a message and a bool,
-                               which indicates the status.
+            GeneratorCheckType: Characteristic and result of fix.
         """
         if not isinstance(slug_searched, str):
             raise TypeError("Characteristic Slug is not of type `str`.")
@@ -114,15 +121,22 @@ class Controller(metaclass=SingletonMeta):
             for result in characteristic.fix():
                 yield result
 
-    def run_fixes(self) -> Generator[CheckType, None, None]:
+    def run_fixes(self) -> GeneratorCheckType:
         """Runs fixes for all characteristics and returns their success.
 
         Returns:
-            List[RunCheckType]: List of Characteristic Slug, description
-                                and result of fix.
-                                The result consists of Tuple of a message and a bool,
-                                which indicates the success.
+            GeneratorCheckType: List of Characteristic and result of fix.
         """
         for characteristic_slug in self.characteristics.keys():
-            for characteristics in self.run_fix(characteristic_slug):
-                yield characteristics
+            for fix_return_value in self.run_fix(characteristic_slug):
+                yield fix_return_value
+
+    def run_pre_boot_fixes(self, environment: Dict[str, Any]) -> GeneratorCheckType:
+        """Runs fixes for all pre boot characteristics and returns their success.
+
+        Returns:
+            GeneratorCheckType: List of Characteristic and result of fix.
+        """
+        for characteristic in self.get_characteristic_list(True, Runtime.PRE_BOOT):
+            self.characteristics[characteristic.slug].environment = environment
+            yield from self.run_fix(characteristic.slug)

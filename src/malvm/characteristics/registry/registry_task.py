@@ -12,7 +12,6 @@ from ...cli.utils import print_warning
 from ...utils.helper_methods import get_project_root, read_json_file
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 
-
 try:
     # type: ignore
     from winreg import (  # type: ignore  # pylint: disable=E0401,I0023,I0021

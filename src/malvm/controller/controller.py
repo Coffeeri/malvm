@@ -4,14 +4,13 @@ Classes:
     SingletonMeta: Singleton Metaclass.
     Controller: Controls the checks and fixes of characteristics.
 """
-from typing import Dict, Generator, List, Optional, Tuple, Any
+from typing import Any, Dict, Generator, List, Optional
 
 from ..characteristics import loaded_characteristics
 from ..characteristics.abstract_characteristic import (
     CharacteristicBase,
-    CheckType,
-    Runtime,
     GeneratorCheckType,
+    Runtime,
 )
 from ..utils.metaclasses import SingletonMeta
 

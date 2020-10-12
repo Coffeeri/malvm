@@ -48,8 +48,7 @@ def get_current_runtime() -> Runtime:
     """Returns the current os, in which malvm is executed."""
     if platform.system() != "Windows":
         return Runtime.DEFAULT
-    else:
-        return Runtime.PRE_BOOT
+    return Runtime.PRE_BOOT
 
 
 class CharacteristicBase:
@@ -126,10 +125,12 @@ class CharacteristicBase:
 
     @property
     def attributes(self) -> CharacteristicAttributes:
+        """Returns attributes of characteristic."""
         return self.__attributes
 
     @property
     def environment(self) -> Dict[str, Any]:
+        """Returns environment of characteristic."""
         return self.__environment
 
     @environment.setter
@@ -180,8 +181,8 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
         """Checks if given characteristic is already satisfied."""
         no_errors = True
         result_list: List[Tuple[CharacteristicBase, CheckType]] = []
-        if self.attributes.runtime != get_current_runtime:
-            yield self, CheckType(f"Skipped, malvm is not running on Windows.", False)
+        if self.attributes.runtime is not get_current_runtime:
+            yield self, CheckType("Skipped, malvm is not running on Windows.", False)
             return
         if self.sub_characteristics:
             for sub_characteristic in self.sub_characteristics.values():
@@ -198,8 +199,8 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
         """Satisfies given characteristic."""
         no_errors = True
         result_list: List[Tuple[CharacteristicBase, CheckType]] = []
-        if self.attributes.runtime != get_current_runtime:
-            yield self, CheckType(f"Skipped, malvm is not running on Windows.", False)
+        if self.attributes.runtime is not get_current_runtime:
+            yield self, CheckType("Skipped, malvm is not running on Windows.", False)
             return
         if self.sub_characteristics:
             for sub_characteristic in self.sub_characteristics.values():

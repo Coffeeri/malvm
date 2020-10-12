@@ -33,11 +33,11 @@ def test_run_check(
         fixture_test_characteristic,
         fixture_hello_world_lambda,
     ]
-    for slug, description, value, status in fixture_test_controller.run_check(
+    for characteristic, return_value in fixture_test_controller.run_check(
         fixture_hello_world_lambda.slug
     ):
 
-        assert (slug, description, value, status) == fixture_hello_world_lambda.check()
+        assert (characteristic, return_value) == fixture_hello_world_lambda.check()
 
 
 def test_get_characteristic_list_all():

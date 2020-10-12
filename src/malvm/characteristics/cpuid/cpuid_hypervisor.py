@@ -8,10 +8,10 @@ from typing import Optional
 
 from ..abstract_characteristic import (
     Characteristic,
-    Runtime,
     CharacteristicAttributes,
-    GeneratorCheckType,
     CheckType,
+    GeneratorCheckType,
+    Runtime,
 )
 
 
@@ -30,6 +30,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
         if vm_name:
             subprocess.run(
                 ["VBoxManage", "modifyvm", vm_name, "--paravirtprovider", "none"],
+                check=True,
             )
         return self.check()
 
@@ -41,6 +42,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
             result = subprocess.run(
                 ["VBoxManage", "showvminfo", vm_name, "--machinereadable"],
                 stdout=subprocess.PIPE,
+                check=True,
             )
             is_fixed = 'paravirtprovider="none"' in result.stdout.decode("utf-8").split(
                 "\n"
@@ -48,6 +50,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
         yield self, CheckType(self.description, is_fixed)
 
     def get_vm_name(self) -> Optional[str]:
+        """Returns the virtual machine name if set."""
         if "vm_name" not in self.environment:
             return None
         return self.environment["vm_name"]

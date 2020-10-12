@@ -1,16 +1,15 @@
 """This module contains the CLI for creating sanitized windows virtual machines."""
 
 import os
-import platform
 import subprocess
 from pathlib import Path
 
 import click
 import inquirer  # type: ignore
 
-from .box_template import BoxConfiguration, PackerTemplate
-from ..utils import print_warning
 from ...utils.helper_methods import get_data_dir
+from ..utils import print_warning
+from .box_template import BoxConfiguration, PackerTemplate
 
 PACKER_PATH = get_data_dir() / "packer"
 

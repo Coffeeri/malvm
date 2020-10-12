@@ -3,8 +3,7 @@ import sys
 
 import click
 
-from ...characteristics import Characteristic
-from ...characteristics.abstract_characteristic import CheckType, CharacteristicBase
+from ...characteristics.abstract_characteristic import CharacteristicBase, CheckType
 from ...controller import Controller
 from .utils import return_bool_styled
 

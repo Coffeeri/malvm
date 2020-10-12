@@ -65,11 +65,11 @@ In the following we are going to create a Windows 10 VM called "malewareVM".
 We use two commands chained together.
 
 ```shell
-▶ maleware box build windows_10
-▶ maleware box run windows_10 malewareVM
+▶ malvm box build windows_10
+▶ malvm box run windows_10 malewareVM
 ```
 First `maleware box build windows_10` builds the Windows 10 image for Vagrant.
-Next `maleware box run windows_10 malewareVM` spins up a VirtualMachine instance of the previously created image.
+Next `malvm box run windows_10 malewareVM` spins up a VirtualMachine instance of the previously created image.
 
 Both commands can be chained into a single command:
 ```shell

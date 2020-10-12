@@ -7,9 +7,9 @@ from pathlib import Path
 import click
 import inquirer  # type: ignore
 
-from .box_template import BoxConfiguration, PackerTemplate
-from ..utils import print_warning
 from ...utils.helper_methods import get_data_dir
+from ..utils import print_warning
+from .box_template import BoxConfiguration, PackerTemplate
 
 PACKER_PATH = get_data_dir() / "packer"
 
@@ -76,10 +76,8 @@ def run(template, name, output: str):
 
         $ malvm box run windows_10 win10-vm01
     """
-
     if not Path("Vagrantfile").exists():
         click.echo(click.style("> Vagrantfile does not exist.", fg="red",))
-
         click.echo(
             click.style(
                 f"> Spin up [{click.style(template, fg='yellow')}] VM "

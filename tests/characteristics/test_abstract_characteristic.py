@@ -1,5 +1,6 @@
 """PyTest tests for Characteristic class."""
-from typing import List
+import sys
+from typing import List, Tuple
 
 import pytest
 
@@ -7,6 +8,7 @@ from malvm.characteristics.abstract_characteristic import (
     Characteristic,
     LambdaCharacteristic,
     CheckType,
+    CharacteristicBase,
 )
 
 
@@ -51,11 +53,9 @@ def test_lambda_characteristic_basic(
     assert lambda_characteristic.slug == slug
     assert lambda_characteristic.description == description
     assert lambda_characteristic.check() == CheckType(
-        slug, description, value, expected_return_check
+        description, expected_return_check
     )
-    assert lambda_characteristic.fix() == CheckType(
-        slug, description, value, expected_return_fix
-    )
+    assert lambda_characteristic.fix() == CheckType(description, expected_return_fix)
 
 
 def test_combine_characteristic_lambda(
@@ -67,14 +67,15 @@ def test_combine_characteristic_lambda(
     assert test_characteristic.sub_characteristics == {
         fixture_hello_world_lambda.slug: fixture_hello_world_lambda
     }
-    result_list: List[CheckType] = []
+    result_list: List[Tuple[CharacteristicBase, CheckType]] = []
     for result in test_characteristic.check():
         result_list.append(result)
-    slug, description, value, status = result_list[1]
-    assert slug == "|-- " + fixture_hello_world_lambda.slug
-    assert description == fixture_hello_world_lambda.description
-    assert value == "Hello world."
-    assert status
+    characteristic, result = result_list[0]
+    if sys.platform != "Windows":
+        assert characteristic.slug == fixture_test_characteristic.slug
+        assert characteristic.description == fixture_test_characteristic.description
+        assert result.check_value == "Skipped, malvm is not running on Windows."
+        assert not result.check_status
 
 
 @pytest.fixture
@@ -94,11 +95,6 @@ def fixture_hello_world_lambda() -> LambdaCharacteristic:
         "HWORLD",
         "This is an example LambdaCharacteristic.",
         "Hello world.",
-        lambda x: (
-            "HWORLD",
-            "This is an example LambdaCharacteristic.",
-            "Hello world.",
-            True,
-        ),
-        lambda x: None,
+        lambda x: True,
+        lambda x: False,
     )

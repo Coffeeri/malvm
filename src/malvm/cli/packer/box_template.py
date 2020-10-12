@@ -1,16 +1,21 @@
 """Module containing a generic template with configuration for virtual machines."""
 import os
+import platform
 import re
 import shutil
 import subprocess
 from pathlib import Path
-from typing import NamedTuple, List, Dict
+from typing import Dict, List, NamedTuple
 
-from malvm.utils.helper_methods import (
+import click
+
+from ...cli.malvm.main import print_result
+from ...controller import Controller
+from ...utils.helper_methods import (
     get_config_root,
     get_data_dir,
-    read_json_file,
     get_vm_malvm_egg,
+    read_json_file,
 )
 
 PACKER_FILE_DIR = get_data_dir() / "packer"
@@ -167,6 +172,13 @@ end
             ["vagrant", "up"], check=True,
         )
         subprocess.run(
+            ["vagrant", "halt"], check=True,
+        )
+        run_pre_boot_fixes(vm_name)
+        subprocess.run(
+            ["vagrant", "up"], check=True,
+        )
+        subprocess.run(
             ["vagrant", "winrm", "-e", "-c", "malvm fix"], check=True,
         )
         subprocess.run(
@@ -205,3 +217,18 @@ end
             )
         autounattend_filepath = json_text["variables"]["autounattend"]
         return Path(self.config_path / autounattend_filepath)
+
+
+def run_pre_boot_fixes(vm_name: str):
+    """Runs fixes of characteristics with RUNTIME PRE_BOOT.
+
+    Args:
+        vm_name (str): Name of virtual machine in VirtualBox.
+    """
+    controller: Controller = Controller()
+    click.echo(
+        click.style("> Checking and fixing pre boot characteristics...", fg="yellow",)
+    )
+    environment = {"os": platform.system(), "vm_name": vm_name}
+    for characteristic, return_status in controller.run_pre_boot_fixes(environment):
+        print_result(characteristic, return_status)

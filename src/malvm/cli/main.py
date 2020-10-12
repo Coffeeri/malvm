@@ -1,8 +1,8 @@
 """This module is the entrypoint for the commandline."""
 import click
 
+from .malvm.main import check, fix, show
 from .packer.vm_builder import box
-from .malvm.malvm import check, fix, show
 
 
 @click.group()

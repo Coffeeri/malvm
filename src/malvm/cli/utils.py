@@ -1,4 +1,5 @@
 """This module contains helper methods related to the CLI."""
+
 import click
 
 

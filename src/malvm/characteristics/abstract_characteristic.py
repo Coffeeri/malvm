@@ -13,30 +13,57 @@ Classes:
 """
 
 import abc
-from typing import Any, Callable, Dict, Generator, List, NamedTuple
+import platform
+from enum import Enum
+from typing import Any, Callable, Dict, Generator, List, NamedTuple, Tuple
 
 
 class CheckType(NamedTuple):
     """Return-Type for check and fix functions."""
 
-    slug: str
-    description: str
     check_value: str
     check_status: bool
 
 
-GeneratorCheckType = Generator[CheckType, None, None]
+class Runtime(Enum):
+    """Enum defining the execution-time of a characteristic."""
+
+    DEFAULT = 1
+    PRE_BOOT = 2
+
+
+class CharacteristicAttributes(NamedTuple):
+    """Attributes of a characteristic."""
+
+    runtime: Runtime
+
+
+class VMType(NamedTuple):
+    """Attributes of a virtual machine."""
+
+    name: str
+
+
+def get_current_runtime() -> Runtime:
+    """Returns the current os, in which malvm is executed."""
+    if platform.system() != "Windows":
+        return Runtime.DEFAULT
+    return Runtime.PRE_BOOT
 
 
 class CharacteristicBase:
     """Base class for Characteristic class or any sub-characteristic class."""
 
-    def __init__(self, slug: str = "", description: str = ""):
+    def __init__(
+        self, slug: str, description: str, attributes: CharacteristicAttributes,
+    ):
         if not slug.isupper():
             raise ValueError("Slug of characteristic must be uppercase.")
         self.__slug = slug
         self.__description = description
         self.__sub_characteristics: Dict[str, CharacteristicBase] = {}
+        self.__attributes: CharacteristicAttributes = attributes
+        self.__environment: Dict[str, Any] = {}
 
     def __eq__(self, other: Any) -> bool:
         """Returns true if compared characteristic is equal."""
@@ -96,6 +123,20 @@ class CharacteristicBase:
         """
         return self.__sub_characteristics
 
+    @property
+    def attributes(self) -> CharacteristicAttributes:
+        """Returns attributes of characteristic."""
+        return self.__attributes
+
+    @property
+    def environment(self) -> Dict[str, Any]:
+        """Returns environment of characteristic."""
+        return self.__environment
+
+    @environment.setter
+    def environment(self, value: Dict[str, Any]) -> None:
+        self.__environment = value
+
     def add_sub_characteristic(self, sub_characteristic: "CharacteristicBase") -> None:
         """Add a sub-characteristic.
 
@@ -118,46 +159,58 @@ class CharacteristicBase:
             self.add_sub_characteristic(characteristic)
 
 
+GeneratorCheckType = Generator[Tuple[CharacteristicBase, CheckType], None, None]
+
+
 class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
     """Interface for a characteristics."""
 
-    def __init__(self, slug: str = "", description: str = ""):
-        super().__init__(slug, description)
+    def __init__(
+        self,
+        slug: str = "",
+        description: str = "",
+        attributes: CharacteristicAttributes = CharacteristicAttributes(
+            runtime=Runtime.DEFAULT
+        ),
+    ):
+        super().__init__(slug, description, attributes)
         self.__slug = slug
         self.__description = description
 
     def check(self) -> GeneratorCheckType:
         """Checks if given characteristic is already satisfied."""
         no_errors = True
-        result_list: List[CheckType] = []
+        result_list: List[Tuple[CharacteristicBase, CheckType]] = []
+        if self.attributes.runtime is not get_current_runtime:
+            yield self, CheckType("Skipped, malvm is not running on Windows.", False)
+            return
         if self.sub_characteristics:
             for sub_characteristic in self.sub_characteristics.values():
                 check_result = sub_characteristic.check()
                 if not check_result[-1]:
                     no_errors = False
-                result_list.append(check_result)
-        yield CheckType(self.slug, self.description, "Summary", no_errors)
+                result_list.append((sub_characteristic, check_result))
+        yield self, CheckType("Summary", no_errors)
         for result in result_list:
-            result_modified = list(result)
-            result_modified[0] = f"|-- {result_modified[0]}"
-            yield CheckType(*result_modified)  # type: ignore
+            characteristic = result[0]
+            yield characteristic, CheckType(*result[1])  # type: ignore
 
     def fix(self) -> GeneratorCheckType:
         """Satisfies given characteristic."""
         no_errors = True
-        result_list: List[CheckType] = []
+        result_list: List[Tuple[CharacteristicBase, CheckType]] = []
+        if self.attributes.runtime is not get_current_runtime:
+            yield self, CheckType("Skipped, malvm is not running on Windows.", False)
+            return
         if self.sub_characteristics:
             for sub_characteristic in self.sub_characteristics.values():
-                result = sub_characteristic.fix()
-                if not result[-1]:
+                check_result = sub_characteristic.fix()
+                if not check_result[-1]:
                     no_errors = False
-                result_list.append(result)
-        yield CheckType(self.slug, self.description, "Summary", no_errors)
+                result_list.append((sub_characteristic, check_result))
+        yield self, CheckType("Summary", no_errors)
         for result in result_list:
-            result = list(result)
-            result[0] = "|-- " + result[0]
-            result = tuple(result)
-            yield result
+            yield result[0], CheckType(*result[1])
 
 
 class LambdaCharacteristic(CharacteristicBase):
@@ -173,6 +226,9 @@ class LambdaCharacteristic(CharacteristicBase):
         value: Any,
         check_func: Callable[[Any], bool],
         fix_func: Callable[[Any], bool],
+        attributes: CharacteristicAttributes = CharacteristicAttributes(
+            runtime=Runtime.DEFAULT
+        ),
     ):
         """Initializes function pointers of LambdaCharacteristic.
 
@@ -185,22 +241,18 @@ class LambdaCharacteristic(CharacteristicBase):
             fix_func(types.FunctionType): Method executed for fixes.
                                           Method receives one parameter - value.
         """
-        super().__init__(slug, description)
+        super().__init__(slug, description, attributes)
         self.__check = check_func
         self.__fix = fix_func
         self.__value = value
 
     def check(self) -> CheckType:
         """Checks if given characteristic is already satisfied."""
-        return CheckType(
-            self.slug, self.description, self.__value, self.__check(self.__value)
-        )
+        return CheckType(self.description, self.__check(self.__value))
 
     def fix(self) -> CheckType:
         """Satisfies given characteristic."""
-        return CheckType(
-            self.slug, self.description, self.__value, self.__fix(self.__value)
-        )
+        return CheckType(self.description, self.__fix(self.__value))
 
     @property
     def value(self) -> Any:

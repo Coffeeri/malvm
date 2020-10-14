@@ -1,5 +1,5 @@
 """PyTest tests for Characteristic class."""
-import sys
+import platform
 from typing import List, Tuple
 
 import pytest
@@ -71,7 +71,7 @@ def test_combine_characteristic_lambda(
     for result in test_characteristic.check():
         result_list.append(result)
     characteristic, result = result_list[0]
-    if sys.platform != "Windows":
+    if platform.system() != "Windows":
         assert characteristic.slug == fixture_test_characteristic.slug
         assert characteristic.description == fixture_test_characteristic.description
         assert result.check_value == "Skipped, malvm is not running on Windows."

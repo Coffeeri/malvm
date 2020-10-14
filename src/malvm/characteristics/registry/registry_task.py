@@ -8,7 +8,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Tuple, Union
 
-from ...cli.utils import print_warning
 from ...utils.helper_methods import get_project_root, read_json_file
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 
@@ -29,7 +28,8 @@ try:
         SetValueEx,
     )
 except ModuleNotFoundError:
-    print_warning("Registry characteristic can be only run on Windows machines.")
+    pass
+    # print_warning("Registry characteristic can be only run on Windows machines.")
 
 
 class RegistryVBCharacteristic(Characteristic):

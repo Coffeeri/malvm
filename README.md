@@ -1,10 +1,14 @@
-# malvm
+<div align="center">
+<img src="https://gitlab.com/uploads/-/system/project/avatar/18734431/computer.png" align="center" width="150" alt="Project icon">
+<h1>malvm</h1>
+<h4>Build non detectable virtual machines for maleware analysis.</h4>
+
+![pipeline](https://gitlab.com/shk_fkie/analysevm/badges/master/pipeline.svg "Pipeline")
+</div>
+
 
 The tool malvm is used to create sanitized virtual environments, such that a
 Maleware is not able to determine, if it's in a virtual machine or not.
-
-VMs are build and installed with the [malboxes](https://github.com/GoSecure/malboxes) 
-gqtool.
 
 ## Characteristics
 

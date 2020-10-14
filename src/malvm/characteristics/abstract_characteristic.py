@@ -33,7 +33,7 @@ class Runtime(Enum):
 
     def __eq__(self, other):
         if self.__class__ is other.__class__:
-            return self.value == other.value
+            return self.value == other.value  # pylint: disable=comparison-with-callable
         return NotImplemented
 
 

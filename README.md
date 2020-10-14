@@ -1,21 +1,14 @@
-# malvm
+<div align="center">
+<img src="https://gitlab.com/uploads/-/system/project/avatar/18734431/computer.png" align="center" width="150" alt="Project icon">
+<h1>malvm</h1>
+<h4>Build non detectable virtual machines for maleware analysis.</h4>
+
+![pipeline](https://gitlab.com/shk_fkie/analysevm/badges/master/pipeline.svg "Pipeline")
+</div>
+
 
 The tool malvm is used to create sanitized virtual environments, such that a
 Maleware is not able to determine, if it's in a virtual machine or not.
-
-VMs are build and installed with the [malboxes](https://github.com/GoSecure/malboxes) 
-gqtool.
-
-## Characteristics
-
-malvm uses different characteristics. Each having its own `check` and `fix` method.
-All Characteristic definitions are in `src/malvm/characteristics/` defined.
-All modules in this package will be dynamically loaded.
-Each Module has a class, which inherits from `Characteristic`in 
-`src/malvm/characteristics/abstract_characteristic.py`.
-Each Characteristic-Module can have multiple Sub-Characteristics.
-In the example of `FilesCharacteristic` - each File would be its own
-Sub-Characteristic.
 
 ## Getting Started
 ### Table of Content
@@ -24,6 +17,7 @@ Sub-Characteristic.
 2. [Installation](#install-malvm)
 3. [Quick start: Create your first VM](#first-vm)
 4. [Quick start: Check and Fix your VM-Environment](#checks-and-fixes)
+5. [Implementation of characteristics](#Characteristics)
 
 ### Prerequisite
 Please make sure that the following dependencies are installed:
@@ -35,6 +29,8 @@ Please make sure that the following dependencies are installed:
 5. [VirtualBox](https://www.virtualbox.org/wiki/Downloads) 
 
 ### Install malvm
+
+Please make sure that you installed all packages in [Prerequisite](#prerequisite).
 
 #### **1. Clone the Repository and open a shell in the folder.**
 ```shell
@@ -91,3 +87,16 @@ If those failed ones should be fixed, simply run:
 ```shell
 ▶ malvm fix
 ```
+
+## Characteristics
+
+malvm uses different characteristics, each having its own `check` and `fix` method.
+All Characteristic definitions are in `src/malvm/characteristics/` defined.
+All modules in this package will be dynamically loaded.
+
+Each Module defines a characteristic and consists of a class, which inherits from `Characteristic` class in 
+`src/malvm/characteristics/abstract_characteristic.py`.
+
+Each Characteristic-Module can have multiple Sub-Characteristics.
+In the example of `FilesCharacteristic` - each File would be its own
+Sub-Characteristic.

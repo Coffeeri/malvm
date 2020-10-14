@@ -31,6 +31,11 @@ class Runtime(Enum):
     DEFAULT = 1
     PRE_BOOT = 2
 
+    def __eq__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value == other.value
+        return NotImplemented
+
 
 class CharacteristicAttributes(NamedTuple):
     """Attributes of a characteristic."""
@@ -46,7 +51,7 @@ class VMType(NamedTuple):
 
 def get_current_runtime() -> Runtime:
     """Returns the current os, in which malvm is executed."""
-    if platform.system() != "Windows":
+    if platform.system() == "Windows":
         return Runtime.DEFAULT
     return Runtime.PRE_BOOT
 
@@ -181,7 +186,7 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
         """Checks if given characteristic is already satisfied."""
         no_errors = True
         result_list: List[Tuple[CharacteristicBase, CheckType]] = []
-        if self.attributes.runtime is not get_current_runtime:
+        if self.attributes.runtime != get_current_runtime():
             yield self, CheckType("Skipped, malvm is not running on Windows.", False)
             return
         if self.sub_characteristics:
@@ -199,7 +204,7 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
         """Satisfies given characteristic."""
         no_errors = True
         result_list: List[Tuple[CharacteristicBase, CheckType]] = []
-        if self.attributes.runtime is not get_current_runtime:
+        if self.attributes.runtime != get_current_runtime():
             yield self, CheckType("Skipped, malvm is not running on Windows.", False)
             return
         if self.sub_characteristics:

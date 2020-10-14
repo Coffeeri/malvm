@@ -6,6 +6,7 @@ Classes:
 """
 from typing import Any, Dict, Generator, List, Optional
 
+
 from ..characteristics import loaded_characteristics
 from ..characteristics.abstract_characteristic import (
     CharacteristicBase,
@@ -92,8 +93,8 @@ class Controller(metaclass=SingletonMeta):
         Returns:
             GeneratorCheckType: Generator of characteristic and result of check.
         """
-        for characteristic_slug in self.characteristics.keys():
-            for result in self.run_check(characteristic_slug):
+        for characteristic in self.get_characteristic_list():
+            for result in self.run_check(characteristic.slug):
                 yield result
 
     def run_fix(self, slug_searched: str) -> GeneratorCheckType:
@@ -126,8 +127,8 @@ class Controller(metaclass=SingletonMeta):
         Returns:
             GeneratorCheckType: List of Characteristic and result of fix.
         """
-        for characteristic_slug in self.characteristics.keys():
-            for fix_return_value in self.run_fix(characteristic_slug):
+        for characteristic in self.get_characteristic_list():
+            for fix_return_value in self.run_fix(characteristic.slug):
                 yield fix_return_value
 
     def run_pre_boot_fixes(self, environment: Dict[str, Any]) -> GeneratorCheckType:
@@ -136,6 +137,16 @@ class Controller(metaclass=SingletonMeta):
         Returns:
             GeneratorCheckType: List of Characteristic and result of fix.
         """
-        for characteristic in self.get_characteristic_list(True, Runtime.PRE_BOOT):
+        for characteristic in self.get_characteristic_list(False, Runtime.PRE_BOOT):
             self.characteristics[characteristic.slug].environment = environment
             yield from self.run_fix(characteristic.slug)
+
+    def run_pre_boot_checks(self, environment: Dict[str, Any]) -> GeneratorCheckType:
+        """Runs checks for all pre boot characteristics and returns their success.
+
+        Returns:
+            GeneratorCheckType: List of Characteristic and result of fix.
+        """
+        for characteristic in self.get_characteristic_list(False, Runtime.PRE_BOOT):
+            self.characteristics[characteristic.slug].environment = environment
+            yield from self.run_check(characteristic.slug)

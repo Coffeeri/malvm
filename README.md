@@ -2,6 +2,7 @@
 <img src="https://gitlab.com/uploads/-/system/project/avatar/18734431/computer.png" align="center" width="150" alt="Project icon">
 <h1>malvm</h1>
 <h4>Build non detectable virtual machines for maleware analysis.</h4>
+<h4>We currently only support Linux!</h4>
 
 ![pipeline](https://gitlab.com/shk_fkie/analysevm/badges/master/pipeline.svg "Pipeline")
 </div>
@@ -22,6 +23,7 @@ Maleware is not able to determine, if it's in a virtual machine or not.
 ### Prerequisite
 Please make sure that the following dependencies are installed:
 
+0. Make sure your host runs on a linux os.
 1. [Python3](https://www.python.org/downloads/)
 2. [git](https://git-scm.com/downloads)
 3. [Vagrant](https://www.vagrantup.com/downloads)

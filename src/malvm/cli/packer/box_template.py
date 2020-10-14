@@ -8,9 +8,9 @@ from pathlib import Path
 from typing import Dict, List, NamedTuple
 
 import click
+from ..malvm.utils import print_result
 
-from ...cli.malvm.main import print_result
-from ...controller import Controller
+from ...controller.controller import Controller
 from ...utils.helper_methods import (
     get_config_root,
     get_data_dir,

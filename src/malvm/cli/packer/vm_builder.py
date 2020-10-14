@@ -101,7 +101,11 @@ def run(template, name, output: str):
             f"Stop VM:  `vagrant suspend`\n"
             f"Start VM: `vagrant resume` or \n"
             f"          `vagrant up`\n"
-            f"Reset VM: `vagrant snapshot restore clean-state`",
+            f"Reset VM: `vagrant snapshot restore clean-state`\n\n"
+            f"If you need to run `malvm fix` again in an elevated cmd, "
+            f"please run on the host:\n"
+            f"$ vagrant winrm -e -c malvm fix"
+            f"This will run the malvm in an shell with elevated privileges.",
             fg="green",
         )
     )

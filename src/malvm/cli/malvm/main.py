@@ -1,18 +1,19 @@
 """This module contians cli for the malvm core."""
 import sys
+from typing import Optional
 
 import click
 
-from ...characteristics.abstract_characteristic import CharacteristicBase, CheckType
 from ...controller import Controller
-from .utils import return_bool_styled
+from .utils import print_result, get_vm_name
 
 controller: Controller = Controller()
 
 
 @click.command()
 @click.argument("characteristic", required=False)
-def check(characteristic: str) -> None:
+@click.option("-v", "--vm", "vm_name", type=str, default=False)
+def check(characteristic: str, vm_name: Optional[str]) -> None:
     """Checks satisfaction of CHARACTERISTIC.
 
     [characteristic-code] for checking specific characteristic.
@@ -23,10 +24,25 @@ def check(characteristic: str) -> None:
     else:
         run_all_checks()
 
+    if not vm_name:
+        vm_name = get_vm_name()
+        if not vm_name:
+            click.echo(
+                click.style(
+                    "No vm was found in your environment.\n"
+                    "You can manually pass the vm-name with [-v VM_NAME].\n"
+                    "If this was run in the VM, this can be ignored.",
+                    fg="red",
+                )
+            )
+            sys.exit(0)
+    print_pre_boot_fix_results(vm_name)
+
 
 @click.command()
 @click.argument("characteristic_slug", required=False)
-def fix(characteristic_slug: str) -> None:
+@click.option("-v", "--vm", "vm_name", type=str, default=False)
+def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     """Fixes satisfaction of CHARACTERISTIC."""
     if characteristic_slug:
         try:
@@ -36,11 +52,35 @@ def fix(characteristic_slug: str) -> None:
                 print_result(characteristic, status)
         except ValueError as error_value:
             click.echo(click.style(str(error_value), fg="red"))
-            sys.exit(1)
 
     else:
         for characteristic, status in controller.run_fixes():
             print_result(characteristic, status)
+    if not vm_name:
+        vm_name = get_vm_name()
+        if not vm_name:
+            click.echo(
+                click.style(
+                    "No vm was found in your environment.\n"
+                    "You can manually pass the vm-name with [-v VM_NAME].\n"
+                    "If this was run in the VM, this can be ignored.",
+                    fg="red",
+                )
+            )
+            sys.exit(0)
+    print_pre_boot_fix_results(vm_name)
+
+
+def print_pre_boot_fix_results(vm_name: str):
+    """Runs pre-boot fixes and prints the result to the screen."""
+    for characteristic, status in controller.run_pre_boot_fixes({"vm_name": vm_name}):
+        print_result(characteristic, status)
+
+
+def print_pre_boot_check_results(vm_name: str):
+    """Runs pre-boot fixes and prints the result to the screen."""
+    for characteristic, status in controller.run_pre_boot_checks({"vm_name": vm_name}):
+        print_result(characteristic, status)
 
 
 @click.command()
@@ -69,16 +109,6 @@ def run_all_checks() -> None:
         print_result(characteristic, status)
 
 
-def print_result(characteristic: CharacteristicBase, status: CheckType):
-    """Prints formatted result via Click."""
-
-    return_value_styled = return_bool_styled(status.check_status)
-    click.echo(
-        f"[{click.style(characteristic.slug, fg='yellow')}] - {return_value_styled} "
-        f"- {click.style(status.check_value, fg='green')}"
-    )
-
-
 def run_specific_check(characteristic: str) -> None:
     """Runs checks of specific characteristic."""
     try:
@@ -86,4 +116,3 @@ def run_specific_check(characteristic: str) -> None:
             print_result(*check_return)
     except ValueError as error_value:
         click.echo(click.style(str(error_value), fg="red"))
-        sys.exit(1)

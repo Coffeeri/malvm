@@ -46,7 +46,7 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     """Fixes satisfaction of CHARACTERISTIC."""
     if characteristic_slug:
         try:
-            for characteristic, status in controller.run_fix(
+            for characteristic, status in controller.apply_fix_get_results(
                 characteristic_slug.upper()
             ):
                 print_result(characteristic, status)
@@ -54,7 +54,7 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
             click.echo(click.style(str(error_value), fg="red"))
 
     else:
-        for characteristic, status in controller.run_fixes():
+        for characteristic, status in controller.apply_all_fixes_get_results():
             print_result(characteristic, status)
     if not vm_name:
         vm_name = get_vm_name()
@@ -73,13 +73,15 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
 
 def print_pre_boot_fix_results(vm_name: str):
     """Runs pre-boot fixes and prints the result to the screen."""
-    for characteristic, status in controller.run_pre_boot_fixes({"vm_name": vm_name}):
+    for characteristic, status in controller.apply_pre_boot_fixes({"vm_name": vm_name}):
         print_result(characteristic, status)
 
 
 def print_pre_boot_check_results(vm_name: str):
     """Runs pre-boot fixes and prints the result to the screen."""
-    for characteristic, status in controller.run_pre_boot_checks({"vm_name": vm_name}):
+    for characteristic, status in controller.get_pre_boot_checks_results(
+        {"vm_name": vm_name}
+    ):
         print_result(characteristic, status)
 
 
@@ -105,14 +107,14 @@ def show(show_all: bool) -> None:
 
 def run_all_checks() -> None:
     """Runs checks for all characteristics."""
-    for characteristic, status in controller.run_checks():
+    for characteristic, status in controller.get_all_checks_results():
         print_result(characteristic, status)
 
 
 def run_specific_check(characteristic: str) -> None:
     """Runs checks of specific characteristic."""
     try:
-        for check_return in controller.run_check(characteristic.upper()):
+        for check_return in controller.get_check_results(characteristic.upper()):
             print_result(*check_return)
     except ValueError as error_value:
         click.echo(click.style(str(error_value), fg="red"))

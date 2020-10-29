@@ -10,7 +10,7 @@ from ..abstract_characteristic import (
     Characteristic,
     CharacteristicAttributes,
     CheckType,
-    GeneratorCheckType,
+    CheckResult,
     Runtime,
 )
 
@@ -25,7 +25,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
             CharacteristicAttributes(runtime=Runtime.PRE_BOOT),
         )
 
-    def fix(self) -> GeneratorCheckType:
+    def fix(self) -> CheckResult:
         vm_name = self.get_vm_name()
         if vm_name:
             subprocess.run(
@@ -34,7 +34,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
             )
         return self.check()
 
-    def check(self) -> GeneratorCheckType:
+    def check(self) -> CheckResult:
         """Checks if `paravirtprovider` is none."""
         vm_name = self.get_vm_name()
         is_fixed: bool = False

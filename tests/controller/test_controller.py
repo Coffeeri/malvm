@@ -4,63 +4,94 @@ from typing import Generator
 import pytest
 
 from malvm.characteristics.abstract_characteristic import (
-    CharacteristicBase,
     LambdaCharacteristic,
     Characteristic,
+    Runtime,
 )
-from ..characteristics.test_abstract_characteristic import (
-    fixture_test_characteristic,
-    fixture_hello_world_lambda,
-)
-from malvm.controller.controller import Controller
+
+from malvm.controller.controller import Controller, load_characteristics_by_path
 
 
-def test_singleton_controller() -> None:
-    """Test if Controller Class is a singleton."""
-    controller = Controller()
+def test_singleton_controller(example_controller):
     controller_second = Controller()
-    assert controller == controller_second
+    assert example_controller == controller_second
 
 
-def test_run_check(
-    fixture_test_controller, fixture_test_characteristic, fixture_hello_world_lambda
-) -> None:
-    """Test if controller runs check."""
-    assert fixture_test_controller.get_characteristic_list() == [
-        fixture_test_characteristic,
+def test_add_characteristic(example_controller, example_characteristic):
+    expected = {
+        example_characteristic.slug: example_characteristic,
+        **example_controller.characteristics,
+    }
+    example_controller.add_characteristic(example_characteristic)
+    actual = example_controller.characteristics
+    assert expected == actual
+
+
+def test_characteristic_loaded(example_controller, example_characteristic):
+    characteristics = list(
+        load_characteristics_by_path(example_controller.characteristics_path)
+    )
+    expected_list = sorted(
+        characteristics + [example_characteristic], key=lambda c: c.slug
+    )
+    actual_list = sorted(
+        example_controller.get_characteristic_list(False, Runtime.DEFAULT)
+        + example_controller.get_characteristic_list(False, Runtime.PRE_BOOT),
+        key=lambda c: c.slug,
+    )
+
+    assert len(expected_list) == len(actual_list)
+    assert all(a == b for a, b in zip(expected_list, actual_list))
+
+
+def test_sub_characteristics_included(example_controller):
+    characteristics = list(
+        load_characteristics_by_path(example_controller.characteristics_path)
+    )
+    expected_sub_characteristics = []
+    for characteristic in characteristics:
+        expected_sub_characteristics.append(characteristic)
+        expected_sub_characteristics.extend(characteristic.sub_characteristics.values())
+
+    expected_sub_characteristics = sorted(
+        expected_sub_characteristics, key=lambda c: c.slug
+    )
+    actual_sub_characteristics = sorted(
+        example_controller.get_characteristic_list(True, Runtime.DEFAULT)
+        + example_controller.get_characteristic_list(True, Runtime.PRE_BOOT),
+        key=lambda c: c.slug,
+    )
+    assert len(expected_sub_characteristics) == len(actual_sub_characteristics)
+    assert expected_sub_characteristics == actual_sub_characteristics
+
+
+def test_run_check(example_controller, example_lambda_sub_characteristic) -> None:
+    expected_characteristics = example_controller.get_characteristic_list()
+    actual_characteristic = Characteristic("TEST", "Test characteristic")
+    actual_characteristic.add_sub_characteristic(example_lambda_sub_characteristic)
+
+    assert len(example_controller.get_characteristic_list()) == 1
+    assert expected_characteristics[0] == actual_characteristic
+
+    assert example_controller.get_characteristic_list(True) == [
+        actual_characteristic,
+        example_lambda_sub_characteristic,
     ]
-    assert fixture_test_controller.get_characteristic_list(True) == [
-        fixture_test_characteristic,
-        fixture_hello_world_lambda,
-    ]
-    for characteristic, return_value in fixture_test_controller.run_check(
-        fixture_hello_world_lambda.slug
+    for characteristic, return_value in example_controller.get_check_results(
+        example_lambda_sub_characteristic.slug
     ):
 
-        assert (characteristic, return_value) == fixture_hello_world_lambda.check()
-
-
-def test_get_characteristic_list_all():
-    """Test if all subcharacteristics of characteristics will be returned."""
-    controller = Controller()
-    characteristics = controller.get_characteristic_list()
-
-    sub_characteristics = [
-        sub_characteristic
-        for characteristic in characteristics
-        for sub_characteristic in characteristic.sub_characteristics.values()
-    ]
-    found_all_characteristics = controller.get_characteristic_list(True)
-    expected_all_characteristics = characteristics.copy()
-    expected_all_characteristics.extend(sub_characteristics)
-    assert all(
-        [found in expected_all_characteristics for found in found_all_characteristics]
-    )
+        assert (
+            characteristic,
+            return_value,
+        ) == example_lambda_sub_characteristic.check()
 
 
 def test_value_run_check(fixture_test_controller):
     with pytest.raises(ValueError):
-        result_list = [result for result in fixture_test_controller.run_check("ABC")]
+        result_list = [
+            result for result in fixture_test_controller.get_check_results("ABC")
+        ]
 
 
 def test_nested_characteristics_run_check(
@@ -76,29 +107,7 @@ def test_nested_characteristics_run_check(
         list(fixture_sub_characteristic_multi.sub_characteristics.values())[0].slug
     ] = list(fixture_sub_characteristic_multi.sub_characteristics.values())[0]
 
-    assert isinstance(fixture_test_controller.run_checks(), Generator)
-
-
-@pytest.fixture
-def fixture_test_controller(
-    fixture_hello_world_lambda, fixture_test_characteristic, monkeypatch
-):
-    controller: Controller = Controller()
-    monkeypatch.setattr(
-        controller,
-        "characteristics",
-        {fixture_test_characteristic.slug: fixture_test_characteristic},
-    )
-    monkeypatch.setattr(
-        controller,
-        "characteristics_with_sub_characteristics",
-        {
-            fixture_test_characteristic.slug: fixture_test_characteristic,
-            fixture_hello_world_lambda.slug: fixture_hello_world_lambda,
-        },
-    )
-
-    return controller
+    assert isinstance(fixture_test_controller.get_all_checks_results(), Generator)
 
 
 @pytest.fixture
@@ -114,3 +123,29 @@ def fixture_sub_characteristic_multi() -> Characteristic:
         )
     )
     return characteristic
+
+
+@pytest.fixture
+def example_controller(example_characteristic) -> Controller:
+    controller = Controller()
+    controller.add_characteristic(example_characteristic)
+    return controller
+
+
+@pytest.fixture
+def example_characteristic(example_lambda_sub_characteristic):
+    characteristic = Characteristic("TEST", "Test characteristic")
+    characteristic.add_sub_characteristic(example_lambda_sub_characteristic)
+    return characteristic
+
+
+@pytest.fixture
+def example_lambda_sub_characteristic() -> LambdaCharacteristic:
+    """Fixture with hello world function."""
+    return LambdaCharacteristic(
+        "HWORLD",
+        "This is an example LambdaCharacteristic.",
+        "Hello world.",
+        lambda x: True,
+        lambda x: False,
+    )

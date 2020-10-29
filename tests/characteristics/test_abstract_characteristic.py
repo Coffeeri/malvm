@@ -76,25 +76,3 @@ def test_combine_characteristic_lambda(
         assert characteristic.description == fixture_test_characteristic.description
         assert result.check_value == "Skipped, malvm is not running on Windows."
         assert not result.check_status
-
-
-@pytest.fixture
-def fixture_test_characteristic(fixture_hello_world_lambda):
-    class TestCharacteristic(Characteristic):
-        def __init__(self, slug, description):
-            super().__init__(slug, description)
-            self.add_sub_characteristic(fixture_hello_world_lambda)
-
-    return TestCharacteristic("TEST", "Test characteristic")
-
-
-@pytest.fixture
-def fixture_hello_world_lambda() -> LambdaCharacteristic:
-    """Fixture with hello world function."""
-    return LambdaCharacteristic(
-        "HWORLD",
-        "This is an example LambdaCharacteristic.",
-        "Hello world.",
-        lambda x: True,
-        lambda x: False,
-    )

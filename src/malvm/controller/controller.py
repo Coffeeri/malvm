@@ -4,12 +4,12 @@ Classes:
     SingletonMeta: Singleton Metaclass.
     Controller: Controls the checks and fixes of characteristics.
 """
-from typing import Any, Dict, Generator, List, Optional, Iterator
 import inspect
 import pkgutil
 import sys
 from importlib import import_module
 from pathlib import Path
+from typing import Any, Dict, Generator, List, Optional, Iterator
 
 from ..characteristics.abstract_characteristic import (
     CharacteristicBase,
@@ -28,17 +28,15 @@ def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
         for i in dir(imported_module):
             attribute = getattr(imported_module, i)
             if (
-                inspect.isclass(attribute)
-                and issubclass(attribute, Characteristic)
-                and attribute is not Characteristic
+                    inspect.isclass(attribute)
+                    and issubclass(attribute, Characteristic)
+                    and attribute is not Characteristic
             ):
                 setattr(sys.modules[__name__], name, attribute)
                 yield attribute()
 
 
-def get_sub_characteristics(
-    characteristic: CharacteristicBase,
-) -> Iterator[CharacteristicBase]:
+def get_sub_characteristics(characteristic: CharacteristicBase) -> Iterator[CharacteristicBase]:
     if characteristic.sub_characteristics:
         yield from characteristic.sub_characteristics.values()
 
@@ -67,15 +65,12 @@ class Controller(metaclass=SingletonMeta):
             yield from get_sub_characteristics(characteristic)
 
     def __get_all_characteristics_dict(self) -> Dict[str, CharacteristicBase]:
-        return {
-            characteristic.slug: characteristic
-            for characteristic in self.__get_all_characteristics()
-        }
+        return {characteristic.slug: characteristic for characteristic in self.__get_all_characteristics()}
 
     def get_characteristic_list(
-        self,
-        include_sub_characteristics: bool = False,
-        runtime: Optional[Runtime] = Runtime.DEFAULT,
+            self,
+            include_sub_characteristics: bool = False,
+            runtime: Optional[Runtime] = Runtime.DEFAULT,
     ) -> List[CharacteristicBase]:
         """Returns filtered characteristics.
 
@@ -109,10 +104,6 @@ class Controller(metaclass=SingletonMeta):
         else:
             raise ValueError("Characteristic was not found.")
 
-    def get_all_checks_results(self) -> CheckResult:
-        for characteristic in self.get_characteristic_list():
-            yield from self.get_check_results(characteristic.slug)
-
     def apply_fix_get_results(self, slug_searched: str) -> CheckResult:
         characteristic = self.__get_all_characteristics_dict().get(slug_searched, None)
         if characteristic:
@@ -121,10 +112,24 @@ class Controller(metaclass=SingletonMeta):
             if not isinstance(return_values, Generator):
                 yield return_values
             else:
-                for result in characteristic.fix():
-                    yield result
+                yield from characteristic.fix()
         else:
             raise ValueError("Characteristic was not found.")
+
+    def action_on_characteristic(self, slug_searched: str, action:str) -> CheckResult:
+        characteristic = self.__get_all_characteristics_dict().get(slug_searched, None)
+
+        #TODO: Auge machen! schau dir das mal an!
+        if action == "check":
+            yield from characteristic.check()
+        elif action == "apply":
+            yield from characteristic.fix()
+
+
+
+    def get_all_checks_results(self) -> CheckResult:
+        for characteristic in self.get_characteristic_list():
+            yield from self.get_check_results(characteristic.slug)
 
     def apply_all_fixes_get_results(self) -> CheckResult:
         for characteristic in self.get_characteristic_list():

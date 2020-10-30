@@ -1,5 +1,4 @@
 """PyTest tests for controller class."""
-from typing import Generator
 
 import pytest
 
@@ -8,7 +7,6 @@ from malvm.characteristics.abstract_characteristic import (
     Characteristic,
     Runtime,
 )
-
 from malvm.controller.controller import Controller, load_characteristics_by_path
 
 
@@ -18,30 +16,40 @@ def test_singleton_controller(example_controller):
 
 
 def test_add_characteristic(example_controller, example_characteristic):
-    expected = {
-        example_characteristic.slug: example_characteristic,
-        **example_controller.characteristics,
-    }
-    example_controller.add_characteristic(example_characteristic)
-    actual = example_controller.characteristics
-    assert expected == actual
+    expected = {example_characteristic.slug: example_characteristic, **example_controller.characteristics}
 
+    example_controller.add_characteristic(example_characteristic)
+
+    assert expected == example_controller.characteristics
+
+
+#
+# def test_characteristic_loaded(example_controller, example_characteristic):
+#     characteristics = list(
+#         load_characteristics_by_path(example_controller.characteristics_path)
+#     )
+#     expected_list = sorted(
+#         characteristics + [example_characteristic], key=lambda c: c.slug
+#     )
+#     actual_list = sorted(
+#         example_controller.get_characteristic_list(False, Runtime.DEFAULT)
+#         + example_controller.get_characteristic_list(False, Runtime.PRE_BOOT),
+#         key=lambda c: c.slug,
+#     )
+#
+#     assert len(expected_list) == len(actual_list)
+#     assert all(a == b for a, b in zip(expected_list, actual_list))
 
 def test_characteristic_loaded(example_controller, example_characteristic):
-    characteristics = list(
-        load_characteristics_by_path(example_controller.characteristics_path)
-    )
-    expected_list = sorted(
-        characteristics + [example_characteristic], key=lambda c: c.slug
-    )
-    actual_list = sorted(
-        example_controller.get_characteristic_list(False, Runtime.DEFAULT)
-        + example_controller.get_characteristic_list(False, Runtime.PRE_BOOT),
-        key=lambda c: c.slug,
-    )
+    characteristics = [*load_characteristics_by_path(example_controller.characteristics_path), example_characteristic]
+    expected_list = sorted(characteristics, key=lambda c: c.slug)
+
+    actual_list = sorted(example_controller.get_characteristic_list(False, Runtime.DEFAULT)
+                         + example_controller.get_characteristic_list(False, Runtime.PRE_BOOT),
+                         key=lambda c: c.slug)
 
     assert len(expected_list) == len(actual_list)
-    assert all(a == b for a, b in zip(expected_list, actual_list))
+    assert expected_list == actual_list
 
 
 def test_sub_characteristics_included(example_controller, example_characteristic):
@@ -120,34 +128,3 @@ def fixture_sub_characteristic_multi() -> Characteristic:
         )
     )
     return characteristic
-
-
-@pytest.fixture
-def example_controller(example_characteristic) -> Controller:
-    controller = Controller()
-    controller.add_characteristic(example_characteristic)
-    return controller
-
-
-class TestCharacteristic(Characteristic):
-    def __init__(self, slug, description):
-        super().__init__(slug, description)
-
-
-@pytest.fixture
-def example_characteristic(example_lambda_sub_characteristic):
-    characteristic = TestCharacteristic("TEST", "Test characteristic")
-    characteristic.add_sub_characteristic(example_lambda_sub_characteristic)
-    return characteristic
-
-
-@pytest.fixture
-def example_lambda_sub_characteristic() -> LambdaCharacteristic:
-    """Fixture with hello world function."""
-    return LambdaCharacteristic(
-        "HWORLD",
-        "This is an example LambdaCharacteristic.",
-        "Hello world.",
-        lambda x: True,
-        lambda x: False,
-    )

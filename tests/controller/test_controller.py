@@ -41,7 +41,7 @@ def test_add_characteristic(example_controller, example_characteristic):
 #     assert all(a == b for a, b in zip(expected_list, actual_list))
 
 def test_characteristic_loaded(example_controller, example_characteristic):
-    characteristics = [*load_characteristics_by_path(example_controller.characteristics_path), example_characteristic]
+    characteristics = (*load_characteristics_by_path(example_controller.characteristics_path), example_characteristic)
     expected_list = sorted(characteristics, key=lambda c: c.slug)
 
     actual_list = sorted(example_controller.get_characteristic_list(False, Runtime.DEFAULT)

@@ -62,9 +62,7 @@ class CharacteristicBase:
     def __init__(
         self, slug: str, description: str, attributes: CharacteristicAttributes,
     ):
-        if not slug.isupper():
-            raise ValueError("Slug of characteristic must be uppercase.")
-        self.__slug = slug
+        self.__slug = slug.upper()
         self.__description = description
         self.__sub_characteristics: Dict[str, CharacteristicBase] = {}
         self.__attributes: CharacteristicAttributes = attributes
@@ -72,8 +70,6 @@ class CharacteristicBase:
 
     def __eq__(self, other: Any) -> bool:
         """Returns true if compared characteristic is equal."""
-        # if not isinstance(other, CharacteristicBase):
-        #     raise TypeError("Parameter `other` must be of type `CharacteristicBase`.")
         return (
             self.slug == other.slug
             and self.description == other.description

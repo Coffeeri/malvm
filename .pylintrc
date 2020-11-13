@@ -1,6 +1,6 @@
 [MESSAGES CONTROL]
 enable=all
-disable=suppressed-message,locally-disabled,bad-continuation
+disable=suppressed-message,locally-disabled,bad-continuation, missing-function-docstring
 
 [REPORTS]
 reports=yes

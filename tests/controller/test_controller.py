@@ -139,6 +139,21 @@ def test_pre_boot_fix(example_controller, example_pre_boot_characteristic):
     assert actual_post_boot_list == []
 
 
+def test_get_characteristic_list(example_controller, example_characteristic):
+    example_controller.characteristics = {}
+    example_controller.add_characteristic(example_characteristic)
+    expected_characteristics = [example_characteristic]
+    expected_characteristics_with_sub = [
+        example_characteristic,
+        *example_characteristic.sub_characteristics.values(),
+    ]
+    actual_characteristics = example_controller.get_characteristic_list(False)
+    actual_characteristics_with_sub = example_controller.get_characteristic_list(True)
+
+    assert expected_characteristics == actual_characteristics
+    assert expected_characteristics_with_sub == actual_characteristics_with_sub
+
+
 def test_check_unknown_characteristic(example_controller):
     with pytest.raises(ValueError):
         [*example_controller.get_check_results("random_slug")]

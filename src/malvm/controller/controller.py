@@ -9,7 +9,7 @@ import sys
 from enum import Enum
 from importlib import import_module
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Iterator
+from typing import Any, Dict, List, Optional, Iterator
 
 from ..characteristics.abstract_characteristic import (
     CharacteristicBase,
@@ -44,6 +44,8 @@ def get_sub_characteristics(
 
 
 class CharacteristicAction(Enum):
+    """Decides which whether check or fix will be executed."""
+
     CHECK = 1
     FIX = 2
 
@@ -102,7 +104,7 @@ class Controller(metaclass=SingletonMeta):
         if include_sub_characteristics:
             characteristics = self.__get_all_characteristics()
         else:
-            characteristics = self.characteristics.values()
+            characteristics = iter(self.characteristics.values())
 
         return [
             characteristic
@@ -125,9 +127,7 @@ class Controller(metaclass=SingletonMeta):
     ) -> CheckResult:
         characteristic = self.__get_all_characteristics_dict().get(slug_searched, None)
         if characteristic:
-            return_values = action_on_characteristic(characteristic, action)
-            # TODO check if always generator
-            yield from return_values
+            yield from action_on_characteristic(characteristic, action)
         else:
             raise ValueError("Characteristic was not found.")
 

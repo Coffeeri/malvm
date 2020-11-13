@@ -1,6 +1,13 @@
 import pytest
 
-from malvm.characteristics.abstract_characteristic import LambdaCharacteristic, Characteristic
+from malvm.characteristics.abstract_characteristic import (
+    LambdaCharacteristic,
+    Characteristic,
+    CharacteristicAttributes,
+    Runtime,
+    CheckResult,
+    CheckType,
+)
 from malvm.controller.controller import Controller
 
 
@@ -25,8 +32,31 @@ def example_characteristic(example_lambda_sub_characteristic):
 @pytest.fixture
 def example_lambda_sub_characteristic() -> LambdaCharacteristic:
     """Fixture with hello world function."""
-    return LambdaCharacteristic(slug="HWORLD",
-                                description="This is an example LambdaCharacteristic.",
-                                value="Hello world.",
-                                check_func=lambda x: True,
-                                fix_func=lambda x: False)
+    return LambdaCharacteristic(
+        slug="HWORLD",
+        description="This is an example LambdaCharacteristic.",
+        value="Hello world.",
+        check_func=lambda x: True,
+        fix_func=lambda x: False,
+    )
+
+
+@pytest.fixture()
+def example_pre_boot_characteristic():
+    class PreBootCharacteristic(Characteristic):
+        """Checks and Fixes cpuid hypervisor bit in Virtualbox."""
+
+        def __init__(self):
+            super().__init__(
+                "PreBootCharacteristic",
+                "Example pre boot characteristic.",
+                CharacteristicAttributes(runtime=Runtime.PRE_BOOT),
+            )
+
+        def check(self) -> CheckResult:
+            yield self, CheckType(str(self.environment), True)
+
+        def fix(self) -> CheckResult:
+            yield self, CheckType(str(self.environment), False)
+
+    return PreBootCharacteristic()

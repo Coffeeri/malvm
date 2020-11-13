@@ -1,12 +1,12 @@
 """This module contains the controller for checks and fixes.
 
 Classes:
-    SingletonMeta: Singleton Metaclass.
     Controller: Controls the checks and fixes of characteristics.
 """
 import inspect
 import pkgutil
 import sys
+from enum import Enum
 from importlib import import_module
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional, Iterator
@@ -28,17 +28,33 @@ def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
         for i in dir(imported_module):
             attribute = getattr(imported_module, i)
             if (
-                    inspect.isclass(attribute)
-                    and issubclass(attribute, Characteristic)
-                    and attribute is not Characteristic
+                inspect.isclass(attribute)
+                and issubclass(attribute, Characteristic)
+                and attribute is not Characteristic
             ):
                 setattr(sys.modules[__name__], name, attribute)
                 yield attribute()
 
 
-def get_sub_characteristics(characteristic: CharacteristicBase) -> Iterator[CharacteristicBase]:
+def get_sub_characteristics(
+    characteristic: CharacteristicBase,
+) -> Iterator[CharacteristicBase]:
     if characteristic.sub_characteristics:
         yield from characteristic.sub_characteristics.values()
+
+
+class CharacteristicAction(Enum):
+    CHECK = 1
+    FIX = 2
+
+
+def action_on_characteristic(
+    characteristic: CharacteristicBase, action: CharacteristicAction
+) -> CheckResult:
+    if action == CharacteristicAction.CHECK:
+        yield from characteristic.check()
+    elif action == CharacteristicAction.FIX:
+        yield from characteristic.fix()
 
 
 class Controller(metaclass=SingletonMeta):
@@ -49,13 +65,13 @@ class Controller(metaclass=SingletonMeta):
             (Path(__file__).parent.parent / "characteristics")
         )
         self.characteristics: Dict[str, CharacteristicBase] = {}
-        self.__add_loaded_characteristics()
+        self.__load_and_add_characteristics()
 
-    def __add_loaded_characteristics(self):
+    def __load_and_add_characteristics(self) -> None:
         for characteristic in load_characteristics_by_path(self.characteristics_path):
             self.add_characteristic(characteristic)
 
-    def add_characteristic(self, characteristic: CharacteristicBase):
+    def add_characteristic(self, characteristic: CharacteristicBase) -> None:
         self.characteristics[characteristic.slug] = characteristic
 
     def __get_all_characteristics(self) -> Iterator[CharacteristicBase]:
@@ -65,12 +81,15 @@ class Controller(metaclass=SingletonMeta):
             yield from get_sub_characteristics(characteristic)
 
     def __get_all_characteristics_dict(self) -> Dict[str, CharacteristicBase]:
-        return {characteristic.slug: characteristic for characteristic in self.__get_all_characteristics()}
+        return {
+            characteristic.slug: characteristic
+            for characteristic in self.__get_all_characteristics()
+        }
 
     def get_characteristic_list(
-            self,
-            include_sub_characteristics: bool = False,
-            runtime: Optional[Runtime] = Runtime.DEFAULT,
+        self,
+        include_sub_characteristics: bool = False,
+        runtime: Optional[Runtime] = Runtime.DEFAULT,
     ) -> List[CharacteristicBase]:
         """Returns filtered characteristics.
 
@@ -92,40 +111,25 @@ class Controller(metaclass=SingletonMeta):
         ]
 
     def get_check_results(self, slug_searched: str) -> CheckResult:
-        """Runs a check for a specified characteristic."""
-        characteristic = self.__get_all_characteristics_dict().get(slug_searched, None)
-        if characteristic:
-            return_values = characteristic.check()
-            # pylint: disable=isinstance-second-argument-not-valid-type
-            if not isinstance(return_values, Generator):
-                yield return_values
-            else:
-                yield from characteristic.check()
-        else:
-            raise ValueError("Characteristic was not found.")
+        yield from self.__action_on_characteristic_with_results(
+            slug_searched, CharacteristicAction.CHECK
+        )
 
     def apply_fix_get_results(self, slug_searched: str) -> CheckResult:
+        yield from self.__action_on_characteristic_with_results(
+            slug_searched, CharacteristicAction.FIX
+        )
+
+    def __action_on_characteristic_with_results(
+        self, slug_searched: str, action: CharacteristicAction
+    ) -> CheckResult:
         characteristic = self.__get_all_characteristics_dict().get(slug_searched, None)
         if characteristic:
-            return_values = characteristic.fix()
-            # pylint: disable=isinstance-second-argument-not-valid-type
-            if not isinstance(return_values, Generator):
-                yield return_values
-            else:
-                yield from characteristic.fix()
+            return_values = action_on_characteristic(characteristic, action)
+            # TODO check if always generator
+            yield from return_values
         else:
             raise ValueError("Characteristic was not found.")
-
-    def action_on_characteristic(self, slug_searched: str, action:str) -> CheckResult:
-        characteristic = self.__get_all_characteristics_dict().get(slug_searched, None)
-
-        #TODO: Auge machen! schau dir das mal an!
-        if action == "check":
-            yield from characteristic.check()
-        elif action == "apply":
-            yield from characteristic.fix()
-
-
 
     def get_all_checks_results(self) -> CheckResult:
         for characteristic in self.get_characteristic_list():

@@ -20,43 +20,11 @@ from ..characteristics.abstract_characteristic import (
 from ..utils.metaclasses import SingletonMeta
 
 
-def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
-    package = "malvm.characteristics"
-    for (_, name, _) in pkgutil.iter_modules([path]):
-        imported_module = import_module("." + name, package=package)
-        imported_module = import_module(f"{package}.{name}")
-        for i in dir(imported_module):
-            attribute = getattr(imported_module, i)
-            if (
-                inspect.isclass(attribute)
-                and issubclass(attribute, Characteristic)
-                and attribute is not Characteristic
-            ):
-                setattr(sys.modules[__name__], name, attribute)
-                yield attribute()
-
-
-def get_sub_characteristics(
-    characteristic: CharacteristicBase,
-) -> Iterator[CharacteristicBase]:
-    if characteristic.sub_characteristics:
-        yield from characteristic.sub_characteristics.values()
-
-
 class CharacteristicAction(Enum):
     """Decides which whether check or fix will be executed."""
 
     CHECK = 1
     FIX = 2
-
-
-def action_on_characteristic(
-    characteristic: CharacteristicBase, action: CharacteristicAction
-) -> CheckResult:
-    if action == CharacteristicAction.CHECK:
-        yield from characteristic.check()
-    elif action == CharacteristicAction.FIX:
-        yield from characteristic.fix()
 
 
 class Controller(metaclass=SingletonMeta):
@@ -142,3 +110,35 @@ class Controller(metaclass=SingletonMeta):
                 or (selected_runtime is None)
             )
         ]
+
+
+def action_on_characteristic(
+    characteristic: CharacteristicBase, action: CharacteristicAction
+) -> CheckResult:
+    if action == CharacteristicAction.CHECK:
+        yield from characteristic.check()
+    elif action == CharacteristicAction.FIX:
+        yield from characteristic.fix()
+
+
+def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
+    package = "malvm.characteristics"
+    for (_, name, _) in pkgutil.iter_modules([path]):
+        imported_module = import_module("." + name, package=package)
+        imported_module = import_module(f"{package}.{name}")
+        for i in dir(imported_module):
+            attribute = getattr(imported_module, i)
+            if (
+                inspect.isclass(attribute)
+                and issubclass(attribute, Characteristic)
+                and attribute is not Characteristic
+            ):
+                setattr(sys.modules[__name__], name, attribute)
+                yield attribute()
+
+
+def get_sub_characteristics(
+    characteristic: CharacteristicBase,
+) -> Iterator[CharacteristicBase]:
+    if characteristic.sub_characteristics:
+        yield from characteristic.sub_characteristics.values()

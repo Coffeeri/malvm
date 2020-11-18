@@ -1,9 +1,11 @@
 """This module contians cli for the malvm core."""
 import sys
-from typing import Optional
+from typing import Optional, List
 
 import click
 
+from ..utils import print_error
+from ...characteristics.abstract_characteristic import CharacteristicBase
 from ...controller import Controller
 from .utils import print_result, get_vm_name
 
@@ -11,9 +13,11 @@ controller: Controller = Controller()
 
 
 @click.command()
-@click.argument("characteristic", required=False)
+@click.argument(
+    "characteristic", required=False,
+)
 @click.option("-v", "--vm", "vm_name", type=str, default=False)
-def check(characteristic: str, vm_name: Optional[str]) -> None:
+def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
     """Checks satisfaction of CHARACTERISTIC.
 
     [characteristic-code] for checking specific characteristic.
@@ -98,6 +102,10 @@ def show(show_all: bool) -> None:
         if show_all
         else controller.get_characteristic_list(False, None)
     )
+    print_characteristics(characteristic_list)
+
+
+def print_characteristics(characteristic_list: List[CharacteristicBase]):
     for characteristic in characteristic_list:
         click.echo(
             f"[{click.style(characteristic.slug, fg='yellow')}] "
@@ -117,4 +125,4 @@ def run_specific_check(characteristic: str) -> None:
         for check_return in controller.get_check_results(characteristic.upper()):
             print_result(*check_return)
     except ValueError as error_value:
-        click.echo(click.style(str(error_value), fg="red"))
+        print_error(str(error_value))

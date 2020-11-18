@@ -21,7 +21,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
     def __init__(self):
         super().__init__(
             "CPUID",
-            "Fixes hypervisor bit in cpuid feature bits.",
+            "Hypervisor bit in cpuid feature bits.",
             CharacteristicAttributes(runtime=Runtime.PRE_BOOT),
         )
 

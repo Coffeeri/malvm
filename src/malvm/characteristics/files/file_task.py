@@ -12,14 +12,15 @@ from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 
 
 class FileVBCharacteristic(Characteristic):
+    """Removes files leaking existence of VirtualBox."""
+
     def __init__(self) -> None:
         super().__init__("FVB", "Files identifying VirtualBox.")
-        sub_characteristics = sub_characteristics_virtualbox()
+        sub_characteristics = get_sub_characteristics_virtualbox()
         self.add_sub_characteristic_list(list(sub_characteristics))
 
 
 def check_path_not_exists(path: str) -> bool:
-    """Returns `True` if path to file/ directory does not exists."""
     return not Path(path).exists()
 
 
@@ -43,17 +44,12 @@ def remove_path(path: str) -> bool:
 
 
 def get_virtualbox_files() -> List[List[str]]:
-    """Returns all files identifying VirtualBox existence."""
     return read_json_file(
         Path(Path(get_project_root() / "data/files_virtualbox.json")).absolute()
     )["files"]
 
 
-def sub_characteristics_virtualbox() -> Iterator[LambdaCharacteristic]:
-    """Creates a list of LambdaCharacteristics.
-
-    A new sub characteristic will be created for each file.
-    """
+def get_sub_characteristics_virtualbox() -> Iterator[LambdaCharacteristic]:
     for slug, file_path in get_virtualbox_files():
         characteristic = LambdaCharacteristic(
             slug=slug,

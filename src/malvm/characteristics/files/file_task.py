@@ -24,12 +24,7 @@ def check_path_not_exists(path: str) -> bool:
     return not Path(path).exists()
 
 
-def remove_path(path: str) -> bool:
-    """Removes file or directory by path-string.
-
-    Returns:
-        bool: Returns True if file was deleted successfully.
-    """
+def remove_path_with_success(path: str) -> bool:
     if check_path_not_exists(path):
         return True
     path_obj = Path(path)
@@ -56,6 +51,6 @@ def get_sub_characteristics_virtualbox() -> Iterator[LambdaCharacteristic]:
             description=f"File identifying VirtualBox existence: {file_path}",
             value=file_path,
             check_func=check_path_not_exists,
-            fix_func=remove_path,
+            fix_func=remove_path_with_success,
         )
         yield characteristic

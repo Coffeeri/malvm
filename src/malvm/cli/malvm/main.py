@@ -112,3 +112,4 @@ def run_specific_check(characteristic: str) -> None:
         print_results(controller.get_check_results(characteristic.upper()))
     except ValueError as error_value:
         print_error(str(error_value))
+        sys.exit(1)

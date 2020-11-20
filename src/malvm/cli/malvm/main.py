@@ -1,13 +1,17 @@
 """This module contians cli for the malvm core."""
 import sys
-from typing import Optional, List
+from typing import Optional
 
 import click
 
 from ..utils import print_error
-from ...characteristics.abstract_characteristic import CharacteristicBase
 from ...controller import Controller
-from .utils import print_result, get_vm_name
+from .utils import (
+    get_vm_name,
+    print_pre_boot_fix_results,
+    print_characteristics,
+    print_results,
+)
 
 controller: Controller = Controller()
 
@@ -20,14 +24,14 @@ controller: Controller = Controller()
 def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
     """Checks satisfaction of CHARACTERISTIC.
 
-    [characteristic-code] for checking specific characteristic.
-    All characteristics will be checked if not mentioned.
+    All characteristics will be checked if non is specified.
     """
     if characteristic:
         run_specific_check(characteristic)
     else:
         run_all_checks()
 
+    # Müssen wir Auge machen.
     if not vm_name:
         vm_name = get_vm_name()
         if not vm_name:
@@ -49,17 +53,12 @@ def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
 def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     """Fixes satisfaction of CHARACTERISTIC."""
     if characteristic_slug:
-        try:
-            for characteristic, status in controller.apply_fix_get_results(
-                characteristic_slug.upper()
-            ):
-                print_result(characteristic, status)
-        except ValueError as error_value:
-            click.echo(click.style(str(error_value), fg="red"))
+        run_specific_fix(characteristic_slug)
 
     else:
-        for characteristic, status in controller.apply_all_fixes_get_results():
-            print_result(characteristic, status)
+        run_all_fixes()
+
+    # Müssen wir Auge machen.
     if not vm_name:
         vm_name = get_vm_name()
         if not vm_name:
@@ -75,27 +74,24 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     print_pre_boot_fix_results(vm_name)
 
 
-def print_pre_boot_fix_results(vm_name: str):
-    """Runs pre-boot fixes and prints the result to the screen."""
-    for characteristic, status in controller.apply_pre_boot_fixes({"vm_name": vm_name}):
-        print_result(characteristic, status)
+def run_specific_fix(characteristic_slug):
+    try:
+        print_results(controller.apply_fix_get_results(characteristic_slug.upper()))
+    except ValueError as error_value:
+        click.echo(click.style(str(error_value), fg="red"))
 
 
-def print_pre_boot_check_results(vm_name: str):
-    """Runs pre-boot fixes and prints the result to the screen."""
-    for characteristic, status in controller.get_pre_boot_checks_results(
-        {"vm_name": vm_name}
-    ):
-        print_result(characteristic, status)
+def run_all_fixes():
+    print_results(controller.apply_all_fixes_get_results())
 
 
 @click.command()
 @click.option("-a", "--show-all", "show_all", type=bool, is_flag=True, default=False)
 def show(show_all: bool) -> None:
-    """Lists all characteristics.
+    """Prints list of characteristics.
 
     Args:
-        show_all: Returns a list of all characteristics, including sub characteristics.
+        show_all: Includes sub characteristics.
     """
     characteristic_list = (
         controller.get_characteristic_list(True, None)
@@ -105,24 +101,14 @@ def show(show_all: bool) -> None:
     print_characteristics(characteristic_list)
 
 
-def print_characteristics(characteristic_list: List[CharacteristicBase]):
-    for characteristic in characteristic_list:
-        click.echo(
-            f"[{click.style(characteristic.slug, fg='yellow')}] "
-            f"{characteristic.description}"
-        )
-
-
 def run_all_checks() -> None:
     """Runs checks for all characteristics."""
-    for characteristic, status in controller.get_all_checks_results():
-        print_result(characteristic, status)
+    print_results(controller.get_all_checks_results())
 
 
 def run_specific_check(characteristic: str) -> None:
     """Runs checks of specific characteristic."""
     try:
-        for check_return in controller.get_check_results(characteristic.upper()):
-            print_result(*check_return)
+        print_results(controller.get_check_results(characteristic.upper()))
     except ValueError as error_value:
         print_error(str(error_value))

@@ -1,3 +1,3 @@
 cd C:/tmp/
-easy_install malvm.egg
+pip install malvm.tar.gz
 malvm fix

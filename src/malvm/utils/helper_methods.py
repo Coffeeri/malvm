@@ -30,9 +30,9 @@ def get_config_root() -> Path:
     return config_path
 
 
-def get_vm_malvm_egg() -> Path:
+def get_vm_malvm_package_file() -> Path:
     """Returns path for malvm package, used for malvm installation on vms."""
-    return get_config_root() / "malvm.egg"
+    return get_config_root() / "malvm.tar.gz"
 
 
 def read_json_file(path: Path) -> Any:

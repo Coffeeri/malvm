@@ -3,8 +3,6 @@
 import pytest
 
 from malvm.characteristics.abstract_characteristic import (
-    LambdaCharacteristic,
-    Characteristic,
     Runtime,
     CheckType,
 )
@@ -159,32 +157,6 @@ def test_check_unknown_characteristic(example_controller):
         [*example_controller.get_check_results("random_slug")]
 
 
-# def test_run_check(
-#     example_controller, example_characteristic, example_lambda_sub_characteristic
-# ) -> None:
-#     expected_characteristics = TestCharacteristic("TEST", "Test characteristic")
-#     expected_characteristics.add_sub_characteristic(example_lambda_sub_characteristic)
-#
-#     actual_characteristic = example_controller.get_characteristic_list() + [
-#         example_characteristic
-#     ]
-#
-#     assert expected_characteristics in actual_characteristic
-#
-#     assert example_controller.get_characteristic_list(True) == [
-#         actual_characteristic,
-#         example_lambda_sub_characteristic,
-#     ]
-#     for characteristic, return_value in example_controller.get_check_results(
-#         example_lambda_sub_characteristic.slug
-#     ):
-#
-#         assert (
-#             characteristic,
-#             return_value,
-#         ) == example_lambda_sub_characteristic.check()
-
-
 # def test_nested_characteristics_run_check(
 #     fixture_test_controller, fixture_sub_characteristic_multi
 # ):
@@ -200,17 +172,17 @@ def test_check_unknown_characteristic(example_controller):
 #
 #     assert isinstance(fixture_test_controller.get_all_checks_results(), Generator)
 
-
-@pytest.fixture
-def fixture_sub_characteristic_multi() -> Characteristic:
-    characteristic = Characteristic("SRC001", "Single Return Characteristic",)
-    characteristic.add_sub_characteristic(
-        LambdaCharacteristic(
-            "SRC002",
-            "Single Return Characteristic 2",
-            "",
-            lambda x: False,
-            lambda x: True,
-        )
-    )
-    return characteristic
+#
+# @pytest.fixture
+# def fixture_sub_characteristic_multi() -> Characteristic:
+#     characteristic = Characteristic("SRC001", "Single Return Characteristic",)
+#     characteristic.add_sub_characteristic(
+#         LambdaCharacteristic(
+#             "SRC002",
+#             "Single Return Characteristic 2",
+#             "",
+#             lambda x: False,
+#             lambda x: True,
+#         )
+#     )
+#     return characteristic

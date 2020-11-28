@@ -39,7 +39,7 @@ Please make sure that the following dependencies are installed:
 You need to create a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).
 
 ```shell
-pip install --extra-index-url https://__token__:YOUR_ACCESS_TOKEN@gitlab.com/api/v4/projects/18734431/packages/pypi/simple --no-deps malvm
+pip install --extra-index-url https://__token__:YOUR_ACCESS_TOKEN@gitlab.com/api/v4/projects/18734431/packages/pypi/simple malvm
 ```
 
 ---

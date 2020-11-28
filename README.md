@@ -27,7 +27,7 @@ Please make sure that the following dependencies are installed:
 1. [Python3](https://www.python.org/downloads/)
 2. [git](https://git-scm.com/downloads)
 3. [Vagrant](https://www.vagrantup.com/downloads)
-4. [Packer](https://learn.hashicorp.com/packer/getting-started/install) (<1.6.0 like version 1.5.6)
+4. [Packer](https://learn.hashicorp.com/packer/getting-started/install) (malvm v0.0.1 tested with packer 1.5.6; malvm v0.0.2 tested with packer 1.6.5)
 5. [VirtualBox](https://www.virtualbox.org/wiki/Downloads) 
 
 ---

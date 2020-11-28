@@ -230,5 +230,5 @@ def run_pre_boot_fixes(vm_name: str):
         click.style("> Checking and fixing pre boot characteristics...", fg="yellow",)
     )
     environment = {"os": platform.system(), "vm_name": vm_name}
-    for characteristic, return_status in controller.run_pre_boot_fixes(environment):
+    for characteristic, return_status in controller.apply_pre_boot_fixes(environment):
         print_result(characteristic, return_status)

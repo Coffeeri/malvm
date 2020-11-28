@@ -15,7 +15,7 @@ Classes:
 import abc
 import platform
 from enum import Enum
-from typing import Any, Callable, Dict, Generator, List, NamedTuple, Tuple
+from typing import Any, Callable, Dict, List, NamedTuple, Tuple, Iterator
 
 
 class CheckType(NamedTuple):
@@ -62,9 +62,7 @@ class CharacteristicBase:
     def __init__(
         self, slug: str, description: str, attributes: CharacteristicAttributes,
     ):
-        if not slug.isupper():
-            raise ValueError("Slug of characteristic must be uppercase.")
-        self.__slug = slug
+        self.__slug = slug.upper()
         self.__description = description
         self.__sub_characteristics: Dict[str, CharacteristicBase] = {}
         self.__attributes: CharacteristicAttributes = attributes
@@ -72,8 +70,6 @@ class CharacteristicBase:
 
     def __eq__(self, other: Any) -> bool:
         """Returns true if compared characteristic is equal."""
-        if not isinstance(other, CharacteristicBase):
-            raise TypeError("Parameter `other` must be of type `CharacteristicBase`.")
         return (
             self.slug == other.slug
             and self.description == other.description
@@ -164,7 +160,7 @@ class CharacteristicBase:
             self.add_sub_characteristic(characteristic)
 
 
-GeneratorCheckType = Generator[Tuple[CharacteristicBase, CheckType], None, None]
+CheckResult = Iterator[Tuple[CharacteristicBase, CheckType]]
 
 
 class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
@@ -182,7 +178,7 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
         self.__slug = slug
         self.__description = description
 
-    def check(self) -> GeneratorCheckType:
+    def check(self) -> CheckResult:
         """Checks if given characteristic is already satisfied."""
         no_errors = True
         result_list: List[Tuple[CharacteristicBase, CheckType]] = []
@@ -200,7 +196,7 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
             characteristic = result[0]
             yield characteristic, CheckType(*result[1])  # type: ignore
 
-    def fix(self) -> GeneratorCheckType:
+    def fix(self) -> CheckResult:
         """Satisfies given characteristic."""
         no_errors = True
         result_list: List[Tuple[CharacteristicBase, CheckType]] = []

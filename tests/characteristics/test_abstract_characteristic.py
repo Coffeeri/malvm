@@ -59,42 +59,20 @@ def test_lambda_characteristic_basic(
 
 
 def test_combine_characteristic_lambda(
-    fixture_test_characteristic, fixture_hello_world_lambda
+    example_characteristic, example_lambda_sub_characteristic
 ) -> None:
-    test_characteristic = fixture_test_characteristic
+    test_characteristic = example_characteristic
     assert test_characteristic.slug == "TEST"
     assert test_characteristic.description == "Test characteristic"
     assert test_characteristic.sub_characteristics == {
-        fixture_hello_world_lambda.slug: fixture_hello_world_lambda
+        example_lambda_sub_characteristic.slug: example_lambda_sub_characteristic
     }
     result_list: List[Tuple[CharacteristicBase, CheckType]] = []
     for result in test_characteristic.check():
         result_list.append(result)
     characteristic, result = result_list[0]
     if platform.system() != "Windows":
-        assert characteristic.slug == fixture_test_characteristic.slug
-        assert characteristic.description == fixture_test_characteristic.description
+        assert characteristic.slug == example_characteristic.slug
+        assert characteristic.description == example_characteristic.description
         assert result.check_value == "Skipped, malvm is not running on Windows."
         assert not result.check_status
-
-
-@pytest.fixture
-def fixture_test_characteristic(fixture_hello_world_lambda):
-    class TestCharacteristic(Characteristic):
-        def __init__(self, slug, description):
-            super().__init__(slug, description)
-            self.add_sub_characteristic(fixture_hello_world_lambda)
-
-    return TestCharacteristic("TEST", "Test characteristic")
-
-
-@pytest.fixture
-def fixture_hello_world_lambda() -> LambdaCharacteristic:
-    """Fixture with hello world function."""
-    return LambdaCharacteristic(
-        "HWORLD",
-        "This is an example LambdaCharacteristic.",
-        "Hello world.",
-        lambda x: True,
-        lambda x: False,
-    )

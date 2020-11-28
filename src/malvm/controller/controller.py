@@ -1,152 +1,144 @@
 """This module contains the controller for checks and fixes.
 
 Classes:
-    SingletonMeta: Singleton Metaclass.
     Controller: Controls the checks and fixes of characteristics.
 """
-from typing import Any, Dict, Generator, List, Optional
+import inspect
+import pkgutil
+import sys
+from enum import Enum
+from importlib import import_module
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Iterator
 
-
-from ..characteristics import loaded_characteristics
 from ..characteristics.abstract_characteristic import (
     CharacteristicBase,
-    GeneratorCheckType,
+    CheckResult,
     Runtime,
+    Characteristic,
 )
 from ..utils.metaclasses import SingletonMeta
 
 
-class Controller(metaclass=SingletonMeta):
-    """The controller collects all characteristics.
+class CharacteristicAction(Enum):
+    """Decides which whether check or fix will be executed."""
 
-    The Controller also runs, check-/ fix-methods.
-    """
+    CHECK = 1
+    FIX = 2
+
+
+class Controller(metaclass=SingletonMeta):
+    """The controller loads and manages all characteristics."""
 
     def __init__(self) -> None:
-        """Initialize Controller and load characteristics."""
+        self.characteristics_path = str(
+            (Path(__file__).parent.parent / "characteristics")
+        )
         self.characteristics: Dict[str, CharacteristicBase] = {}
-        self.characteristics_with_sub_characteristics: Dict[
-            str, CharacteristicBase
-        ] = {}
-        for characteristic in loaded_characteristics:
-            sub_characteristics = {
-                c.slug: c for c in characteristic().sub_characteristics.values()
-            }
-            self.characteristics = {
-                **self.characteristics,
-                characteristic().slug: characteristic(),
-            }
-            self.characteristics_with_sub_characteristics = {
-                **self.characteristics_with_sub_characteristics,
-                characteristic().slug: characteristic(),
-                **sub_characteristics,
-            }
+        self.__load_and_add_characteristics()
+
+    def __load_and_add_characteristics(self) -> None:
+        for characteristic in load_characteristics_by_path(self.characteristics_path):
+            self.add_characteristic(characteristic)
+
+    def add_characteristic(self, characteristic: CharacteristicBase) -> None:
+        self.characteristics[characteristic.slug] = characteristic
+
+    def __get_all_characteristics_dict(self) -> Dict[str, CharacteristicBase]:
+        return {
+            characteristic.slug: characteristic
+            for characteristic in self.__get_all_characteristics()
+        }
+
+    def __get_all_characteristics(self) -> Iterator[CharacteristicBase]:
+        for characteristic in self.characteristics.values():
+            yield characteristic
+            yield from get_sub_characteristics(characteristic)
+
+    def get_all_checks_results(self) -> CheckResult:
+        for characteristic in self.get_characteristic_list():
+            yield from self.get_check_results(characteristic.slug)
+
+    def get_pre_boot_checks_results(self, environment: Dict[str, Any]) -> CheckResult:
+        for characteristic in self.get_characteristic_list(False, Runtime.PRE_BOOT):
+            self.characteristics[characteristic.slug].environment = environment
+            yield from self.get_check_results(characteristic.slug)
+
+    def get_check_results(self, slug_searched: str) -> CheckResult:
+        yield from self.__action_on_characteristic_with_results(
+            slug_searched, CharacteristicAction.CHECK
+        )
+
+    def apply_all_fixes_get_results(self) -> CheckResult:
+        for characteristic in self.get_characteristic_list():
+            yield from self.apply_fix_get_results(characteristic.slug)
+
+    def apply_pre_boot_fixes(self, environment: Dict[str, Any]) -> CheckResult:
+        for characteristic in self.get_characteristic_list(False, Runtime.PRE_BOOT):
+            self.characteristics[characteristic.slug].environment = environment
+            yield from self.apply_fix_get_results(characteristic.slug)
+
+    def apply_fix_get_results(self, slug_searched: str) -> CheckResult:
+        yield from self.__action_on_characteristic_with_results(
+            slug_searched, CharacteristicAction.FIX
+        )
+
+    def __action_on_characteristic_with_results(
+        self, slug_searched: str, action: CharacteristicAction
+    ) -> CheckResult:
+        characteristic = self.__get_all_characteristics_dict().get(slug_searched, None)
+        if characteristic:
+            yield from action_on_characteristic(characteristic, action)
+        else:
+            raise ValueError("Characteristic was not found.")
 
     def get_characteristic_list(
         self,
         include_sub_characteristics: bool = False,
-        runtime: Optional[Runtime] = Runtime.DEFAULT,
+        selected_runtime: Optional[Runtime] = Runtime.DEFAULT,
     ) -> List[CharacteristicBase]:
-        """Returns all characteristics.
-
-        Args:
-            include_sub_characteristics (bool): Select True if sub characteristics
-                                                should be included.
-            runtime (Runtime): Enum, defining the time and location when check and fix
-                               methods will be executed.
-        """
         if include_sub_characteristics:
-            characteristics = self.characteristics_with_sub_characteristics
+            characteristics = self.__get_all_characteristics()
         else:
-            characteristics = self.characteristics
-        return list(
+            characteristics = iter(self.characteristics.values())
+
+        return [
             characteristic
-            for characteristic in characteristics.values()
-            if ((characteristic.attributes.runtime == runtime) or (runtime is None))
-        )
+            for characteristic in characteristics
+            if (
+                (characteristic.attributes.runtime == selected_runtime)
+                or (selected_runtime is None)
+            )
+        ]
 
-    def run_check(self, slug_searched: str) -> GeneratorCheckType:
-        """Runs a check for a specified characteristic.
 
-        Args:
-            slug_searched (str): A unique slug representing a characteristic.
-                                       Read more about it in the docs on Gitlab.
+def action_on_characteristic(
+    characteristic: CharacteristicBase, action: CharacteristicAction
+) -> CheckResult:
+    if action == CharacteristicAction.CHECK:
+        yield from characteristic.check()
+    elif action == CharacteristicAction.FIX:
+        yield from characteristic.fix()
 
-        Returns:
-            GeneratorCheckType: Generator of characteristic and result of check.
-        """
-        if slug_searched not in self.characteristics_with_sub_characteristics:
-            raise ValueError("Characteristic was not found.")
-        characteristic = self.characteristics_with_sub_characteristics[slug_searched]
-        characteristic_return_value = characteristic.check()
-        if not isinstance(  # pylint: disable=isinstance-second-argument-not-valid-type
-            characteristic_return_value, Generator,
-        ):
-            yield characteristic_return_value
-        else:
-            for result in characteristic.check():
-                yield result
 
-    def run_checks(self) -> GeneratorCheckType:
-        """Runs all checks and returns their results.
+def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
+    package = "malvm.characteristics"
+    for (_, name, _) in pkgutil.iter_modules([path]):
+        imported_module = import_module("." + name, package=package)
+        imported_module = import_module(f"{package}.{name}")
+        for i in dir(imported_module):
+            attribute = getattr(imported_module, i)
+            if (
+                inspect.isclass(attribute)
+                and issubclass(attribute, Characteristic)
+                and attribute is not Characteristic
+            ):
+                setattr(sys.modules[__name__], name, attribute)
+                yield attribute()
 
-        Returns:
-            GeneratorCheckType: Generator of characteristic and result of check.
-        """
-        for characteristic in self.get_characteristic_list():
-            for result in self.run_check(characteristic.slug):
-                yield result
 
-    def run_fix(self, slug_searched: str) -> GeneratorCheckType:
-        """Runs a fix for a specified characteristic.
-
-        Args:
-            slug_searched (str): A unique slug representing a characteristic.
-                                       Read more about it in the docs on Gitlab.
-
-        Returns:
-            GeneratorCheckType: Characteristic and result of fix.
-        """
-        if not isinstance(slug_searched, str):
-            raise TypeError("Characteristic Slug is not of type `str`.")
-        if slug_searched not in self.characteristics:
-            raise ValueError("Characteristic was not found.")
-        characteristic = self.characteristics[slug_searched]
-        characteristic_return_value = characteristic.fix()
-        if not isinstance(  # pylint: disable=isinstance-second-argument-not-valid-type
-            characteristic_return_value, Generator,
-        ):
-            yield characteristic_return_value
-        else:
-            for result in characteristic.fix():
-                yield result
-
-    def run_fixes(self) -> GeneratorCheckType:
-        """Runs fixes for all characteristics and returns their success.
-
-        Returns:
-            GeneratorCheckType: List of Characteristic and result of fix.
-        """
-        for characteristic in self.get_characteristic_list():
-            for fix_return_value in self.run_fix(characteristic.slug):
-                yield fix_return_value
-
-    def run_pre_boot_fixes(self, environment: Dict[str, Any]) -> GeneratorCheckType:
-        """Runs fixes for all pre boot characteristics and returns their success.
-
-        Returns:
-            GeneratorCheckType: List of Characteristic and result of fix.
-        """
-        for characteristic in self.get_characteristic_list(False, Runtime.PRE_BOOT):
-            self.characteristics[characteristic.slug].environment = environment
-            yield from self.run_fix(characteristic.slug)
-
-    def run_pre_boot_checks(self, environment: Dict[str, Any]) -> GeneratorCheckType:
-        """Runs checks for all pre boot characteristics and returns their success.
-
-        Returns:
-            GeneratorCheckType: List of Characteristic and result of fix.
-        """
-        for characteristic in self.get_characteristic_list(False, Runtime.PRE_BOOT):
-            self.characteristics[characteristic.slug].environment = environment
-            yield from self.run_check(characteristic.slug)
+def get_sub_characteristics(
+    characteristic: CharacteristicBase,
+) -> Iterator[CharacteristicBase]:
+    if characteristic.sub_characteristics:
+        yield from characteristic.sub_characteristics.values()

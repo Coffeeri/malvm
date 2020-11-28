@@ -30,32 +30,48 @@ Please make sure that the following dependencies are installed:
 4. [Packer](https://learn.hashicorp.com/packer/getting-started/install) (<1.6.0 like version 1.5.6)
 5. [VirtualBox](https://www.virtualbox.org/wiki/Downloads) 
 
+---
+
 ### Install malvm
+
+#### with pip
+
+You need to create a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).
+
+```shell
+pip install --extra-index-url https://__token__:YOUR_ACCESS_TOKEN@gitlab.com/api/v4/projects/18734431/packages/pypi/simple --no-deps malvm
+```
+
+---
+
+#### with git clone and manual Installation
 
 Please make sure that you installed all packages in [Prerequisite](#prerequisite).
 
-#### **1. Clone the Repository and open a shell in the folder.**
+##### **1. Clone the Repository and open a shell in the folder.**
 ```shell
-▶ git clone git@gitlab.com:shk_fkie/analysevm.git
+git clone git@gitlab.com:shk_fkie/analysevm.git
 ```
 
 ```shell
-▶ cd analysevm
+cd analysevm
 ```
 
-#### **2. Install package**
+##### **2. Install package**
 
 **2.1 Install package (Normal User)**
 
 ```shell
-▶ python setup.py install
+python setup.py install
 ```
 
 **2.1 Install package (Developer)**
 
 ```shell
-▶ ./bootstrap.sh
+./bootstrap.sh
 ```
+
+---
 
 ### First VM
 
@@ -63,16 +79,18 @@ In the following we are going to create a Windows 10 VM called "malewareVM".
 We use two commands chained together.
 
 ```shell
-▶ malvm box build windows_10
-▶ malvm box run windows_10 malewareVM
+malvm box build windows_10
+malvm box run windows_10 malewareVM
 ```
 First `maleware box build windows_10` builds the Windows 10 image for Vagrant.
 Next `malvm box run windows_10 malewareVM` spins up a VirtualMachine instance of the previously created image.
 
 Both commands can be chained into a single command:
 ```shell
-▶ malvm box build windows_10 run windows_10 malewareVM
+malvm box build windows_10 run windows_10 malewareVM
 ```
+
+---
 
 ### Checks and Fixes 
 
@@ -81,14 +99,16 @@ Malvm analyses its environment. It includes [Characteristics](https://gitlab.com
 Those characteristics can be checked with:
 
 ```shell
-▶ malvm check
+malvm check
 ```
 
 If those failed ones should be fixed, simply run:
 
 ```shell
-▶ malvm fix
+malvm fix
 ```
+
+---
 
 ## Characteristics
 

@@ -31,7 +31,7 @@ DATA_FILES = [
 
 setuptools.setup(
     name="malvm",
-    version="0.0.1",
+    version="0.0.2",
     author="Leander Kohler",
     author_email="leander.kohler@uni-bonn.de",
     description="Creates non detectable VMs to analyze Malware.",

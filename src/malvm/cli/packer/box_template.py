@@ -14,7 +14,7 @@ from ...controller.controller import Controller
 from ...utils.helper_methods import (
     get_config_root,
     get_data_dir,
-    get_vm_malvm_egg,
+    get_vm_malvm_package_file,
     read_json_file,
 )
 
@@ -85,10 +85,10 @@ class PackerTemplate:
 
     def configure_packer_config(self):
         """Configures packers template json file."""
-        egg_path = str(get_vm_malvm_egg().absolute())
-        egg_path = egg_path.replace("\\", "/")
+        malvm_package_file_path = str(get_vm_malvm_package_file().absolute())
+        malvm_package_file_path = malvm_package_file_path.replace("\\", "/")
         packer_config = {
-            "insert_analysevm_path": egg_path,
+            "insert_analysevm_path": malvm_package_file_path,
             "insert_username": self.configuration.username,
             "insert_password": self.configuration.password,
         }

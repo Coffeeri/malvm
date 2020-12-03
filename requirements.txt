@@ -3,6 +3,5 @@ pytest==5.4.3
 flake8==3.8.3
 pylint==2.5.3
 mypy==0.780
-black==19.10b0
 setuptools==47.1.1
 inquirer~=2.7.0

@@ -1,3 +1,4 @@
+"""This module contains tests for the malvm-cli."""
 from click.testing import CliRunner
 
 from malvm.cli.malvm.main import check, controller

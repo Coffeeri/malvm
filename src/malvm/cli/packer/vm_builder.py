@@ -7,7 +7,10 @@ from pathlib import Path
 import click
 import inquirer  # type: ignore
 
-from ...utils.helper_methods import get_data_dir
+from ...utils.helper_methods import (
+    get_data_dir,
+    add_vm_to_vagrant_files,
+)
 from ..utils import print_warning
 from .box_template import BoxConfiguration, PackerTemplate
 
@@ -17,7 +20,7 @@ PACKER_PATH = get_data_dir() / "packer"
 WIN_10_CONFIG = BoxConfiguration(
     packer_template_path=(PACKER_PATH / "windows_10.json"),
     packer_box_name="windows_10_virtualbox.box",
-    vagrant_box_name="win-10",
+    vagrant_box_name="malvm-win-10",
     username="max",
     password="123456",
     computer_name="Computer",
@@ -76,7 +79,7 @@ def run(template, name, output: str):
 
         $ malvm box run windows_10 win10-vm01
     """
-    if not Path("Vagrantfile").exists():
+    if not Path(Path(output) / "Vagrantfile").exists():
         click.echo(click.style("> Vagrantfile does not exist.", fg="red",))
         click.echo(
             click.style(
@@ -93,6 +96,8 @@ def run(template, name, output: str):
         subprocess.run(
             ["vagrant", "up"], check=True,
         )
+    add_vm_to_vagrant_files(name, output)
+
     click.echo(
         click.style(
             f"VM {name} was started. "

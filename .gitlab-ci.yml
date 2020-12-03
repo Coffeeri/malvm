@@ -9,10 +9,6 @@ stages:
   - Testing
   - Deploy
 
-black:
-  stage: Testing
-  script:
-  - black src/malvm
 
 flake8:
   stage: Testing

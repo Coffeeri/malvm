@@ -125,7 +125,8 @@ def show(show_all: bool) -> None:
 
 @click.command()
 @click.option("-f", "--force", type=bool, is_flag=True, default=False)
-def clean(force: bool) -> None:
+@click.option("-s", "--soft", type=bool, is_flag=True, default=False)
+def clean(force: bool, soft: bool) -> None:
     """Removes all malvm data.
 
     This includes virtual machines and their Vagrantfiles, packer cache..
@@ -136,7 +137,7 @@ def clean(force: bool) -> None:
     ]
     vagrantfile_paths = get_existing_vagrantfiles_paths_iterable()
     if force:
-        clean_malvm_data(clean_paths)
+        clean_malvm_data(clean_paths, soft)
     else:
         click.echo("The following data will be deleted:")
         for path in clean_paths:
@@ -148,7 +149,7 @@ def clean(force: bool) -> None:
 
         user_conformation = input("Sure? This cannot be reversed. [y/n]").lower()
         if user_conformation == "y":
-            clean_malvm_data(clean_paths)
+            clean_malvm_data(clean_paths, soft)
 
 
 def delete_vagrant_boxes():
@@ -158,10 +159,11 @@ def delete_vagrant_boxes():
     )
 
 
-def clean_malvm_data(clean_paths: List[Path]):
+def clean_malvm_data(clean_paths: List[Path], clean_soft: bool):
     destroy_virtual_machines()
-    delete_vagrant_boxes()
-    delete_malvm_data_paths(clean_paths)
+    if not clean_soft:
+        delete_vagrant_boxes()
+        delete_malvm_data_paths(clean_paths)
 
 
 def delete_malvm_data_paths(clean_paths: List[Path]):

@@ -151,8 +151,16 @@ def clean(force: bool) -> None:
             clean_malvm_data(clean_paths)
 
 
+def delete_vagrant_boxes():
+    # CAN: only delete if box exists not in `vagrant box list --machine-readable`
+    subprocess.run(
+        ["vagrant", "box", "remove", "malvm-win-10", "--all"], check=True,
+    )
+
+
 def clean_malvm_data(clean_paths: List[Path]):
     destroy_virtual_machines()
+    delete_vagrant_boxes()
     delete_malvm_data_paths(clean_paths)
 
 

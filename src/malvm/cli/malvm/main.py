@@ -47,7 +47,7 @@ def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
                 click.style(
                     "No vm was found in your environment.\n"
                     "You can manually pass the vm-name with [-v VM_NAME].\n"
-                    "If this was run in the VM, this can be ignored.",
+                    "If this ran in the VM, this can be ignored.",
                     fg="red",
                 )
             )
@@ -88,7 +88,7 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
                 click.style(
                     "No vm was found in your environment.\n"
                     "You can manually pass the vm-name with [-v VM_NAME].\n"
-                    "If this was run in the VM, this can be ignored.",
+                    "If this ran in the VM, this can be ignored.",
                     fg="red",
                 )
             )

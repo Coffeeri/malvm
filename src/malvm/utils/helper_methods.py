@@ -126,7 +126,7 @@ def get_vm_ids() -> Iterable[str]:
 
 def get_vm_id_vagrantfile_path() -> Iterable[Tuple[str, str]]:
     for vm_status in get_vm_status():
-        yield vm_status["vagrant_file_path"], vm_status["machine-id"]
+        yield vm_status["machine-id"], vm_status["vagrant_file_path"]
 
 
 def get_vm_status() -> List[Dict[str, str]]:

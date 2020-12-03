@@ -169,5 +169,5 @@ def destroy_virtual_machines():
 
 def destroy_virtual_machine(vm_id: str):
     subprocess.run(
-        ["vagrant", "destroy", "--parallel", vm_id], check=True,
+        ["vagrant", "destroy", "--force", vm_id], check=True,
     )

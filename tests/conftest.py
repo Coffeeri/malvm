@@ -1,3 +1,4 @@
+"""This module contains fixtures for tests on a global level."""
 import pytest
 
 from malvm.characteristics.abstract_characteristic import (

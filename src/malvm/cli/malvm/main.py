@@ -1,9 +1,8 @@
 """This module contians cli for the malvm core."""
-import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional, Iterable, Tuple, List
+from typing import Optional, List
 
 import click
 
@@ -17,10 +16,8 @@ from .utils import (
 )
 from ...utils.helper_methods import (
     get_config_root,
-    get_vagrant_files_path,
     get_existing_vagrantfiles_paths_iterable,
     remove_path_with_success,
-    get_vm_ids,
     get_vm_id_vagrantfile_path,
 )
 
@@ -139,7 +136,7 @@ def clean(force: bool) -> None:
     ]
     vagrantfile_paths = get_existing_vagrantfiles_paths_iterable()
     if force:
-        clean_malvm_data(clean_paths, vagrantfile_paths)
+        clean_malvm_data(clean_paths)
     else:
         click.echo("The following data will be deleted:")
         for path in clean_paths:

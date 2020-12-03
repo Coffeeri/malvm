@@ -68,7 +68,7 @@ python setup.py install
 **2.1 Install package (Developer)**
 
 ```shell
-./bootstrap.sh
+source bootstrap.sh
 ```
 
 ---

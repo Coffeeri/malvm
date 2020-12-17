@@ -137,3 +137,33 @@ def stop(name: str):
     subprocess.run(
         ["vagrant", "suspend", vm_id], check=True,
     )
+
+
+@box.command()
+@click.argument("name")
+def reset(name: str):
+    """Resets virtual machine.
+
+    Resetting by restoring the `clean-state` snapshot.
+    """
+    vm_id = get_vm_ids_dict()[name]
+    subprocess.run(
+        ["vagrant snapshot restore clean-state", vm_id], check=True,
+    )
+
+
+@box.command()
+@click.argument("name")
+def fix(name: str):
+    """Runs fixes on virtual machine."""
+    vm_id = get_vm_ids_dict()[name]
+    subprocess.run(
+        ["vagrant winrm -e -c malvm fix", vm_id], check=True,
+    )
+
+
+@box.command(name="list")
+def ls():
+    """Prints all existing virtual machines."""
+    for vm_name, vagrantfile_path in get_existing_vagrantfiles_paths_iterable():
+        print_info(f"{vm_name} - {vagrantfile_path}")

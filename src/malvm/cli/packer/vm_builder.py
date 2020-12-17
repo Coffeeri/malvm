@@ -10,7 +10,8 @@ import inquirer  # type: ignore
 
 from ...utils.helper_methods import (
     get_data_dir,
-    add_vm_to_vagrant_files, get_vm_malvm_package_file,
+    add_vm_to_vagrant_files, get_vm_malvm_package_file, get_config_root,
+    get_vagrantfiles_folder_path, get_vm_ids_dict,
 )
 from ..utils import print_warning
 from .box_template import BoxConfiguration, PackerTemplate
@@ -77,8 +78,7 @@ def check_needed_files():
     "template", type=click.Choice(BOX_TEMPLATE_CHOICES),
 )
 @click.argument("name")
-@click.option("-o", "--output", show_default=True, default=str(Path.cwd().absolute()))
-def run(template, name, output: str):
+def run(template, name):
     """Run TEMPLATE as NAME in Virtualbox via Vagrant.
 
     TEMPLATE is the in `malvm box build` build template.
@@ -88,8 +88,10 @@ def run(template, name, output: str):
 
         $ malvm box run windows_10 win10-vm01
     """
-    if not Path(Path(output) / "Vagrantfile").exists():
-        click.echo(click.style("> Vagrantfile does not exist.", fg="red", ))
+    vagrantfile_path = get_vagrantfiles_folder_path() / name
+    if not (vagrantfile_path / "Vagrantfile").exists():
+        vagrantfile_path.mkdir(parents=True, exist_ok=True)
+        click.echo(click.style(f"> Vagrantfile for {name} does not exist. ✓", fg="green", ))
         click.echo(
             click.style(
                 f"> Spin up [{click.style(template, fg='yellow')}] VM "
@@ -97,29 +99,41 @@ def run(template, name, output: str):
                 fg="green",
             )
         )
+
         PackerTemplate(template, BOX_TEMPLATES[template]).setup_virtualmachine(
-            name, Path(output)
+            name, vagrantfile_path
         )
     else:
-        os.chdir(output)
+        os.chdir(vagrantfile_path)
         subprocess.run(
             ["vagrant", "up"], check=True,
         )
-    add_vm_to_vagrant_files(name, output)
+    add_vm_to_vagrant_files(name, vagrantfile_path)
 
+    vm_id = get_vm_ids_dict()[name]
     click.echo(
         click.style(
             f"VM {name} was started. "
             f"A snapshot of the ´clean-state´ was saved.\n"
             f"Don't shutdown the VM, prefer to use these commands:\n\n"
-            f"Stop VM:  `vagrant suspend`\n"
-            f"Start VM: `vagrant resume` or \n"
-            f"          `vagrant up`\n"
+            f"Stop VM:  `vagrant suspend {vm_id}`\n"
+            f"Start VM: `vagrant resume {vm_id}` or \n"
+            f"          `vagrant up {vm_id}`\n"
             f"Reset VM: `vagrant snapshot restore clean-state`\n\n"
             f"If you need to run `malvm fix` again in an elevated cmd, "
             f"please run on the host:\n"
-            f"$ vagrant winrm -e -c malvm fix"
+            f"$ vagrant winrm -e -c malvm fix {vm_id}"
             f"This will run the malvm in an shell with elevated privileges.",
             fg="green",
         )
+    )
+
+
+@box.command()
+@click.argument("name")
+def stop(name: str):
+    """Suspends virtual machine."""
+    vm_id = get_vm_ids_dict()[name]
+    subprocess.run(
+        ["vagrant", "suspend", vm_id], check=True,
     )

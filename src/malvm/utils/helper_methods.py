@@ -66,7 +66,7 @@ def add_vm_to_vagrant_files(name: str, vagrant_parent_path: str):
     edit_key_in_json_file(
         key=name,
         value=str(Path(vagrant_parent_path).absolute() / "Vagrantfile"),
-        json_file_path=get_vagrant_files_path(),
+        json_file_path=get_vagrant_files_json_path(),
     )
 
 
@@ -83,13 +83,17 @@ def edit_key_in_json_file(key: Any, value: Any, json_file_path: Path):
 
 
 def get_existing_vagrantfiles_paths_iterable() -> Iterable[Tuple[str, Path]]:
-    data = read_json_file(get_vagrant_files_path())
+    data = read_json_file(get_vagrant_files_json_path())
     for vm_name, vagrantfile_path in data.items():
         yield vm_name, vagrantfile_path
 
 
-def get_vagrant_files_path() -> Path:
+def get_vagrant_files_json_path() -> Path:
     return get_config_root() / "vagrant_files.json"
+
+
+def get_vagrantfiles_folder_path() -> Path:
+    return Path(get_config_root() / "vagrantfiles/")
 
 
 def __get_vagrant_global_status() -> List[Dict[str, str]]:
@@ -119,9 +123,12 @@ def __get_vagrant_global_status() -> List[Dict[str, str]]:
     return vm_collection
 
 
-def get_vm_ids() -> Iterable[str]:
+def get_vm_ids_dict() -> Dict[str, str]:
+    vms_with_id = {}
     for vm_status in get_vm_status():
-        yield vm_status["machine-id"]
+        vm_name = Path(vm_status["vagrant_file_path"]).parent.name
+        vms_with_id[vm_name] = vm_status["machine-id"]
+    return vms_with_id
 
 
 def get_vm_id_vagrantfile_path() -> Iterable[Tuple[str, str]]:

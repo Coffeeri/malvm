@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import click
@@ -9,13 +10,12 @@ import inquirer  # type: ignore
 
 from ...utils.helper_methods import (
     get_data_dir,
-    add_vm_to_vagrant_files,
+    add_vm_to_vagrant_files, get_vm_malvm_package_file,
 )
 from ..utils import print_warning
 from .box_template import BoxConfiguration, PackerTemplate
 
 PACKER_PATH = get_data_dir() / "packer"
-
 
 WIN_10_CONFIG = BoxConfiguration(
     packer_template_path=(PACKER_PATH / "windows_10.json"),
@@ -40,6 +40,7 @@ def box():
 @click.argument("template", type=click.Choice(BOX_TEMPLATE_CHOICES), required=False)
 def build(template: str):
     """Builds a Malbox template."""
+    check_needed_files()
     print_warning("Note: Currently only Windows 10 box implemented.")
     if not template:
         questions = [
@@ -63,6 +64,14 @@ def build(template: str):
     packer_template.add_to_vagrant()
 
 
+def check_needed_files():
+    if not get_vm_malvm_package_file().exists():
+        print("Error: Malvm.tar.gz was not found.\n"
+              "Please consider reinstalling with:\n"
+              "Run `malvm clean` and `source bootstrap.sh`")
+        sys.exit(1)
+
+
 @box.command()
 @click.argument(
     "template", type=click.Choice(BOX_TEMPLATE_CHOICES),
@@ -80,7 +89,7 @@ def run(template, name, output: str):
         $ malvm box run windows_10 win10-vm01
     """
     if not Path(Path(output) / "Vagrantfile").exists():
-        click.echo(click.style("> Vagrantfile does not exist.", fg="red",))
+        click.echo(click.style("> Vagrantfile does not exist.", fg="red", ))
         click.echo(
             click.style(
                 f"> Spin up [{click.style(template, fg='yellow')}] VM "

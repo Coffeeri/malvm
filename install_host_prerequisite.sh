@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -Eeuo pipefail
 
 #INSTALL_PATH="/usr/bin/"
 INSTALL_PATH="$HOME/.local/bin/"
@@ -139,6 +140,12 @@ else
     echo "Packer not found. Attempting install.."
     install_packer
 fi
+
+
+# # install pyenv for python3
+# python3 -c "import sys;sys.exit(not(sys.version>'3.7'));"
+# PYTHON3_VIABLE_VERSION=$? # if 0 then yes if 1 then false
+# curl https://pyenv.run | bash
 
 
 exit $EXIT_CODE

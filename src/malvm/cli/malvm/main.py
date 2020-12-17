@@ -18,7 +18,8 @@ from ...utils.helper_methods import (
     get_config_root,
     get_existing_vagrantfiles_paths_iterable,
     remove_path_with_success,
-    get_vm_id_vagrantfile_path,
+    get_vm_id_vagrantfile_path, get_vagrantfiles_folder_path,
+    get_vagrant_files_json_path,
 )
 
 controller: Controller = Controller()
@@ -139,11 +140,12 @@ def clean(force: bool, soft: bool) -> None:
     if force:
         clean_malvm_data(clean_paths, soft)
     else:
-        click.echo("The following data will be deleted:")
-        for path in clean_paths:
-            click.echo(f"Path: {path.absolute()}")
+        if not soft:
+            click.echo("The following data will be deleted:")
+            for path in clean_paths:
+                click.echo(f"Path: {path.absolute()}")
 
-        click.echo("The ENTIRE VM and its Vagrantfile will be destroyed:")
+        click.echo("VMs and Vagrantfiles will be destroyed and removed:")
         for vm_name, vagrantfile in vagrantfile_paths:
             click.echo(f"{vm_name}: {vagrantfile}")
 
@@ -161,9 +163,15 @@ def delete_vagrant_boxes():
 
 def clean_malvm_data(clean_paths: List[Path], clean_soft: bool):
     destroy_virtual_machines()
+    delete_vagrantfiles_data()
     if not clean_soft:
         delete_vagrant_boxes()
         delete_malvm_data_paths(clean_paths)
+
+
+def delete_vagrantfiles_data():
+    remove_path_with_success(str(get_vagrant_files_json_path()))
+    remove_path_with_success(str(get_vagrantfiles_folder_path()))
 
 
 def delete_malvm_data_paths(clean_paths: List[Path]):

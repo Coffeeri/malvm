@@ -1,3 +1,4 @@
+"""This module contains the applications logger with its settings."""
 import logging
 from logging.handlers import RotatingFileHandler, SysLogHandler
 

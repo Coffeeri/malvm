@@ -7,7 +7,6 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, NamedTuple
 
-import click
 from ..malvm.utils import print_result
 from ..utils import print_info
 

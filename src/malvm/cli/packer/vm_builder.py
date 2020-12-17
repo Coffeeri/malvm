@@ -102,7 +102,6 @@ def run(template, name):
         )
     add_vm_to_vagrant_files(name, vagrantfile_path)
 
-    vm_id = get_vm_ids_dict()[name]
     print_info(
         f"VM {name} was started. "
         f"A snapshot of the ´clean-state´ was saved.\n"
@@ -151,7 +150,7 @@ def fix(name: str):
 
 
 @box.command(name="list")
-def ls():
+def list_boxes():
     """Prints all existing virtual machines."""
     for vm_name, vagrantfile_path in get_existing_vagrantfiles_paths_iterable():
         print_info(f"{vm_name} - {vagrantfile_path}")

@@ -8,7 +8,7 @@ logger = logging.getLogger("malvm")
 
 logger.setLevel(logging.DEBUG)
 file_handler = RotatingFileHandler(str(get_logfile_path() / "malvm.log"),
-                                   maxBytes=10000,
+                                   maxBytes=(1024*1024),
                                    backupCount=10)
 syslog_handler = SysLogHandler(address='/dev/log')
 

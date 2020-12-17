@@ -3,14 +3,12 @@
 import os
 import subprocess
 import sys
-from pathlib import Path
-
 import click
 import inquirer  # type: ignore
 
 from ...utils.helper_methods import (
     get_data_dir,
-    add_vm_to_vagrant_files, get_vm_malvm_package_file, get_config_root,
+    add_vm_to_vagrant_files, get_vm_malvm_package_file,
     get_vagrantfiles_folder_path, get_vm_ids_dict,
 )
 from ..utils import print_warning
@@ -91,7 +89,9 @@ def run(template, name):
     vagrantfile_path = get_vagrantfiles_folder_path() / name
     if not (vagrantfile_path / "Vagrantfile").exists():
         vagrantfile_path.mkdir(parents=True, exist_ok=True)
-        click.echo(click.style(f"> Vagrantfile for {name} does not exist. ✓", fg="green", ))
+        click.echo(
+            click.style(f"> Vagrantfile for {name} does not exist. ✓",
+                        fg="green", ))
         click.echo(
             click.style(
                 f"> Spin up [{click.style(template, fg='yellow')}] VM "

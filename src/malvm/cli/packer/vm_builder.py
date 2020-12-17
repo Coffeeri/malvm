@@ -10,8 +10,9 @@ from ...utils.helper_methods import (
     get_data_dir,
     add_vm_to_vagrant_files, get_vm_malvm_package_file,
     get_vagrantfiles_folder_path, get_vm_ids_dict,
+    get_existing_vagrantfiles_paths_iterable,
 )
-from ..utils import print_warning
+from ..utils import print_warning, print_info, print_error
 from .box_template import BoxConfiguration, PackerTemplate
 
 PACKER_PATH = get_data_dir() / "packer"
@@ -51,11 +52,7 @@ def build(template: str):
         ]
         template = inquirer.prompt(questions)["box-template"]
     click.clear()
-    click.echo(
-        click.style(
-            f"> Building template {click.style(template, fg='yellow')}:", fg="green"
-        )
-    )
+    print_info(f"> Building template {click.style(template, fg='yellow')}...")
     template_config = BOX_TEMPLATES[template]
     packer_template = PackerTemplate(template, template_config)
     packer_template.configure()
@@ -65,9 +62,9 @@ def build(template: str):
 
 def check_needed_files():
     if not get_vm_malvm_package_file().exists():
-        print("Error: Malvm.tar.gz was not found.\n"
-              "Please consider reinstalling with:\n"
-              "Run `malvm clean` and `source bootstrap.sh`")
+        print_error("Error: Malvm.tar.gz was not found.\n"
+                    "Please consider reinstalling with:\n"
+                    "Run `malvm clean` and `source bootstrap.sh`")
         sys.exit(1)
 
 
@@ -89,15 +86,10 @@ def run(template, name):
     vagrantfile_path = get_vagrantfiles_folder_path() / name
     if not (vagrantfile_path / "Vagrantfile").exists():
         vagrantfile_path.mkdir(parents=True, exist_ok=True)
-        click.echo(
-            click.style(f"> Vagrantfile for {name} does not exist. ✓",
-                        fg="green", ))
-        click.echo(
-            click.style(
-                f"> Spin up [{click.style(template, fg='yellow')}] VM "
-                f"{click.style(name, fg='yellow')}...",
-                fg="green",
-            )
+        print_info("Vagrantfile for {name} does not exist. ✓")
+        print_info(
+            f"> Spin up [{click.style(template, fg='yellow')}] VM "
+            f"{click.style(name, fg='yellow')}..."
         )
 
         PackerTemplate(template, BOX_TEMPLATES[template]).setup_virtualmachine(
@@ -111,21 +103,17 @@ def run(template, name):
     add_vm_to_vagrant_files(name, vagrantfile_path)
 
     vm_id = get_vm_ids_dict()[name]
-    click.echo(
-        click.style(
-            f"VM {name} was started. "
-            f"A snapshot of the ´clean-state´ was saved.\n"
-            f"Don't shutdown the VM, prefer to use these commands:\n\n"
-            f"Stop VM:  `vagrant suspend {vm_id}`\n"
-            f"Start VM: `vagrant resume {vm_id}` or \n"
-            f"          `vagrant up {vm_id}`\n"
-            f"Reset VM: `vagrant snapshot restore clean-state`\n\n"
-            f"If you need to run `malvm fix` again in an elevated cmd, "
-            f"please run on the host:\n"
-            f"$ vagrant winrm -e -c malvm fix {vm_id}"
-            f"This will run the malvm in an shell with elevated privileges.",
-            fg="green",
-        )
+    print_info(
+        f"VM {name} was started. "
+        f"A snapshot of the ´clean-state´ was saved.\n"
+        f"Don't shutdown the VM, prefer to use these commands:\n\n"
+        f"Stop VM:  `malvm box stop {name}`\n"
+        f"Start VM: `malvm box run {name}`\n"
+        f"Reset VM: `malvm box reset {name}`\n\n"
+        f"If you need to run `malvm fix` again in an elevated cmd, "
+        f"please run on the host:\n"
+        f"`malvm box fix {name}`"
+        f"This will run the malvm in an shell with elevated privileges."
     )
 
 

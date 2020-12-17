@@ -9,6 +9,7 @@ from typing import Dict, List, NamedTuple
 
 import click
 from ..malvm.utils import print_result
+from ..utils import print_info
 
 from ...controller.controller import Controller
 from ...utils.helper_methods import (
@@ -226,9 +227,7 @@ def run_pre_boot_fixes(vm_name: str):
         vm_name (str): Name of virtual machine in VirtualBox.
     """
     controller: Controller = Controller()
-    click.echo(
-        click.style("> Checking and fixing pre boot characteristics...", fg="yellow",)
-    )
+    print_info("> Checking and fixing pre boot characteristics...")
     environment = {"os": platform.system(), "vm_name": vm_name}
     for characteristic, return_status in controller.apply_pre_boot_fixes(environment):
         print_result(characteristic, return_status)

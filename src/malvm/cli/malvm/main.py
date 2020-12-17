@@ -6,7 +6,7 @@ from typing import Optional, List
 
 import click
 
-from ..utils import print_error
+from ..utils import print_error, print_warning, print_info
 from ...controller import Controller
 from .utils import (
     get_vm_name,
@@ -44,14 +44,9 @@ def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
     if not vm_name:
         vm_name = get_vm_name()
         if not vm_name:
-            click.echo(
-                click.style(
-                    "No vm was found in your environment.\n"
-                    "You can manually pass the vm-name with [-v VM_NAME].\n"
-                    "If this ran in the VM, this can be ignored.",
-                    fg="red",
-                )
-            )
+            print_warning("No vm was found in your environment.\n"
+                          "You can manually pass the vm-name with [-v VM_NAME].\n"
+                          "If this ran in the VM, this can be ignored.")
             sys.exit(0)
     print_pre_boot_fix_results(vm_name)
 
@@ -85,14 +80,9 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     if not vm_name:
         vm_name = get_vm_name()
         if not vm_name:
-            click.echo(
-                click.style(
-                    "No vm was found in your environment.\n"
-                    "You can manually pass the vm-name with [-v VM_NAME].\n"
-                    "If this ran in the VM, this can be ignored.",
-                    fg="red",
-                )
-            )
+            print_warning("No vm was found in your environment.\n"
+                          "You can manually pass the vm-name with [-v VM_NAME].\n"
+                          "If this ran in the VM, this can be ignored.")
             sys.exit(0)
     print_pre_boot_fix_results(vm_name)
 
@@ -101,7 +91,7 @@ def run_specific_fix(characteristic_slug):
     try:
         print_results(controller.apply_fix_get_results(characteristic_slug.upper()))
     except ValueError as error_value:
-        click.echo(click.style(str(error_value), fg="red"))
+        print_error(str(error_value))
 
 
 def run_all_fixes():
@@ -141,13 +131,13 @@ def clean(force: bool, soft: bool) -> None:
         clean_malvm_data(clean_paths, soft)
     else:
         if not soft:
-            click.echo("The following data will be deleted:")
+            print_info("The following data will be deleted:")
             for path in clean_paths:
-                click.echo(f"Path: {path.absolute()}")
+                print_info(f"Path: {path.absolute()}")
 
-        click.echo("VMs and Vagrantfiles will be destroyed and removed:")
+        print_info("VMs and Vagrantfiles will be destroyed and removed:")
         for vm_name, vagrantfile in vagrantfile_paths:
-            click.echo(f"{vm_name}: {vagrantfile}")
+            print_info(f"{vm_name}: {vagrantfile}")
 
         user_conformation = input("Sure? This cannot be reversed. [y/n]").lower()
         if user_conformation == "y":

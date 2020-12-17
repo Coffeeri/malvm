@@ -5,8 +5,7 @@ fgWhite=$(tput setaf 7)
 textReset=$(tput sgr0)
 echo "${fgYellow}"
 if [ ! -d "venv" ]; then
-    echo "${textBold}Setting up environment.."
-    echo "${fgWhite}"
+    echo "${textBold}Setting up environment..${fgWhite}"
     pip3 install virtualenv
     virtualenv -p python3.8 venv
     source venv/bin/activate
@@ -15,7 +14,7 @@ if [ ! -d "venv" ]; then
     python3 setup.py install
 else
     echo "${textBold}Environment already exists."
-    echo "${textBold}Activate environment.."
+    echo "Activate environment.."
 
 fi
 echo "${fgYellow}"

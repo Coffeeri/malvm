@@ -19,7 +19,7 @@ from ...utils.helper_methods import (
     get_existing_vagrantfiles_paths_iterable,
     remove_path_with_success,
     get_vm_id_vagrantfile_path, get_vagrantfiles_folder_path,
-    get_vagrant_files_json_path,
+    get_vagrant_files_json_path, get_vm_ids_dict,
 )
 
 controller: Controller = Controller()
@@ -179,3 +179,9 @@ def destroy_virtual_machine(vm_id: str):
     subprocess.run(
         ["vagrant", "destroy", "--force", vm_id], check=True,
     )
+
+
+def remove_vm_and_data(vm_name: str):
+    vm_id = get_vm_ids_dict()[vm_name]
+    destroy_virtual_machine(vm_id)
+    remove_path_with_success(str(get_vagrantfiles_folder_path() / vm_name))

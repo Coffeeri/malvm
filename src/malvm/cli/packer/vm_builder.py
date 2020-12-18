@@ -6,6 +6,7 @@ import sys
 import click
 import inquirer  # type: ignore
 
+from ..malvm.main import remove_vm_and_data
 from ...utils.helper_methods import (
     get_data_dir,
     add_vm_to_vagrant_files, get_vm_malvm_package_file,
@@ -137,6 +138,15 @@ def reset(name: str):
     subprocess.run(
         ["vagrant snapshot restore clean-state", vm_id], check=True,
     )
+
+
+@box.command()
+@click.argument("name")
+def remove(name: str):
+    """Removes virtual machine."""
+    print_info(f"Destroying VM {name}...",
+               command=f"malvm box remove {name}")
+    remove_vm_and_data(name)
 
 
 @box.command()

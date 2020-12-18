@@ -172,11 +172,11 @@ def list_boxes():
     """Prints all existing virtual machines."""
     vm_list = list(get_existing_vagrantfiles_paths_iterable())
     if vm_list:
-        print_info(f"List of virtual machines and vagrantfile path:",
-                   command=f"malvm box list")
+        print_info("List of virtual machines and vagrantfile path:",
+                   command="malvm box list")
     else:
-        print_info(f"No virtual machine setup yet.\n"
-                   f"Please create one with `malvm box run [template] [vm_name]`",
-                   command=f"malvm box list")
+        print_info("No virtual machine setup yet.\n"
+                   "Please create one with `malvm box run [template] [vm_name]`",
+                   command="malvm box list")
     for vm_name, vagrantfile_path in vm_list:
         print_info(f"{vm_name} - {vagrantfile_path}")

@@ -1,8 +1,8 @@
 """This module contains the applications logger with its settings."""
-from logging import getLogger, Formatter, DEBUG, Logger
+from logging import getLogger, Formatter, DEBUG
 from logging.handlers import RotatingFileHandler, SysLogHandler
 
-from .helper_methods import get_logfile_path, get_vagrantfiles_folder_path
+from .helper_methods import get_logfile_path
 
 logger = getLogger("malvm")
 

@@ -22,3 +22,9 @@ def print_warning(text: str) -> None:
 def print_error(text: str) -> None:
     click.secho(f"ERROR: {text}", fg="red")
     logger.error((click.unstyle(text)))
+
+
+def print_critical_error(text: str) -> None:
+    click.secho(f"ERROR: {text}", fg="red")
+    logger.critical((click.unstyle(text)))
+    sys.exit(1)

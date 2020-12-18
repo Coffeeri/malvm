@@ -1,13 +1,17 @@
 """This module contains helper methods related to the CLI."""
+import sys
+from typing import Optional
 
 import click
 
 from malvm.utils.logging import logger
 
 
-def print_info(text: str) -> None:
+def print_info(text: str, command: Optional[str] = "") -> None:
     click.secho(f"{text}")
-    logger.info(click.unstyle(text))
+    command_message = f"COMMAND: {command}\nOUTPUT: "
+    logger.debug(f"{command_message if command else ''}"
+                 f"{click.unstyle(text)}")
 
 
 def print_warning(text: str) -> None:

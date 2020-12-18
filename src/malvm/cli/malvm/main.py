@@ -131,7 +131,8 @@ def clean(force: bool, soft: bool) -> None:
         clean_malvm_data(clean_paths, soft)
     else:
         if not soft:
-            print_info("The following data will be deleted:")
+            print_info("The following data will be deleted:",
+                       command=f"malvm clean {'-f' if force else ''}")
             for path in clean_paths:
                 print_info(f"Path: {path.absolute()}")
 

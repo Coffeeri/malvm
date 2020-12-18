@@ -87,7 +87,8 @@ def run(template, name):
     vagrantfile_path = get_vagrantfiles_folder_path() / name
     if not (vagrantfile_path / "Vagrantfile").exists():
         vagrantfile_path.mkdir(parents=True, exist_ok=True)
-        print_info("Vagrantfile for {name} does not exist. ✓")
+        print_info("Vagrantfile for {name} does not exist. ✓",
+                   command=f"malvm box run {template} {name}")
         print_info(
             f"> Spin up [{click.style(template, fg='yellow')}] VM "
             f"{click.style(name, fg='yellow')}..."
@@ -122,6 +123,8 @@ def run(template, name):
 def stop(name: str):
     """Suspends virtual machine."""
     vm_id = get_vm_ids_dict()[name]
+    print_info(f"Suspending VM {name}...",
+               command=f"malvm box stop {name}")
     subprocess.run(
         ["vagrant", "suspend", vm_id], check=True,
     )
@@ -135,6 +138,8 @@ def reset(name: str):
     Resetting by restoring the `clean-state` snapshot.
     """
     vm_id = get_vm_ids_dict()[name]
+    print_info(f"Resetting VM {name}...",
+               command=f"malvm box reset {name}")
     subprocess.run(
         ["vagrant snapshot restore clean-state", vm_id], check=True,
     )
@@ -154,6 +159,8 @@ def remove(name: str):
 def fix(name: str):
     """Runs fixes on virtual machine."""
     vm_id = get_vm_ids_dict()[name]
+    print_info(f"Fixing characteristics on VM {name}...",
+               command=f"malvm box fix {name}")
     subprocess.run(
         ["vagrant winrm -e -c malvm fix", vm_id], check=True,
     )
@@ -162,5 +169,13 @@ def fix(name: str):
 @box.command(name="list")
 def list_boxes():
     """Prints all existing virtual machines."""
-    for vm_name, vagrantfile_path in get_existing_vagrantfiles_paths_iterable():
+    vm_list = list(get_existing_vagrantfiles_paths_iterable())
+    if vm_list:
+        print_info(f"List of virtual machines and vagrantfile path:",
+                   command=f"malvm box list")
+    else:
+        print_info(f"No virtual machine setup yet.\n"
+                   f"Please create one with `malvm box run [template] [vm_name]`",
+                   command=f"malvm box list")
+    for vm_name, vagrantfile_path in vm_list:
         print_info(f"{vm_name} - {vagrantfile_path}")

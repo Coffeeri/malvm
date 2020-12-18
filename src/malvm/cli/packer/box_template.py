@@ -5,6 +5,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
+from time import sleep
 from typing import Dict, List, NamedTuple
 
 from ..malvm.utils import print_result
@@ -174,7 +175,11 @@ end
         subprocess.run(
             ["vagrant", "halt"], check=True,
         )
+        print_info("Wait 3 seconds..")
+        sleep(3)
         run_pre_boot_fixes(vm_name)
+        print_info("Wait 3 seconds..")
+        sleep(3)
         subprocess.run(
             ["vagrant", "up"], check=True,
         )

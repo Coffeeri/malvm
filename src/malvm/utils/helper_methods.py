@@ -95,7 +95,10 @@ def get_existing_vagrantfiles_paths_iterable() -> Iterable[Tuple[str, Path]]:
 
 
 def get_vagrant_files_json_path() -> Path:
-    return get_config_root() / "vagrant_files.json"
+    path = get_config_root() / "vagrantfiles.json"
+    if not path.exists():
+        path.write_text("{}")
+    return path
 
 
 def get_vagrantfiles_folder_path() -> Path:

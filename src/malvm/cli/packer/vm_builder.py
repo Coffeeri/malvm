@@ -1,8 +1,9 @@
 """This module contains the CLI for creating sanitized windows virtual machines."""
-
+import logging
 import os
 import subprocess
 import sys
+
 import click
 import inquirer  # type: ignore
 
@@ -13,9 +14,10 @@ from ...utils.helper_methods import (
     get_vagrantfiles_folder_path, get_vm_ids_dict,
     get_existing_vagrantfiles_paths_iterable,
 )
-from ..utils import print_warning, print_info, print_error
+from ..utils import print_info
 from .box_template import BoxConfiguration, PackerTemplate
 
+log = logging.getLogger(__name__)
 PACKER_PATH = get_data_dir() / "packer"
 
 WIN_10_CONFIG = BoxConfiguration(
@@ -42,7 +44,7 @@ def box():
 def build(template: str):
     """Builds a Malbox template."""
     check_needed_files()
-    print_warning("Note: Currently only Windows 10 box implemented.")
+    log.warning("Currently only Windows 10 box implemented.")
     if not template:
         questions = [
             inquirer.List(
@@ -63,9 +65,9 @@ def build(template: str):
 
 def check_needed_files():
     if not get_vm_malvm_package_file().exists():
-        print_error("Error: Malvm.tar.gz was not found.\n"
-                    "Please consider reinstalling with:\n"
-                    "Run `malvm clean` and `source bootstrap.sh`")
+        log.error("Malvm.tar.gz was not found.\n"
+                  "Please consider reinstalling with:\n"
+                  "Run `malvm clean` and `source bootstrap.sh`")
         sys.exit(1)
 
 

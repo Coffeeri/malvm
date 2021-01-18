@@ -1,4 +1,5 @@
 """This module contians cli for the malvm core."""
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -6,7 +7,7 @@ from typing import Optional, List
 
 import click
 
-from ..utils import print_error, print_warning, print_info
+from ..utils import print_info
 from ...controller import Controller
 from .utils import (
     get_vm_name,
@@ -23,6 +24,7 @@ from ...utils.helper_methods import (
 )
 
 controller: Controller = Controller()
+log = logging.getLogger(__name__)
 
 
 @click.command()
@@ -44,9 +46,9 @@ def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
     if not vm_name:
         vm_name = get_vm_name()
         if not vm_name:
-            print_warning("No vm was found in your environment.\n"
-                          "You can manually pass the vm-name with [-v VM_NAME].\n"
-                          "If this ran in the VM, this can be ignored.")
+            log.warning("No vm was found in your environment.\n"
+                        "You can manually pass the vm-name with [-v VM_NAME].\n"
+                        "If this ran in the VM, this can be ignored.")
             sys.exit(0)
     print_pre_boot_fix_results(vm_name)
 
@@ -61,8 +63,7 @@ def run_specific_check(characteristic: str) -> None:
     try:
         print_results(controller.get_check_results(characteristic.upper()))
     except ValueError as error_value:
-        print_error(str(error_value))
-        sys.exit(1)
+        log.exception(error_value)
 
 
 @click.command()
@@ -80,9 +81,9 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     if not vm_name:
         vm_name = get_vm_name()
         if not vm_name:
-            print_warning("No vm was found in your environment.\n"
-                          "You can manually pass the vm-name with [-v VM_NAME].\n"
-                          "If this ran in the VM, this can be ignored.")
+            log.warning("No vm was found in your environment.\n"
+                        "You can manually pass the vm-name with [-v VM_NAME].\n"
+                        "If this ran in the VM, this can be ignored.")
             sys.exit(0)
     print_pre_boot_fix_results(vm_name)
 
@@ -91,7 +92,7 @@ def run_specific_fix(characteristic_slug):
     try:
         print_results(controller.apply_fix_get_results(characteristic_slug.upper()))
     except ValueError as error_value:
-        print_error(str(error_value))
+        log.exception(error_value)
 
 
 def run_all_fixes():

@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Optional, List, Iterator, Tuple
 
 import click
-from malvm.utils.logging import logger
 
 from ..utils import print_info
 from ...characteristics.abstract_characteristic import CharacteristicBase, CheckType
@@ -62,7 +61,6 @@ def print_pre_boot_check_results(vm_name: str):
 
 def print_characteristics(characteristic_list: List[CharacteristicBase]):
     for characteristic in characteristic_list:
-        logger.info("Command: Listing characteristics:")
         print_info(
             f"[{click.style(characteristic.slug, fg='yellow')}] "
             f"{characteristic.description}"

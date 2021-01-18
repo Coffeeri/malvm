@@ -1,4 +1,5 @@
 """Module containing a generic template with configuration for virtual machines."""
+import logging
 import os
 import platform
 import re
@@ -19,6 +20,7 @@ from ...utils.helper_methods import (
     read_json_file,
 )
 
+log = logging.getLogger()
 PACKER_FILE_DIR = get_data_dir() / "packer"
 
 
@@ -62,7 +64,7 @@ class PackerTemplate:
         self.configuration = configuration
         self.config_path = get_config_root() / f"data/{self.name}/"
         self.local_packer_template_path = (
-            self.config_path / self.configuration.packer_template_path.name
+                self.config_path / self.configuration.packer_template_path.name
         )
         self.configured = False
 
@@ -102,7 +104,7 @@ class PackerTemplate:
             "insert_password": self.configuration.password,
         }
         vagrantfile_template_path = (
-            self.config_path / f"vagrantfile-{self.name.lower()}.template"
+                self.config_path / f"vagrantfile-{self.name.lower()}.template"
         )
         replace_text_in_file(vagrantfile_template_path, vagrantfile_template_config)
 
@@ -115,6 +117,7 @@ class PackerTemplate:
         if not self.configured:
             raise RuntimeError("Box must be configured before build.")
         os.chdir(str(self.config_path.absolute()))
+        log.debug(f"Building box {str(self.local_packer_template_path.absolute())}")
         subprocess.run(
             [
                 "packer",
@@ -127,6 +130,9 @@ class PackerTemplate:
 
     def add_to_vagrant(self):
         """Adds box build by Packer to Vagrant environment."""
+        log.debug(
+            f"Add box {self.configuration.vagrant_box_name} at "
+            f"{str(self.config_path / f'{self.name}_virtualbox.box')} to Vagrant")
         subprocess.run(
             [
                 "vagrant",
@@ -169,23 +175,29 @@ end
             else str(vagrantfile_output.parent.absolute())
         )
         self.init_vagrantfile(vm_name)
+        log.debug(f"Starting first time VM {vm_name} with `vagrant up`.")
         subprocess.run(
             ["vagrant", "up"], check=True,
         )
+        log.debug(f"Shutting down VM {vm_name} with `vagrant halt`.")
         subprocess.run(
             ["vagrant", "halt"], check=True,
         )
         print_info("Wait 3 seconds..")
         sleep(3)
+        log.debug(f"Running pre boot fixes on VM {vm_name}.")
         run_pre_boot_fixes(vm_name)
         print_info("Wait 3 seconds..")
         sleep(3)
+        log.debug(f"Starting VM {vm_name} with `vagrant up`.")
         subprocess.run(
             ["vagrant", "up"], check=True,
         )
+        log.debug(f"Running malvm fix on {vm_name}.")
         subprocess.run(
             ["vagrant", "winrm", "-e", "-c", "malvm fix"], check=True,
         )
+        log.debug(f"Save clean-state snapshot for {vm_name}.")
         subprocess.run(
             ["vagrant", "snapshot", "save", "clean-state"], check=True,
         )

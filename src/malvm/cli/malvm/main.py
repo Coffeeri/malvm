@@ -24,7 +24,7 @@ from ...utils.helper_methods import (
 )
 
 controller: Controller = Controller()
-log = logging.getLogger(__name__)
+log = logging.getLogger()
 
 
 @click.command()

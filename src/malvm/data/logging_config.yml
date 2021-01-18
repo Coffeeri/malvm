@@ -1,7 +1,7 @@
 version: 1
 formatters:
   default:
-    format: '[%(asctime)s] (%(levelname)s:%(module)s@%(lineno)s) %(message)s'
+    format: '[%(asctime)s] (%(levelname)s:%(pathname)s%(module)s@%(lineno)s) %(message)s'
     datefmt: '%Y-%m-%d %H:%M:%S'
   console_error:
     format: 'ERROR: %(message)s'

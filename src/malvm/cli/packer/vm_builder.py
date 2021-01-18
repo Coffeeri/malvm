@@ -17,7 +17,7 @@ from ...utils.helper_methods import (
 from ..utils import print_info
 from .box_template import BoxConfiguration, PackerTemplate
 
-log = logging.getLogger(__name__)
+log = logging.getLogger()
 PACKER_PATH = get_data_dir() / "packer"
 
 WIN_10_CONFIG = BoxConfiguration(

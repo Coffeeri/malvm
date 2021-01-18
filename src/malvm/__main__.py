@@ -4,7 +4,7 @@ import sys
 import logging
 from malvm.cli.main import malvm
 
-log = logging.getLogger(__name__)
+log = logging.getLogger()
 
 
 def add_exception_logger():

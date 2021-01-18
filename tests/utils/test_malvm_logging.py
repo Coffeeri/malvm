@@ -17,7 +17,7 @@ import logging
 from malvm.utils.malvm_logging import setup_logging
 
 
-def test_logger(caplog):
-    setup_logging()
-    log = logging.getLogger(__name__)
-    log.error("test")
+# def test_logger(caplog):
+#     setup_logging()
+#     log = logging.getLogger(__name__)
+#     log.error("test")

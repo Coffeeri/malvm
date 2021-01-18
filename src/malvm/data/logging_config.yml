@@ -5,18 +5,11 @@ formatters:
     datefmt: '%Y-%m-%d %H:%M:%S'
   console_error:
     format: 'ERROR: %(message)s'
-  console_warn:
-    format: 'WARNING: %(message)s'
 handlers:
   console_error:
     class: logging.StreamHandler
     level: ERROR
     formatter: console_error
-    stream: ext://sys.stdout
-  console_warn:
-    class: logging.StreamHandler
-    level: WARN
-    formatter: console_warn
     stream: ext://sys.stdout
   logfile:
     class: logging.handlers.RotatingFileHandler
@@ -38,3 +31,4 @@ loggers:
 root:
   handlers: [ console_error, logfile, syslog ]
   level: DEBUG
+  propagate: True

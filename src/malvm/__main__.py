@@ -1,13 +1,15 @@
 """Malvm Entrypoint."""
 import sys
 
+import logging
 from malvm.cli.main import malvm
-from malvm.cli.utils import print_critical_error
+
+log = logging.getLogger(__name__)
 
 
 def add_exception_logger():
     def exception_handler(exctype, value, traceback):
-        print_critical_error(
+        log.exception(
             f"EXCEPTION: \n"
             f"TYPE: {exctype.__name__}\n"
             f"VALUE: {value}\n"

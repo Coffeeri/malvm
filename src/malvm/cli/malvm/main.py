@@ -135,7 +135,7 @@ def clean(force: bool, soft: bool) -> None:
             print_info("The following data will be deleted:",
                        command=f"malvm clean {'-f' if force else ''}")
             for path in clean_paths:
-                print_info(f"Path: {path.absolute()}")
+                print_info(f"Path: {path.absolute()}", command="clean()")
 
         print_info("VMs and Vagrantfiles will be destroyed and removed:")
         for vm_name, vagrantfile in vagrantfile_paths:

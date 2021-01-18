@@ -63,5 +63,4 @@ def print_characteristics(characteristic_list: List[CharacteristicBase]):
     for characteristic in characteristic_list:
         print_info(
             f"[{click.style(characteristic.slug, fg='yellow')}] "
-            f"{characteristic.description}"
-        )
+            f"{characteristic.description}", command="print_characteristics()")

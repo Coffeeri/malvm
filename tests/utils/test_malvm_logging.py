@@ -14,7 +14,7 @@
 #     assert expected_logger_name == actual_logger_name
 import logging
 
-from malvm.utils.malvm_logging import setup_logging
+# from malvm.utils.malvm_logging import setup_logging
 
 
 # def test_logger(caplog):

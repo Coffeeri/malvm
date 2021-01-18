@@ -1,0 +1,34 @@
+version: 1
+formatters:
+  default:
+    format: '[%(asctime)s] (%(levelname)s:%(pathname)s%(module)s@%(lineno)s) %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+  console_error:
+    format: 'ERROR: %(message)s'
+handlers:
+  console_error:
+    class: logging.StreamHandler
+    level: ERROR
+    formatter: console_error
+    stream: ext://sys.stdout
+  logfile:
+    class: logging.handlers.RotatingFileHandler
+    filename: /home/leander/.local/share/malvm/logs/malvm.log
+    maxBytes: 1048576 # 1024*1024 = 1 MB
+    backupCount: 10
+    level: DEBUG
+    formatter: default
+  syslog:
+    class: logging.handlers.SysLogHandler
+    address: /dev/log
+    formatter: default
+loggers:
+  testlogger:
+    level: DEBUG
+    propagate: True
+    handlers: [console_error, logfile, syslog]
+
+root:
+  handlers: [ console_error, logfile, syslog ]
+  level: DEBUG
+  propagate: True

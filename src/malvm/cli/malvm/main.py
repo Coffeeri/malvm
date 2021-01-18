@@ -1,4 +1,5 @@
 """This module contians cli for the malvm core."""
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -6,7 +7,7 @@ from typing import Optional, List
 
 import click
 
-from ..utils import print_error
+from ..utils import print_info
 from ...controller import Controller
 from .utils import (
     get_vm_name,
@@ -19,10 +20,11 @@ from ...utils.helper_methods import (
     get_existing_vagrantfiles_paths_iterable,
     remove_path_with_success,
     get_vm_id_vagrantfile_path, get_vagrantfiles_folder_path,
-    get_vagrant_files_json_path,
+    get_vagrant_files_json_path, get_vm_ids_dict,
 )
 
 controller: Controller = Controller()
+log = logging.getLogger()
 
 
 @click.command()
@@ -44,14 +46,9 @@ def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
     if not vm_name:
         vm_name = get_vm_name()
         if not vm_name:
-            click.echo(
-                click.style(
-                    "No vm was found in your environment.\n"
-                    "You can manually pass the vm-name with [-v VM_NAME].\n"
-                    "If this ran in the VM, this can be ignored.",
-                    fg="red",
-                )
-            )
+            log.warning("No vm was found in your environment.\n"
+                        "You can manually pass the vm-name with [-v VM_NAME].\n"
+                        "If this ran in the VM, this can be ignored.")
             sys.exit(0)
     print_pre_boot_fix_results(vm_name)
 
@@ -66,8 +63,7 @@ def run_specific_check(characteristic: str) -> None:
     try:
         print_results(controller.get_check_results(characteristic.upper()))
     except ValueError as error_value:
-        print_error(str(error_value))
-        sys.exit(1)
+        log.exception(error_value)
 
 
 @click.command()
@@ -85,14 +81,9 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     if not vm_name:
         vm_name = get_vm_name()
         if not vm_name:
-            click.echo(
-                click.style(
-                    "No vm was found in your environment.\n"
-                    "You can manually pass the vm-name with [-v VM_NAME].\n"
-                    "If this ran in the VM, this can be ignored.",
-                    fg="red",
-                )
-            )
+            log.warning("No vm was found in your environment.\n"
+                        "You can manually pass the vm-name with [-v VM_NAME].\n"
+                        "If this ran in the VM, this can be ignored.")
             sys.exit(0)
     print_pre_boot_fix_results(vm_name)
 
@@ -101,7 +92,7 @@ def run_specific_fix(characteristic_slug):
     try:
         print_results(controller.apply_fix_get_results(characteristic_slug.upper()))
     except ValueError as error_value:
-        click.echo(click.style(str(error_value), fg="red"))
+        log.exception(error_value)
 
 
 def run_all_fixes():
@@ -141,13 +132,14 @@ def clean(force: bool, soft: bool) -> None:
         clean_malvm_data(clean_paths, soft)
     else:
         if not soft:
-            click.echo("The following data will be deleted:")
+            print_info("The following data will be deleted:",
+                       command=f"malvm clean {'-f' if force else ''}")
             for path in clean_paths:
-                click.echo(f"Path: {path.absolute()}")
+                print_info(f"Path: {path.absolute()}", command="clean()")
 
-        click.echo("VMs and Vagrantfiles will be destroyed and removed:")
+        print_info("VMs and Vagrantfiles will be destroyed and removed:")
         for vm_name, vagrantfile in vagrantfile_paths:
-            click.echo(f"{vm_name}: {vagrantfile}")
+            print_info(f"{vm_name}: {vagrantfile}")
 
         user_conformation = input("Sure? This cannot be reversed. [y/n]").lower()
         if user_conformation == "y":
@@ -189,3 +181,9 @@ def destroy_virtual_machine(vm_id: str):
     subprocess.run(
         ["vagrant", "destroy", "--force", vm_id], check=True,
     )
+
+
+def remove_vm_and_data(vm_name: str):
+    vm_id = get_vm_ids_dict()[vm_name]
+    destroy_virtual_machine(vm_id)
+    remove_path_with_success(str(get_vagrantfiles_folder_path() / vm_name))

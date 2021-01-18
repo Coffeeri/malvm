@@ -33,6 +33,12 @@ def get_config_root() -> Path:
     return config_path
 
 
+def get_logfile_path() -> Path:
+    path = get_config_root() / "logs"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def get_vm_malvm_package_file() -> Path:
     """Returns path for malvm package, used for malvm installation on vms."""
     return get_config_root() / "malvm.tar.gz"
@@ -89,7 +95,10 @@ def get_existing_vagrantfiles_paths_iterable() -> Iterable[Tuple[str, Path]]:
 
 
 def get_vagrant_files_json_path() -> Path:
-    return get_config_root() / "vagrant_files.json"
+    path = get_config_root() / "vagrantfiles.json"
+    if not path.exists():
+        path.write_text("{}")
+    return path
 
 
 def get_vagrantfiles_folder_path() -> Path:

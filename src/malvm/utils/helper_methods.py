@@ -76,19 +76,32 @@ def add_vm_to_vagrant_files(name: str, vagrant_parent_path: str):
     )
 
 
+def remove_vm_from_vagrant_files(vm_name: str):
+    remove_key_from_json_file(vm_name, get_vagrant_files_json_path())
+
+
 def edit_key_in_json_file(key: Any, value: Any, json_file_path: Path):
     if json_file_path.exists():
-        with json_file_path.open() as file:
-            data = json.load(file)
+        with json_file_path.open() as opened_file:
+            data = json.load(opened_file)
     else:
         json_file_path.touch()
         data = {}
     data[key] = value
-    with json_file_path.open(mode="w") as file:
-        json.dump(data, file)
+    with json_file_path.open(mode="w") as opened_file:
+        json.dump(data, opened_file)
 
 
-def get_existing_vagrantfiles_paths_iterable() -> Iterable[Tuple[str, Path]]:
+def remove_key_from_json_file(key: Any, json_file_path: Path):
+    if json_file_path.exists():
+        with json_file_path.open() as opened_file:
+            data = json.load(opened_file)
+        data.pop(key)
+        with json_file_path.open(mode="w") as opened_file:
+            json.dump(data, opened_file)
+
+
+def get_existing_vagrant_files_paths_iterable() -> Iterable[Tuple[str, Path]]:
     data = read_json_file(get_vagrant_files_json_path())
     for vm_name, vagrantfile_path in data.items():
         yield vm_name, vagrantfile_path
@@ -101,7 +114,7 @@ def get_vagrant_files_json_path() -> Path:
     return path
 
 
-def get_vagrantfiles_folder_path() -> Path:
+def get_vagrant_files_folder_path() -> Path:
     return Path(get_config_root() / "vagrantfiles/")
 
 
@@ -147,7 +160,7 @@ def get_vm_id_vagrantfile_path() -> Iterable[Tuple[str, str]]:
 
 def get_vm_status() -> List[Dict[str, str]]:
     vagrant_file_paths = [
-        path for _, path in get_existing_vagrantfiles_paths_iterable()
+        path for _, path in get_existing_vagrant_files_paths_iterable()
     ]
     malvm_vm_status_purged = []
     for status in __get_vagrant_global_status():

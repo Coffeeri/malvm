@@ -17,10 +17,10 @@ from .utils import (
 )
 from ...utils.helper_methods import (
     get_config_root,
-    get_existing_vagrantfiles_paths_iterable,
+    get_existing_vagrant_files_paths_iterable,
     remove_path_with_success,
-    get_vm_id_vagrantfile_path, get_vagrantfiles_folder_path,
-    get_vagrant_files_json_path, get_vm_ids_dict,
+    get_vm_id_vagrantfile_path, get_vagrant_files_folder_path,
+    get_vagrant_files_json_path, get_vm_ids_dict, remove_vm_from_vagrant_files,
 )
 
 controller: Controller = Controller()
@@ -127,7 +127,7 @@ def clean(force: bool, soft: bool) -> None:
     clean_paths = [
         get_config_root(),
     ]
-    vagrantfile_paths = get_existing_vagrantfiles_paths_iterable()
+    vagrantfile_paths = get_existing_vagrant_files_paths_iterable()
     if force:
         clean_malvm_data(clean_paths, soft)
     else:
@@ -163,7 +163,7 @@ def clean_malvm_data(clean_paths: List[Path], clean_soft: bool):
 
 def delete_vagrantfiles_data():
     remove_path_with_success(str(get_vagrant_files_json_path()))
-    remove_path_with_success(str(get_vagrantfiles_folder_path()))
+    remove_path_with_success(str(get_vagrant_files_folder_path()))
 
 
 def delete_malvm_data_paths(clean_paths: List[Path]):
@@ -186,4 +186,5 @@ def destroy_virtual_machine(vm_id: str):
 def remove_vm_and_data(vm_name: str):
     vm_id = get_vm_ids_dict()[vm_name]
     destroy_virtual_machine(vm_id)
-    remove_path_with_success(str(get_vagrantfiles_folder_path() / vm_name))
+    remove_path_with_success(str(get_vagrant_files_folder_path() / vm_name))
+    remove_vm_from_vagrant_files(vm_name)

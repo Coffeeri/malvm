@@ -11,8 +11,8 @@ from ..malvm.main import remove_vm_and_data
 from ...utils.helper_methods import (
     get_data_dir,
     add_vm_to_vagrant_files, get_vm_malvm_package_file,
-    get_vagrantfiles_folder_path, get_vm_ids_dict,
-    get_existing_vagrantfiles_paths_iterable,
+    get_vagrant_files_folder_path, get_vm_ids_dict,
+    get_existing_vagrant_files_paths_iterable,
 )
 from ..utils import print_info
 from .box_template import BoxConfiguration, PackerTemplate
@@ -86,7 +86,7 @@ def run(template, name):
 
         $ malvm box run windows_10 win10-vm01
     """
-    vagrantfile_path = get_vagrantfiles_folder_path() / name
+    vagrantfile_path = get_vagrant_files_folder_path() / name
     if not (vagrantfile_path / "Vagrantfile").exists():
         vagrantfile_path.mkdir(parents=True, exist_ok=True)
         print_info("Vagrantfile for {name} does not exist. ✓",
@@ -172,7 +172,7 @@ def fix(name: str):
 @box.command(name="list")
 def list_boxes():
     """Prints all existing virtual machines."""
-    vm_list = list(get_existing_vagrantfiles_paths_iterable())
+    vm_list = list(get_existing_vagrant_files_paths_iterable())
     if vm_list:
         print_info("List of virtual machines and vagrantfile path:",
                    command="malvm box list")

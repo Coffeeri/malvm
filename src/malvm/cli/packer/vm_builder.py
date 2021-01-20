@@ -144,7 +144,7 @@ def reset(name: str):
     print_info(f"Resetting VM {name}...",
                command=f"malvm box reset {name}")
     subprocess.run(
-        ["vagrant snapshot restore clean-state", vm_id], check=True,
+        ["vagrant", "snapshot", "restore", vm_id, "clean-state"], check=True,
     )
 
 

@@ -21,13 +21,13 @@ virtual_machines:
   default:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: []
     pip_applications: []
   fkieVM:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: [git]
     pip_applications: [black, pytest]
 """
@@ -47,7 +47,7 @@ virtual_machines:
   fkieVM:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: []
     pip_applications: []
 """
@@ -79,13 +79,13 @@ virtual_machines:
   default:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: []
     pip_applications: []
   fkieVM:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: []
     pip_applications: []
 """
@@ -104,13 +104,13 @@ virtual_machines:
   default:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: []
     pip_applications: []
   fkieVM:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: []
     pip_applications: []
 """
@@ -128,13 +128,13 @@ virtual_machines:
   default:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: []
     pip_applications: []
   fkieVM:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: [git]
     pip_applications: [black, pytest]
 """
@@ -151,13 +151,13 @@ virtual_machines:
   default:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: []
     pip_applications: []
   fkieVM:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: [git]
     pip_applications: [black, pytest]
 """
@@ -171,13 +171,13 @@ virtual_machines:
   default:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: []
     pip_applications: []
   fkieVM:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: [git]
     pip_applications: [black, pytest]
 """
@@ -197,13 +197,13 @@ virtual_machines:
   default:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: []
     pip_applications: []
   fkieVM:
     base_image: malvm-other-image
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: [git]
     pip_applications: [black, pytest]
 """

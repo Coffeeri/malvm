@@ -6,7 +6,7 @@ import sys
 
 import click
 import inquirer  # type: ignore
-from malvm.controller.config_loader import BaseImageSettings, BaseImagesType
+from malvm.controller.config_loader import BaseImagesType
 
 from ..malvm.main import remove_vm_and_data
 from ...controller import Controller

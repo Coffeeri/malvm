@@ -148,11 +148,12 @@ class PackerTemplate:
         """Initialize Vagrantfile for virtual machine."""
         virtual_machines = Controller().configuration.virtual_machines
         vm_settings = virtual_machines.get(vm_name, virtual_machines["default"])
+        log.debug(f"Initialize Vagrantfile for {vm_name} with settings {vm_settings}")
         subprocess.run(
             ["vagrant", "init", self.configuration.vagrant_box_name], check=True,
         )
 
-        ignore_vbguest_additions = f"""
+        modified_vagrantfile_tail = f"""
    config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     vb.gui = true
@@ -163,7 +164,7 @@ class PackerTemplate:
   config.vbguest.auto_update = false
 end
         """
-        edit_last_line_of_text(Path("Vagrantfile"), ignore_vbguest_additions)
+        edit_last_line_of_text(Path("Vagrantfile"), modified_vagrantfile_tail)
 
     def setup_virtualmachine(self, vm_name: str, vagrantfile_output: Path = Path.cwd()):
         """Setup and start virtual machine with vagrant.

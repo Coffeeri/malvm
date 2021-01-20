@@ -12,6 +12,6 @@ virtual_machines:
   default:
     base_image: malvm-win-10
     disk_size: 120GB
-    memory: 2048MB
+    memory: 2048
     choco_applications: [ ]
     pip_applications: [ ]

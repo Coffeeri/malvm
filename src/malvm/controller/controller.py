@@ -37,8 +37,8 @@ class Controller(metaclass=SingletonMeta):
         )
         self.characteristics: Dict[str, CharacteristicBase] = {}
         self.__load_and_add_characteristics()
-        setup_logging()
         self.configuration = get_malvm_configuration()
+        setup_logging(self.configuration)
 
     def __load_and_add_characteristics(self) -> None:
         for characteristic in load_characteristics_by_path(self.characteristics_path):

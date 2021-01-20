@@ -1,10 +1,9 @@
 """This module contains methods which load and verify the malvm configuration."""
 import logging
 import shutil
-import sys
 from logging.config import dictConfig
 from pathlib import Path
-from typing import NamedTuple, List, Dict, Any, Optional
+from typing import NamedTuple, List, Dict, Any, Optional, Tuple
 
 import yaml
 
@@ -19,12 +18,16 @@ class LoggingSettings(NamedTuple):
     rotating_file_path: Optional[Path]
 
 
-class VirtualMachineSettings(NamedTuple):
+class BaseImageSettings(NamedTuple):
+    template: str
     username: str
     password: str
     computer_name: str
     language_code: str
-    windows_box: str
+
+
+class VirtualMachineSettings(NamedTuple):
+    base_image: str
     disk_size: str
     memory: str
     choco_applications: Optional[List[str]]
@@ -32,12 +35,17 @@ class VirtualMachineSettings(NamedTuple):
 
 
 VirtualMachinesType = Dict[str, VirtualMachineSettings]
+BaseImagesType = Dict[str, BaseImageSettings]
 
 
 class MalvmConfigurationSettings(NamedTuple):
-    win10_vagrant_box_name: str
     logging_settings: LoggingSettings
+    base_images: BaseImagesType
     virtual_machines: VirtualMachinesType
+
+
+class MisconfigurationException(Exception):
+    pass
 
 
 CONFIG_PATH_SUFFIX_YAML = get_config_root() / "malvm_config.yaml"
@@ -45,10 +53,31 @@ CONFIG_PATH_SUFFIX_YML = get_config_root() / "malvm_config.yml"
 TEMPLATE_CONFIG_PATH_SUFFIX_YAML = get_data_dir() / "template_malvm_config.yml"
 
 
-def setup_logging():
-    with (get_data_dir() / "logging_config.yml").open() as read_config:
-        config = yaml.load(read_config, Loader=yaml.FullLoader)
-    dictConfig(config)
+def insert_user_conf_in_logging_conf(malvm_conf: MalvmConfigurationSettings, logging_conf: Dict) -> Dict:
+    modified_config = logging_conf.copy()
+    if malvm_conf.logging_settings.rotating_file_path:
+        rotating_file_path = str(malvm_conf.logging_settings.rotating_file_path.expanduser().absolute())
+        modified_config["handlers"]["logfile"]["filename"] = rotating_file_path
+    else:
+        modified_config["handlers"].pop("logfile")
+    if malvm_conf.logging_settings.syslog_address:
+        modified_config["handlers"]["syslog"]["address"] = str(malvm_conf.logging_settings.syslog_address)
+    else:
+        modified_config["handlers"].pop("syslog")
+    return modified_config
+
+
+def setup_logging(malvm_configuration: MalvmConfigurationSettings):
+    logging_file_content = get_logging_config_content()
+    logging_config = insert_user_conf_in_logging_conf(malvm_configuration, logging_file_content)
+    dictConfig(logging_config)
+
+
+def get_logging_config_content() -> Dict:
+    logging_config_path = get_data_dir() / "logging_config.yml"
+    with logging_config_path.open() as read_config:
+        logging_config = yaml.full_load(read_config)
+    return logging_config
 
 
 def get_malvm_configuration() -> MalvmConfigurationSettings:
@@ -57,7 +86,10 @@ def get_malvm_configuration() -> MalvmConfigurationSettings:
         log.error("No configfile `malvm_config.yml` was found. Default template configuration will be loaded instead.")
         yaml_config_path = load_default_template_configuration()
         print_info(f"Configfile {yaml_config_path.absolute()} was created and loaded.")
-    return parse_malvm_yaml_config(yaml_config_path)
+    if is_configuration_file_valid(yaml_config_path):
+        return parse_malvm_yaml_config(yaml_config_path)
+    raise MisconfigurationException("The configuration is wrong configured, please look at the template configuration "
+                                    "in the documentation.")
 
 
 def load_default_template_configuration() -> Path:
@@ -98,22 +130,35 @@ def is_configuration_file_valid(yaml_path: Path) -> bool:
 
 def parse_malvm_yaml_config(yaml_path: Path) -> MalvmConfigurationSettings:
     loaded_configuration = get_json_from_yaml_file(yaml_path)
-    settings_dict = loaded_configuration["settings"]
-    vm_settings_dict = loaded_configuration["virtual_machines"]
-    logging_settings_dict = settings_dict["logging"] if "logging" in settings_dict else None
+    base_image_settings_dict, logging_settings_dict, vm_settings_dict = fetch_settings_dict_or_none(
+        loaded_configuration)
 
-    win10_vagrant_box_name = settings_dict["win10_vagrant_box_name"] \
-        if "win10_vagrant_box_name" in settings_dict else "malvm-win-10"
+    base_images_settings_dict = parse_base_images_settings(base_image_settings_dict)
     logging_settings_object = parse_logging_settings(logging_settings_dict)
     virtual_machines_setting_dict = parse_vm_settings(vm_settings_dict)
 
+    check_base_image_mismatch(base_images_settings_dict, virtual_machines_setting_dict)
     malvm_configuration = MalvmConfigurationSettings(
-        win10_vagrant_box_name=win10_vagrant_box_name,
         logging_settings=logging_settings_object,
+        base_images=base_images_settings_dict,
         virtual_machines=virtual_machines_setting_dict
     )
     log.debug(f"Parsed malvm config {malvm_configuration}")
     return malvm_configuration
+
+
+def check_base_image_mismatch(base_images_settings_dict, virtual_machines_setting_dict):
+    found_base_images = set(base_images_settings_dict.keys())
+    found_vm_used_base_images = set([vm.base_image for vm in virtual_machines_setting_dict.values()])
+    if not found_vm_used_base_images.issubset(found_base_images):
+        raise KeyError("The base images do not match the ones, used in virtual machine settings.")
+
+
+def fetch_settings_dict_or_none(loaded_configuration) -> Tuple[Dict[str, str], Dict[str, str], Dict[str, str]]:
+    logging_settings_dict = loaded_configuration["logging"] if "logging" in loaded_configuration else None
+    base_image_settings_dict = loaded_configuration["base_images"] if "base_images" in loaded_configuration else None
+    vm_settings_dict = loaded_configuration["virtual_machines"] if "virtual_machines" in loaded_configuration else None
+    return base_image_settings_dict, logging_settings_dict, vm_settings_dict
 
 
 def parse_logging_settings(logging_settings_dict: Optional[Dict]) -> LoggingSettings:
@@ -126,16 +171,26 @@ def parse_logging_settings(logging_settings_dict: Optional[Dict]) -> LoggingSett
     return LoggingSettings(syslog_address=syslog_address, rotating_file_path=rotating_file_path)
 
 
+def parse_base_images_settings(base_image_settings_dict: Optional[Dict]) -> BaseImagesType:
+    if not base_image_settings_dict:
+        log.exception("No base image was configured.")
+        raise KeyError("No base image was configured.")
+    base_images_dict = {base_image_name: BaseImageSettings(
+        template=base_image["template"],
+        username=base_image["username"],
+        password=base_image["password"],
+        computer_name=base_image["computer_name"],
+        language_code=base_image["language_code"],
+    ) for base_image_name, base_image in base_image_settings_dict.items()}
+    return base_images_dict
+
+
 def parse_vm_settings(vm_settings_dict: Optional[Dict]) -> VirtualMachinesType:
     if not vm_settings_dict:
         return {}
     virtual_machines_setting_dict = {
         vm_name: VirtualMachineSettings(
-            username=vm_setting["username"],
-            password=vm_setting["password"],
-            computer_name=vm_setting["computer_name"],
-            language_code=vm_setting["language_code"],
-            windows_box=vm_setting["windows_box"],
+            base_image=vm_setting["base_image"],
             disk_size=vm_setting["disk_size"],
             memory=vm_setting["memory"],
             choco_applications=vm_setting["choco_applications"],

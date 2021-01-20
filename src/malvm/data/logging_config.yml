@@ -13,14 +13,14 @@ handlers:
     stream: ext://sys.stdout
   logfile:
     class: logging.handlers.RotatingFileHandler
-    filename: /home/leander/.local/share/malvm/logs/malvm.log
+    filename: somepath
     maxBytes: 1048576 # 1024*1024 = 1 MB
     backupCount: 10
     level: DEBUG
     formatter: default
   syslog:
     class: logging.handlers.SysLogHandler
-    address: /dev/log
+    address: someaddress
     formatter: default
 loggers:
   testlogger:

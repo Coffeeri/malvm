@@ -1,15 +1,4 @@
 """This module contains the applications logger with its settings."""
-from logging.config import dictConfig
-
-import yaml
-from .helper_methods import get_data_dir
-
-
-def setup_logging():
-    with (get_data_dir() / "logging_config.yml").open() as read_config:
-        config = yaml.load(read_config, Loader=yaml.FullLoader)
-
-    dictConfig(config)
 
 # def logger(logger_name: Optional[str] = None) -> Logger:
 #     if not logger_name:

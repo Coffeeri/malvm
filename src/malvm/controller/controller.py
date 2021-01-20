@@ -11,6 +11,7 @@ from importlib import import_module
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Iterator
 
+from .config_loader import setup_logging, get_malvm_configuration
 from ..characteristics.abstract_characteristic import (
     CharacteristicBase,
     CheckResult,
@@ -36,6 +37,8 @@ class Controller(metaclass=SingletonMeta):
         )
         self.characteristics: Dict[str, CharacteristicBase] = {}
         self.__load_and_add_characteristics()
+        setup_logging()
+        self.configuration = get_malvm_configuration()
 
     def __load_and_add_characteristics(self) -> None:
         for characteristic in load_characteristics_by_path(self.characteristics_path):
@@ -84,7 +87,7 @@ class Controller(metaclass=SingletonMeta):
         )
 
     def __action_on_characteristic_with_results(
-        self, slug_searched: str, action: CharacteristicAction
+            self, slug_searched: str, action: CharacteristicAction
     ) -> CheckResult:
         characteristic = self.__get_all_characteristics_dict().get(slug_searched, None)
         if characteristic:
@@ -93,9 +96,9 @@ class Controller(metaclass=SingletonMeta):
             raise ValueError("Characteristic was not found.")
 
     def get_characteristic_list(
-        self,
-        include_sub_characteristics: bool = False,
-        selected_runtime: Optional[Runtime] = Runtime.DEFAULT,
+            self,
+            include_sub_characteristics: bool = False,
+            selected_runtime: Optional[Runtime] = Runtime.DEFAULT,
     ) -> List[CharacteristicBase]:
         if include_sub_characteristics:
             characteristics = self.__get_all_characteristics()
@@ -106,14 +109,14 @@ class Controller(metaclass=SingletonMeta):
             characteristic
             for characteristic in characteristics
             if (
-                (characteristic.attributes.runtime == selected_runtime)
-                or (selected_runtime is None)
+                    (characteristic.attributes.runtime == selected_runtime)
+                    or (selected_runtime is None)
             )
         ]
 
 
 def action_on_characteristic(
-    characteristic: CharacteristicBase, action: CharacteristicAction
+        characteristic: CharacteristicBase, action: CharacteristicAction
 ) -> CheckResult:
     if action == CharacteristicAction.CHECK:
         yield from characteristic.check()
@@ -129,16 +132,16 @@ def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
         for i in dir(imported_module):
             attribute = getattr(imported_module, i)
             if (
-                inspect.isclass(attribute)
-                and issubclass(attribute, Characteristic)
-                and attribute is not Characteristic
+                    inspect.isclass(attribute)
+                    and issubclass(attribute, Characteristic)
+                    and attribute is not Characteristic
             ):
                 setattr(sys.modules[__name__], name, attribute)
                 yield attribute()
 
 
 def get_sub_characteristics(
-    characteristic: CharacteristicBase,
+        characteristic: CharacteristicBase,
 ) -> Iterator[CharacteristicBase]:
     if characteristic.sub_characteristics:
         yield from characteristic.sub_characteristics.values()

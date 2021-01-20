@@ -1,0 +1,16 @@
+settings:
+  win10_vagrant_box_name: malvm-win-10
+  logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+virtual_machines:
+  default:
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+    windows_box: malvm-win-10
+    disk_size: 120GB
+    memory: 2048MB
+    choco_applications: [ ]
+    pip_applications: [ ]

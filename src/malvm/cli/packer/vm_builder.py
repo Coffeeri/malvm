@@ -6,8 +6,10 @@ import sys
 
 import click
 import inquirer  # type: ignore
+from malvm.controller.config_loader import BaseImageSettings, BaseImagesType
 
 from ..malvm.main import remove_vm_and_data
+from ...controller import Controller
 from ...utils.helper_methods import (
     get_data_dir,
     add_vm_to_vagrant_files, get_vm_malvm_package_file,
@@ -17,6 +19,7 @@ from ...utils.helper_methods import (
 from ..utils import print_info
 from .box_template import BoxConfiguration, PackerTemplate
 
+controller = Controller()
 log = logging.getLogger()
 PACKER_PATH = get_data_dir() / "packer"
 
@@ -34,16 +37,35 @@ BOX_TEMPLATES = {"windows_10": WIN_10_CONFIG}
 BOX_TEMPLATE_CHOICES = list(BOX_TEMPLATES.keys())
 
 
+def check_missing_base_images():
+    pass
+
+
 @click.group(chain=True)
 def box():
     """Handles Malboxes."""
 
 
+def get_box_config_by_base_image_name(base_image_name: str) -> BoxConfiguration:
+    base_images: BaseImagesType = controller.configuration.base_images
+    return BoxConfiguration(
+        packer_template_path=(PACKER_PATH / f"{base_images[base_image_name].template}.json"),
+        packer_box_name=f"{base_images[base_image_name].template}_virtualbox.box",
+        vagrant_box_name=base_image_name,
+        username=base_images[base_image_name].username,
+        password=base_images[base_image_name].password,
+        computer_name=base_images[base_image_name].computer_name,
+        language_code=base_images[base_image_name].language_code,
+    )
+
+
 @box.command()
 @click.argument("template", type=click.Choice(BOX_TEMPLATE_CHOICES), required=False)
-def build(template: str):
+@click.argument("base_image_name", default="malvm-win-10")
+def build(template: str, base_image_name: str):
     """Builds a Malbox template."""
     check_needed_files()
+    box_config = get_box_config_by_base_image_name(base_image_name)
     log.warning("Currently only Windows 10 box implemented.")
     if not template:
         questions = [
@@ -56,8 +78,8 @@ def build(template: str):
         template = inquirer.prompt(questions)["box-template"]
     click.clear()
     print_info(f"> Building template {click.style(template, fg='yellow')}...")
-    template_config = BOX_TEMPLATES[template]
-    packer_template = PackerTemplate(template, template_config)
+    log.debug(box_config)
+    packer_template = PackerTemplate(template, box_config)
     packer_template.configure()
     packer_template.build()
     packer_template.add_to_vagrant()

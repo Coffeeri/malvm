@@ -175,12 +175,16 @@ def parse_base_images_settings(base_image_settings_dict: Optional[Dict]) -> Base
         log.exception("No base image was configured.")
         raise KeyError("No base image was configured.")
     base_images_dict = {base_image_name: BaseImageSettings(
-        template=base_image["template"],
-        username=base_image["username"],
-        password=base_image["password"],
-        computer_name=base_image["computer_name"],
-        language_code=base_image["language_code"],
+        template=str(base_image["template"]),
+        username=str(base_image["username"]),
+        password=str(base_image["password"]),
+        computer_name=str(base_image["computer_name"]),
+        language_code=str(base_image["language_code"]),
     ) for base_image_name, base_image in base_image_settings_dict.items()}
+
+    for base_image in base_images_dict.values():
+        if base_image.template != "windows_10":
+            raise KeyError("Only Templates: windows_10 are supported at the moment.")
     return base_images_dict
 
 

@@ -146,6 +146,8 @@ class PackerTemplate:
 
     def init_vagrantfile(self, vm_name: str):
         """Initialize Vagrantfile for virtual machine."""
+        virtual_machines = Controller().configuration.virtual_machines
+        vm_settings = virtual_machines.get(vm_name, virtual_machines["default"])
         subprocess.run(
             ["vagrant", "init", self.configuration.vagrant_box_name], check=True,
         )
@@ -155,7 +157,7 @@ class PackerTemplate:
     # Display the VirtualBox GUI when booting the machine
     vb.gui = true
     # Customize the amount of memory on the VM:
-    vb.memory = "2048"
+    vb.memory = "{vm_settings.memory}"
     vb.name = "{vm_name}"
   end
   config.vbguest.auto_update = false

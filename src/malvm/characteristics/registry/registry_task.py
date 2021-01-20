@@ -3,6 +3,7 @@
 Classes:
     RegistryVBCharacteristic: Checks and Fixes registry entries referring to VirtualBox.
 """
+import logging
 import platform
 from enum import Enum
 from pathlib import Path
@@ -10,6 +11,8 @@ from typing import Dict, List, NamedTuple, Optional, Tuple, Union
 
 from ...utils.helper_methods import get_project_root, read_json_file
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
+
+log = logging.getLogger()
 
 try:
     # type: ignore
@@ -139,7 +142,7 @@ def remove_key(task: RegistryTask) -> None:
         try:
             delete_sub_key(key_base, key_path, arch_key)
         except OSError as exception:
-            print(exception)
+            log.exception(exception)
 
 
 def delete_sub_key(key0: int, current_key: str, arch_key: int = 0) -> None:

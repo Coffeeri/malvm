@@ -101,10 +101,9 @@ def load_default_template_configuration() -> Path:
 def get_malvm_configuration_file_path() -> Optional[Path]:
     if CONFIG_PATH_SUFFIX_YAML.exists():
         return CONFIG_PATH_SUFFIX_YAML
-    elif CONFIG_PATH_SUFFIX_YML.exists():
+    if CONFIG_PATH_SUFFIX_YML.exists():
         return CONFIG_PATH_SUFFIX_YML
-    else:
-        return None
+    return None
 
 
 def get_json_from_yaml_file(yaml_path: Path) -> Dict[str, Any]:
@@ -149,7 +148,7 @@ def parse_malvm_yaml_config(yaml_path: Path) -> MalvmConfigurationSettings:
 
 def check_base_image_mismatch(base_images_settings_dict, virtual_machines_setting_dict):
     found_base_images = set(base_images_settings_dict.keys())
-    found_vm_used_base_images = set([vm.base_image for vm in virtual_machines_setting_dict.values()])
+    found_vm_used_base_images = {vm.base_image for vm in virtual_machines_setting_dict.values()}
     if not found_vm_used_base_images.issubset(found_base_images):
         raise KeyError("The base images do not match the ones, used in virtual machine settings.")
 

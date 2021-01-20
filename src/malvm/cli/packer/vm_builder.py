@@ -111,7 +111,7 @@ def run(template, name):
     vagrantfile_path = get_vagrant_files_folder_path() / name
     if not (vagrantfile_path / "Vagrantfile").exists():
         vagrantfile_path.mkdir(parents=True, exist_ok=True)
-        print_info("Vagrantfile for {name} does not exist. ✓",
+        print_info(f"Vagrantfile for {name} does not exist. ✓",
                    command=f"malvm box run {template} {name}")
         print_info(
             f"> Spin up [{click.style(template, fg='yellow')}] VM "

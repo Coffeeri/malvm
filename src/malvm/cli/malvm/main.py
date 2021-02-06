@@ -146,6 +146,12 @@ def clean(force: bool, soft: bool) -> None:
             clean_malvm_data(clean_paths, soft)
 
 
+@click.command()
+@click.option("-f", "--force", type=bool, is_flag=True, default=False)
+def up(force: bool):
+    """Creates baseimages and virtual machines from configuration file."""
+
+
 def delete_vagrant_boxes():
     # CAN: only delete if box exists not in `vagrant box list --machine-readable`
     subprocess.run(

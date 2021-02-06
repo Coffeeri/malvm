@@ -11,7 +11,8 @@ from importlib import import_module
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Iterator
 
-from .config_loader import setup_logging, get_malvm_configuration
+from .config_loader import setup_logging, get_malvm_configuration, VirtualMachinesType, VirtualMachineSettings, \
+    filter_existing_vms_from_config
 from ..characteristics.abstract_characteristic import (
     CharacteristicBase,
     CheckResult,
@@ -113,6 +114,12 @@ class Controller(metaclass=SingletonMeta):
                     or (selected_runtime is None)
             )
         ]
+
+    def create_configured_vms(self):
+        vms_config = filter_existing_vms_from_config(self.configuration.virtual_machines)
+
+    def create_vm_by_config(self, vm_name: str, vm_config: VirtualMachineSettings):
+        ...
 
 
 def action_on_characteristic(

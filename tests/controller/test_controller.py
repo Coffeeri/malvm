@@ -157,32 +157,7 @@ def test_check_unknown_characteristic(example_controller):
         [*example_controller.get_check_results("random_slug")]
 
 
-# def test_nested_characteristics_run_check(
-#     fixture_test_controller, fixture_sub_characteristic_multi
-# ):
-#     fixture_test_controller.characteristics[
-#         fixture_sub_characteristic_multi.slug
-#     ] = fixture_sub_characteristic_multi
-#     fixture_test_controller.characteristics_with_sub_characteristics[
-#         fixture_sub_characteristic_multi.slug
-#     ] = fixture_sub_characteristic_multi
-#     fixture_test_controller.characteristics_with_sub_characteristics[
-#         list(fixture_sub_characteristic_multi.sub_characteristics.values())[0].slug
-#     ] = list(fixture_sub_characteristic_multi.sub_characteristics.values())[0]
-#
-#     assert isinstance(fixture_test_controller.get_all_checks_results(), Generator)
 
-#
-# @pytest.fixture
-# def fixture_sub_characteristic_multi() -> Characteristic:
-#     characteristic = Characteristic("SRC001", "Single Return Characteristic",)
-#     characteristic.add_sub_characteristic(
-#         LambdaCharacteristic(
-#             "SRC002",
-#             "Single Return Characteristic 2",
-#             "",
-#             lambda x: False,
-#             lambda x: True,
-#         )
-#     )
-#     return characteristic
+
+def test_create_create_configured_vms(example_controller):
+    ...

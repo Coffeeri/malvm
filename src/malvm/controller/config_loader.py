@@ -7,8 +7,8 @@ from typing import NamedTuple, List, Dict, Any, Optional, Tuple
 
 import yaml
 
-from malvm.cli.utils import print_info
-from malvm.utils.helper_methods import get_data_dir, get_config_root
+from ..cli.utils import print_info
+from ..utils.helper_methods import get_data_dir, get_config_root, get_vm_names_list
 
 log = logging.getLogger()
 
@@ -51,6 +51,11 @@ class MisconfigurationException(Exception):
 CONFIG_PATH_SUFFIX_YAML = get_config_root() / "malvm_config.yaml"
 CONFIG_PATH_SUFFIX_YML = get_config_root() / "malvm_config.yml"
 TEMPLATE_CONFIG_PATH_SUFFIX_YAML = get_data_dir() / "template_malvm_config.yml"
+
+
+def filter_existing_vms_from_config(vms_config: VirtualMachinesType) -> VirtualMachinesType:
+    existing_vms = get_vm_names_list()
+    return {vm_name: vm_config for vm_name, vm_config in vms_config.items() if vm_name not in existing_vms}
 
 
 def insert_user_conf_in_logging_conf(malvm_conf: MalvmConfigurationSettings, logging_conf: Dict) -> Dict:

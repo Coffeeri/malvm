@@ -1,7 +1,7 @@
 """This module is the entrypoint for the commandline."""
 import click
 
-from .malvm.main import check, fix, show, clean
+from .malvm.main import check, fix, show, clean, up
 from .packer.vm_builder import box
 
 
@@ -15,3 +15,4 @@ malvm.add_command(clean)
 malvm.add_command(check)
 malvm.add_command(fix)
 malvm.add_command(box)
+malvm.add_command(up)

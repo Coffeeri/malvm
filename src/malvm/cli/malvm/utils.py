@@ -1,7 +1,5 @@
 """This module contains helper methods for cli malvm-core."""
-import re
-from pathlib import Path
-from typing import Optional, List, Iterator, Tuple
+from typing import List, Iterator, Tuple
 
 import click
 

@@ -2,7 +2,7 @@
 import click
 
 from .malvm.main import check, fix, show, clean, up
-from .packer.vm_builder import box
+from .box.vm_builder import box
 
 
 @click.group()

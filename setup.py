@@ -46,6 +46,6 @@ setuptools.setup(
     entry_points={"console_scripts": ["malvm = malvm.__main__:main"]},
 )
 # Add malvm installation file to config folder
-# Needed for installing malvm on each virtual machine
+# Needed for installing malvm on each Virtual Machine
 for file in glob.glob(r"dist/malvm*.tar.gz"):
     shutil.copy(file, str((get_config_root() / "malvm.tar.gz").absolute()))

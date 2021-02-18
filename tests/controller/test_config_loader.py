@@ -255,13 +255,13 @@ def test_is_configuration_file_valid(tmp_path):
 def test_no_default_vm_defined(tmp_path, caplog):
     config_path = write_configuration(tmp_path, no_default_vm_malvm_config)
     assert is_configuration_file_valid(config_path) is False
-    assert "No default virtual machine occupancy was found" in caplog.text
+    assert "No default Virtual Machine occupancy was found" in caplog.text
 
 
 def test_no_vm_defined(tmp_path, caplog):
     config_path = write_configuration(tmp_path, no_vm_malvm_config)
     assert is_configuration_file_valid(config_path) is False
-    assert "No default virtual machine occupancy was found" in caplog.text
+    assert "No default Virtual Machine occupancy was found" in caplog.text
 
 
 def test_no_syslog_defined(tmp_path):

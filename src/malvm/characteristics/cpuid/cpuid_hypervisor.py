@@ -55,7 +55,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
         yield self, CheckType(self.description, is_fixed)
 
     def get_vm_name(self) -> Optional[str]:
-        """Returns the virtual machine name if set."""
+        """Returns the Virtual Machine name if set."""
         if "vm_name" not in self.environment:
             return None
         return self.environment["vm_name"]

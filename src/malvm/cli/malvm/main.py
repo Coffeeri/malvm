@@ -9,12 +9,10 @@ import click
 
 from ..utils import print_info
 from ...controller import Controller
-from .utils import (
-    get_vm_name,
-    print_pre_boot_fix_results,
-    print_characteristics,
-    print_results,
-)
+from .utils import (print_pre_boot_fix_results,
+                    print_characteristics,
+                    print_results,
+                    )
 from ...utils.helper_methods import (
     get_config_root,
     get_existing_vagrant_files_paths_iterable,
@@ -44,12 +42,10 @@ def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
 
     # Müssen wir Auge machen.
     if not vm_name:
-        vm_name = get_vm_name()
-        if not vm_name:
-            log.warning("No vm was found in your environment.\n"
-                        "You can manually pass the vm-name with [-v VM_NAME].\n"
-                        "If this ran in the VM, this can be ignored.")
-            sys.exit(0)
+        log.warning("No vm was found in your environment.\n"
+                    "You can manually pass the vm-name with [-v VM_NAME].\n"
+                    "If this ran in the VM, this can be ignored.")
+        sys.exit(0)
     print_pre_boot_fix_results(vm_name)
 
 
@@ -79,12 +75,10 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
 
     # Müssen wir Auge machen.
     if not vm_name:
-        vm_name = get_vm_name()
-        if not vm_name:
-            log.warning("No vm was found in your environment.\n"
-                        "You can manually pass the vm-name with [-v VM_NAME].\n"
-                        "If this ran in the VM, this can be ignored.")
-            sys.exit(0)
+        log.warning("No vm was found in your environment.\n"
+                    "You can manually pass the vm-name with [-v VM_NAME].\n"
+                    "If this ran in the VM, this can be ignored.")
+        sys.exit(0)
     print_pre_boot_fix_results(vm_name)
 
 

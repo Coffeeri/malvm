@@ -68,14 +68,6 @@ def check_path_not_exists(path: str) -> bool:
     return not Path(path).exists()
 
 
-def add_vm_to_vagrant_files(name: str, vagrant_parent_path: str):
-    edit_key_in_json_file(
-        key=name,
-        value=str(Path(vagrant_parent_path).absolute() / "Vagrantfile"),
-        json_file_path=get_vagrant_files_json_path(),
-    )
-
-
 def remove_vm_from_vagrant_files(vm_name: str):
     remove_key_from_json_file(vm_name, get_vagrant_files_json_path())
 
@@ -124,8 +116,7 @@ def __get_vagrant_global_status() -> List[Dict[str, str]]:
         stdout=subprocess.PIPE,
         check=True,
     )
-    result_decoded = result.stdout.decode("utf-8")
-    reader = csv.reader(result_decoded.split("\n"), delimiter=",")
+    reader = decode_vagrant_output(result)
     vm_collection = []
     current_vm = []
     for row in reader:
@@ -145,29 +136,21 @@ def __get_vagrant_global_status() -> List[Dict[str, str]]:
     return vm_collection
 
 
-def get_vm_ids_dict() -> Dict[str, str]:
-    vms_with_id = {}
-    for vm_status in get_vm_status():
-        vm_name = Path(vm_status["vagrant_file_path"]).parent.name
-        vms_with_id[vm_name] = vm_status["machine-id"]
-    return vms_with_id
+def get_vagrant_box_list() -> List[str]:
+    result = subprocess.run(
+        ["vagrant", "box", "list", "--machine-readable"],
+        stdout=subprocess.PIPE,
+        check=True,
+    )
+    reader = decode_vagrant_output(result)
+    base_images = []
+    for row in reader:
+        if len(row) == 4 and row[2] == "box-name":
+            base_images.append(row[3])
+    return base_images
 
 
-def get_vm_names_list() -> Iterable[str]:
-    return list(get_vm_ids_dict().keys())
-
-
-def get_vm_id_vagrantfile_path() -> Iterable[Tuple[str, str]]:
-    for vm_status in get_vm_status():
-        yield vm_status["machine-id"], vm_status["vagrant_file_path"]
-
-
-def get_vm_status() -> List[Dict[str, str]]:
-    vagrant_file_paths = [
-        path for _, path in get_existing_vagrant_files_paths_iterable()
-    ]
-    malvm_vm_status_purged = []
-    for status in __get_vagrant_global_status():
-        if status["vagrant_file_path"] in vagrant_file_paths:
-            malvm_vm_status_purged.append(status)
-    return malvm_vm_status_purged
+def decode_vagrant_output(result):
+    result_decoded = result.stdout.decode("utf-8")
+    reader = csv.reader(result_decoded.split("\n"), delimiter=",")
+    return reader

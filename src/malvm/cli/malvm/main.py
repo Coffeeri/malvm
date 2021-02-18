@@ -110,7 +110,7 @@ def show(show_all: bool) -> None:
 def clean(force: bool, soft: bool) -> None:
     """Removes all malvm data.
 
-    This includes virtual machines and their Vagrantfiles, packer cache..
+    This includes Virtual Machines and their Vagrantfiles, packer cache..
     This does not remove the malvm package itself.
     """
     clean_paths = [
@@ -138,4 +138,4 @@ def clean(force: bool, soft: bool) -> None:
 @click.command()
 @click.option("-f", "--force", type=bool, is_flag=True, default=False)
 def up(force: bool):
-    """Creates baseimages and virtual machines from configuration file."""
+    """Creates baseimages and Virtual Machines from configuration file."""

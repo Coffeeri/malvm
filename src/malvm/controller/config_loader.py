@@ -8,7 +8,7 @@ from typing import NamedTuple, List, Dict, Any, Optional, Tuple
 import yaml
 
 from ..cli.utils import print_info
-from ..utils.helper_methods import get_data_dir, get_config_root, get_vm_names_list
+from ..utils.helper_methods import get_data_dir, get_config_root
 
 log = logging.getLogger()
 
@@ -51,11 +51,6 @@ class MisconfigurationException(Exception):
 CONFIG_PATH_SUFFIX_YAML = get_config_root() / "malvm_config.yaml"
 CONFIG_PATH_SUFFIX_YML = get_config_root() / "malvm_config.yml"
 TEMPLATE_CONFIG_PATH_SUFFIX_YAML = get_data_dir() / "template_malvm_config.yml"
-
-
-def filter_existing_vms_from_config(vms_config: VirtualMachinesType) -> VirtualMachinesType:
-    existing_vms = get_vm_names_list()
-    return {vm_name: vm_config for vm_name, vm_config in vms_config.items() if vm_name not in existing_vms}
 
 
 def insert_user_conf_in_logging_conf(malvm_conf: MalvmConfigurationSettings, logging_conf: Dict) -> Dict:
@@ -126,7 +121,7 @@ def is_configuration_file_valid(yaml_path: Path) -> bool:
         log.exception("Configuration cannot be loaded.")
         return False
     if "default" not in malvm_config.virtual_machines:
-        log.error(f"No default virtual machine occupancy was found in configuration.\n"
+        log.error(f"No default Virtual Machine occupancy was found in configuration.\n"
                   f"File {yaml_path.absolute()}")
         return False
     return True
@@ -155,7 +150,7 @@ def check_base_image_mismatch(base_images_settings_dict, virtual_machines_settin
     found_base_images = set(base_images_settings_dict.keys())
     found_vm_used_base_images = {vm.base_image for vm in virtual_machines_setting_dict.values()}
     if not found_vm_used_base_images.issubset(found_base_images):
-        raise KeyError("The base images do not match the ones, used in virtual machine settings.")
+        raise KeyError("The base images do not match the ones, used in Virtual Machine settings.")
 
 
 def fetch_settings_dict_or_none(loaded_configuration) -> Tuple[Dict[str, str], Dict[str, str], Dict[str, str]]:

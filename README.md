@@ -1,7 +1,7 @@
 <div align="center">
 <img src="https://gitlab.com/uploads/-/system/project/avatar/18734431/computer.png" align="center" width="150" alt="Project icon">
 <h1>malvm</h1>
-<h4>Build non detectable virtual machines for maleware analysis.</h4>
+<h4>Build non detectable Virtual Machines for maleware analysis.</h4>
 <h4>We currently only support Linux!</h4>
 
 ![pipeline](https://gitlab.com/shk_fkie/analysevm/badges/master/pipeline.svg "Pipeline")
@@ -9,7 +9,7 @@
 
 
 The tool malvm is used to create sanitized virtual environments, such that a
-Maleware is not able to determine, if it's in a virtual machine or not.
+Maleware is not able to determine, if it's in a Virtual Machine or not.
 
 ## Getting Started
 ### Table of Content
@@ -80,21 +80,24 @@ We use two commands chained together.
 
 ```shell
 malvm box build windows_10
-malvm box run windows_10 malewareVM
+malvm box run malewareVM windows_10
 ```
 First `maleware box build windows_10` builds the Windows 10 image for Vagrant.
-Next `malvm box run windows_10 malewareVM` spins up a VirtualMachine instance of the previously created image.
+Next `malvm box run malewareVM windows_10` spins up a Virtual Machine instance of the 
+previously created image.
 
 Both commands can be chained into a single command:
 ```shell
-malvm box build windows_10 run windows_10 malewareVM
+malvm box build windows_10 run malewareVM windows_10
 ```
 
 ---
 
 ### Checks and Fixes 
 
-Malvm analyses its environment. It includes [Characteristics](https://gitlab.com/shk_fkie/analysevm/-/wikis/2.-Characteristics) which reveal the existence of being in a VM-environment.
+Malvm analyses its environment. It includes 
+[Characteristics](https://gitlab.com/shk_fkie/analysevm/-/wikis/2.-Characteristics) 
+which reveal the existence of being in a VM-environment.
 
 Those characteristics can be checked with:
 

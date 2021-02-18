@@ -7,8 +7,8 @@ from malvm.controller import config_loader
 from malvm.controller.config_loader import is_configuration_file_valid, \
     parse_malvm_yaml_config, get_malvm_configuration, TEMPLATE_CONFIG_PATH_SUFFIX_YAML, \
     get_malvm_configuration_file_path, setup_logging, get_logging_config_content, insert_user_conf_in_logging_conf, \
-    filter_existing_vms_from_config, MisconfigurationException
-from malvm.utils.helper_methods import get_vm_names_list
+    MisconfigurationException
+from malvm.utils.vm_managment import get_vm_names_list, filter_existing_vms_from_config
 import malvm.utils.helper_methods as helper_methods
 
 correct_malvm_config = """

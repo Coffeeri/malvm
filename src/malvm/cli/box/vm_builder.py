@@ -1,62 +1,26 @@
-"""This module contains the CLI for creating sanitized windows virtual machines."""
+"""This module contains the CLI for creating sanitized windows Virtual Machines."""
 import logging
-import os
 import subprocess
 import sys
 
 import click
 import inquirer  # type: ignore
-from malvm.controller.config_loader import BaseImagesType
 
-from ...utils.vm_managment import remove_vm_and_data
+from ...utils.vm_managment import BOX_TEMPLATE_CHOICES, get_vm_ids_dict
 from ...controller import Controller
 from ...utils.helper_methods import (
-    get_data_dir,
-    add_vm_to_vagrant_files, get_vm_malvm_package_file,
-    get_vagrant_files_folder_path, get_vm_ids_dict,
+    get_vm_malvm_package_file,
     get_existing_vagrant_files_paths_iterable,
 )
 from ..utils import print_info
-from malvm.utils.box_template import BoxConfiguration, PackerTemplate
 
 controller = Controller()
 log = logging.getLogger()
-PACKER_PATH = get_data_dir() / "packer"
-
-WIN_10_CONFIG = BoxConfiguration(
-    packer_template_path=(PACKER_PATH / "windows_10.json"),
-    packer_box_name="windows_10_virtualbox.box",
-    vagrant_box_name="malvm-win-10",
-    username="max",
-    password="123456",
-    computer_name="Computer",
-    language_code="de-De",
-)
-
-BOX_TEMPLATES = {"windows_10": WIN_10_CONFIG}
-BOX_TEMPLATE_CHOICES = list(BOX_TEMPLATES.keys())
-
-
-def check_missing_base_images():
-    pass
 
 
 @click.group(chain=True)
 def box():
     """Handles Malboxes."""
-
-
-def get_box_config_by_base_image_name(base_image_name: str) -> BoxConfiguration:
-    base_images: BaseImagesType = controller.configuration.base_images
-    return BoxConfiguration(
-        packer_template_path=(PACKER_PATH / f"{base_images[base_image_name].template}.json"),
-        packer_box_name=f"{base_images[base_image_name].template}_virtualbox.box",
-        vagrant_box_name=base_image_name,
-        username=base_images[base_image_name].username,
-        password=base_images[base_image_name].password,
-        computer_name=base_images[base_image_name].computer_name,
-        language_code=base_images[base_image_name].language_code,
-    )
 
 
 @box.command()
@@ -77,16 +41,8 @@ def build(template: str, base_image_name: str):
         template = inquirer.prompt(questions)["box-template"]
     click.clear()
     print_info(f"> Building template {click.style(template, fg='yellow')}...")
-    box_config = get_box_config_by_base_image_name(base_image_name)
-    build_base_image(box_config, template)
-
-
-def build_base_image(box_config: BoxConfiguration, template: str = "windows_10"):
-    log.debug(box_config)
-    packer_template = PackerTemplate(template, box_config)
-    packer_template.configure()
-    packer_template.build()
-    packer_template.add_to_vagrant()
+    box_config = controller.vm_manager.generate_box_config_by_base_image_name(base_image_name)
+    controller.vm_manager.build_base_image(template, box_config)
 
 
 def check_needed_files():
@@ -98,11 +54,11 @@ def check_needed_files():
 
 
 @box.command()
-@click.argument(
-    "template", type=click.Choice(BOX_TEMPLATE_CHOICES),
-)
 @click.argument("name")
-def run(template, name):
+@click.argument(
+    "base_image", type=click.Choice(BOX_TEMPLATE_CHOICES), required=False
+)
+def run(name, base_image):
     """Run TEMPLATE as NAME in Virtualbox via Vagrant.
 
     TEMPLATE is the in `malvm box build` build template.
@@ -110,27 +66,18 @@ def run(template, name):
 
     Examples:
 
-        $ malvm box run windows_10 win10-vm01
+        $ malvm box run win10-vm01 windows_10
     """
-    vagrantfile_path = get_vagrant_files_folder_path() / name
-    if not (vagrantfile_path / "Vagrantfile").exists():
-        vagrantfile_path.mkdir(parents=True, exist_ok=True)
-        print_info(f"Vagrantfile for {name} does not exist. ✓",
-                   command=f"malvm box run {template} {name}")
+
+    if base_image:
         print_info(
-            f"> Spin up [{click.style(template, fg='yellow')}] VM "
+            f"> Starting new [{click.style(base_image, fg='yellow')}] Virtual Machine "
             f"{click.style(name, fg='yellow')}..."
         )
-
-        PackerTemplate(template, BOX_TEMPLATES[template]).setup_virtualmachine(
-            name, vagrantfile_path
-        )
+        controller.vm_manager.build_vm(name, base_image)
     else:
-        os.chdir(vagrantfile_path)
-        subprocess.run(
-            ["vagrant", "up"], check=True,
-        )
-    add_vm_to_vagrant_files(name, vagrantfile_path)
+        print_info(f"Starting Virtual Machine {click.style(name, fg='yellow')}...")
+        controller.vm_manager.start_vm(name)
 
     print_info(
         f"VM {name} was started. "
@@ -150,61 +97,52 @@ def run(template, name):
 @box.command()
 @click.argument("name")
 def stop(name: str):
-    """Suspends virtual machine."""
-    vm_id = get_vm_ids_dict()[name]
+    """Suspends Virtual Machine."""
     print_info(f"Suspending VM {name}...",
                command=f"malvm box stop {name}")
-    subprocess.run(
-        ["vagrant", "suspend", vm_id], check=True,
-    )
+    controller.vm_manager.stop_vm(name)
 
 
 @box.command()
 @click.argument("name")
 def reset(name: str):
-    """Resets virtual machine.
+    """Resets Virtual Machine.
 
     Resetting by restoring the `clean-state` snapshot.
     """
-    vm_id = get_vm_ids_dict()[name]
     print_info(f"Resetting VM {name}...",
                command=f"malvm box reset {name}")
-    subprocess.run(
-        ["vagrant", "snapshot", "restore", vm_id, "clean-state"], check=True,
-    )
+    controller.vm_manager.reset_vm(name)
 
 
 @box.command()
 @click.argument("name")
 def remove(name: str):
-    """Removes virtual machine."""
+    """Removes Virtual Machine."""
     print_info(f"Destroying VM {name}...",
                command=f"malvm box remove {name}")
-    remove_vm_and_data(name)
+    controller.vm_manager.destroy_vm(name)
 
 
 @box.command()
 @click.argument("name")
 def fix(name: str):
-    """Runs fixes on virtual machine."""
-    vm_id = get_vm_ids_dict()[name]
+    """Runs fixes on Virtual Machine."""
     print_info(f"Fixing characteristics on VM {name}...",
                command=f"malvm box fix {name}")
-    subprocess.run(
-        ["vagrant winrm -e -c malvm fix", vm_id], check=True,
-    )
+    controller.vm_manager.fix_vm(name)
 
 
 @box.command(name="list")
 def list_boxes():
-    """Prints all existing virtual machines."""
-    vm_list = list(get_existing_vagrant_files_paths_iterable())
+    """Prints all existing Virtual Machines."""
+    vm_list = controller.vm_manager.get_virtual_machines_names_iter()
     if vm_list:
-        print_info("List of virtual machines and vagrantfile path:",
+        print_info("List of Virtual Machines:",
                    command="malvm box list")
+        for vm_name in vm_list:
+            print_info(f"{vm_name}")
     else:
-        print_info("No virtual machine setup yet.\n"
+        print_info("No Virtual Machine setup yet.\n"
                    "Please create one with `malvm box run [template] [vm_name]`",
                    command="malvm box list")
-    for vm_name, vagrantfile_path in vm_list:
-        print_info(f"{vm_name} - {vagrantfile_path}")

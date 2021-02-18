@@ -1,7 +1,6 @@
-"""Module containing a generic template with configuration for virtual machines."""
+"""Module containing a generic template with configuration for Virtual Machines."""
 import logging
 import os
-import platform
 import re
 import shutil
 import subprocess
@@ -9,16 +8,15 @@ from pathlib import Path
 from time import sleep
 from typing import Dict, List, NamedTuple
 
-from ..cli.malvm.utils import print_result
 from ..cli.utils import print_info
 
-from ..controller.controller import Controller
 from .helper_methods import (
     get_config_root,
     get_data_dir,
     get_vm_malvm_package_file,
     read_json_file,
 )
+from ..controller.config_loader import VirtualMachineSettings
 
 log = logging.getLogger()
 PACKER_FILE_DIR = get_data_dir() / "packer"
@@ -59,8 +57,8 @@ def edit_last_line_of_text(file: Path, text):
 class PackerTemplate:
     """VM template creation class for Packer."""
 
-    def __init__(self, name: str, configuration: BoxConfiguration):
-        self.name = name
+    def __init__(self, template: str, configuration: BoxConfiguration):
+        self.name = template
         self.configuration = configuration
         self.config_path = get_config_root() / f"data/{self.name}/"
         self.local_packer_template_path = (
@@ -144,10 +142,10 @@ class PackerTemplate:
             check=True,
         )
 
-    def init_vagrantfile(self, vm_name: str):
-        """Initialize Vagrantfile for virtual machine."""
-        virtual_machines = Controller().configuration.virtual_machines
-        vm_settings = virtual_machines.get(vm_name, virtual_machines["default"])
+    def init_vagrantfile(self, vm_name: str, vm_settings: VirtualMachineSettings):
+        """Initialize Vagrantfile for Virtual Machine."""
+        # virtual_machines = Controller().configuration.virtual_machines
+        # vm_settings = virtual_machines.get(vm_name, virtual_machines["default"])
         log.debug(f"Initialize Vagrantfile for {vm_name} with settings {vm_settings}")
         subprocess.run(
             ["vagrant", "init", self.configuration.vagrant_box_name], check=True,
@@ -165,45 +163,6 @@ class PackerTemplate:
 end
         """
         edit_last_line_of_text(Path("Vagrantfile"), modified_vagrantfile_tail)
-
-    def setup_virtualmachine(self, vm_name: str, vagrantfile_output: Path = Path.cwd()):
-        """Setup and start virtual machine with vagrant.
-
-        This method initializes the Vagrantfile, starts the virtual machine,
-        fixes all characteristics and saves a snapshot of the clean state.
-        """
-        os.chdir(
-            str(vagrantfile_output.absolute())
-            if vagrantfile_output.is_dir()
-            else str(vagrantfile_output.parent.absolute())
-        )
-        self.init_vagrantfile(vm_name)
-        log.debug(f"Starting first time VM {vm_name} with `vagrant up`.")
-        subprocess.run(
-            ["vagrant", "up"], check=True,
-        )
-        log.debug(f"Shutting down VM {vm_name} with `vagrant halt`.")
-        subprocess.run(
-            ["vagrant", "halt"], check=True,
-        )
-        print_info("Wait 3 seconds..")
-        sleep(3)
-        log.debug(f"Running pre boot fixes on VM {vm_name}.")
-        run_pre_boot_fixes(vm_name)
-        print_info("Wait 3 seconds..")
-        sleep(3)
-        log.debug(f"Starting VM {vm_name} with `vagrant up`.")
-        subprocess.run(
-            ["vagrant", "up"], check=True,
-        )
-        log.debug(f"Running malvm fix on {vm_name}.")
-        subprocess.run(
-            ["vagrant", "winrm", "-e", "-c", "malvm fix"], check=True,
-        )
-        log.debug(f"Save clean-state snapshot for {vm_name}.")
-        subprocess.run(
-            ["vagrant", "snapshot", "save", "clean-state"], check=True,
-        )
 
     def copy_necessary_files(self):
         """Copies all data and configuration files for Packer and Vagrant."""
@@ -238,15 +197,14 @@ end
         autounattend_filepath = json_text["variables"]["autounattend"]
         return Path(self.config_path / autounattend_filepath)
 
-
-def run_pre_boot_fixes(vm_name: str):
-    """Runs fixes of characteristics with RUNTIME PRE_BOOT.
-
-    Args:
-        vm_name (str): Name of virtual machine in VirtualBox.
-    """
-    controller: Controller = Controller()
-    print_info("> Checking and fixing pre boot characteristics...")
-    environment = {"os": platform.system(), "vm_name": vm_name}
-    for characteristic, return_status in controller.apply_pre_boot_fixes(environment):
-        print_result(characteristic, return_status)
+# def run_pre_boot_fixes(vm_name: str):
+#     """Runs fixes of characteristics with RUNTIME PRE_BOOT.
+#
+#     Args:
+#         vm_name (str): Name of Virtual Machine in VirtualBox.
+#     """
+#     print_info("> Checking and fixing pre boot characteristics...")
+#     environment = {"os": platform.system(), "vm_name": vm_name}
+#     for characteristic, return_status in controller.apply_pre_boot_fixes(environment):
+#         print_result(characteristic, return_status)
+# TODO

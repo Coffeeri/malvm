@@ -1,9 +1,7 @@
 """This module contians cli for the malvm core."""
 import logging
-import subprocess
 import sys
-from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 
 import click
 
@@ -16,9 +14,6 @@ from .utils import (print_pre_boot_fix_results,
 from ...utils.helper_methods import (
     get_config_root,
     get_existing_vagrant_files_paths_iterable,
-    remove_path_with_success,
-    get_vm_id_vagrantfile_path, get_vagrant_files_folder_path,
-    get_vagrant_files_json_path, get_vm_ids_dict, remove_vm_from_vagrant_files,
 )
 
 controller: Controller = Controller()
@@ -123,7 +118,7 @@ def clean(force: bool, soft: bool) -> None:
     ]
     vagrantfile_paths = get_existing_vagrant_files_paths_iterable()
     if force:
-        clean_malvm_data(clean_paths, soft)
+        controller.clean_malvm_data(clean_paths, soft)
     else:
         if not soft:
             print_info("The following data will be deleted:",
@@ -137,54 +132,10 @@ def clean(force: bool, soft: bool) -> None:
 
         user_conformation = input("Sure? This cannot be reversed. [y/n]").lower()
         if user_conformation == "y":
-            clean_malvm_data(clean_paths, soft)
+            controller.clean_malvm_data(clean_paths, soft)
 
 
 @click.command()
 @click.option("-f", "--force", type=bool, is_flag=True, default=False)
 def up(force: bool):
     """Creates baseimages and virtual machines from configuration file."""
-
-
-def delete_vagrant_boxes():
-    # CAN: only delete if box exists not in `vagrant box list --machine-readable`
-    subprocess.run(
-        ["vagrant", "box", "remove", "malvm-win-10", "--all"], check=True,
-    )
-
-
-def clean_malvm_data(clean_paths: List[Path], clean_soft: bool):
-    destroy_virtual_machines()
-    delete_vagrantfiles_data()
-    if not clean_soft:
-        delete_vagrant_boxes()
-        delete_malvm_data_paths(clean_paths)
-
-
-def delete_vagrantfiles_data():
-    remove_path_with_success(str(get_vagrant_files_json_path()))
-    remove_path_with_success(str(get_vagrant_files_folder_path()))
-
-
-def delete_malvm_data_paths(clean_paths: List[Path]):
-    for path in clean_paths:
-        remove_path_with_success(str(path.absolute()))
-
-
-def destroy_virtual_machines():
-    for vm_id, vagrantfile_path in get_vm_id_vagrantfile_path():
-        destroy_virtual_machine(vm_id)
-        remove_path_with_success(vagrantfile_path)
-
-
-def destroy_virtual_machine(vm_id: str):
-    subprocess.run(
-        ["vagrant", "destroy", "--force", vm_id], check=True,
-    )
-
-
-def remove_vm_and_data(vm_name: str):
-    vm_id = get_vm_ids_dict()[vm_name]
-    destroy_virtual_machine(vm_id)
-    remove_path_with_success(str(get_vagrant_files_folder_path() / vm_name))
-    remove_vm_from_vagrant_files(vm_name)

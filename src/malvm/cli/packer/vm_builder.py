@@ -8,7 +8,7 @@ import click
 import inquirer  # type: ignore
 from malvm.controller.config_loader import BaseImagesType
 
-from ..malvm.main import remove_vm_and_data
+from ...utils.vm_managment import remove_vm_and_data
 from ...controller import Controller
 from ...utils.helper_methods import (
     get_data_dir,

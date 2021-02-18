@@ -20,6 +20,7 @@ from ..characteristics.abstract_characteristic import (
     Characteristic,
 )
 from ..utils.metaclasses import SingletonMeta
+from ..utils.vm_managment import _clean_malvm_data
 
 
 class CharacteristicAction(Enum):
@@ -114,6 +115,9 @@ class Controller(metaclass=SingletonMeta):
                     or (selected_runtime is None)
             )
         ]
+
+    def clean_malvm_data(self, clean_paths: List[Path], clean_soft: bool):
+        _clean_malvm_data(clean_paths, clean_soft)
 
     def create_configured_vms(self):
         vms_config = filter_existing_vms_from_config(self.configuration.virtual_machines)

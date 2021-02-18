@@ -65,7 +65,6 @@ def get_box_config_by_base_image_name(base_image_name: str) -> BoxConfiguration:
 def build(template: str, base_image_name: str):
     """Builds a Malbox template."""
     check_needed_files()
-    box_config = get_box_config_by_base_image_name(base_image_name)
     log.warning("Currently only Windows 10 box implemented.")
     if not template:
         questions = [
@@ -78,6 +77,11 @@ def build(template: str, base_image_name: str):
         template = inquirer.prompt(questions)["box-template"]
     click.clear()
     print_info(f"> Building template {click.style(template, fg='yellow')}...")
+    box_config = get_box_config_by_base_image_name(base_image_name)
+    build_base_image(box_config, template)
+
+
+def build_base_image(box_config: BoxConfiguration, template: str = "windows_10"):
     log.debug(box_config)
     packer_template = PackerTemplate(template, box_config)
     packer_template.configure()

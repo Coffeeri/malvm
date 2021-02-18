@@ -1,11 +1,13 @@
 """This module test the configuration loading and verification."""
 from pathlib import Path
 
+import pytest
+
 from malvm.controller import config_loader
 from malvm.controller.config_loader import is_configuration_file_valid, \
     parse_malvm_yaml_config, get_malvm_configuration, TEMPLATE_CONFIG_PATH_SUFFIX_YAML, \
     get_malvm_configuration_file_path, setup_logging, get_logging_config_content, insert_user_conf_in_logging_conf, \
-    filter_existing_vms_from_config
+    filter_existing_vms_from_config, MisconfigurationException
 from malvm.utils.helper_methods import get_vm_names_list
 import malvm.utils.helper_methods as helper_methods
 
@@ -211,6 +213,26 @@ virtual_machines:
     pip_applications: [black, pytest]
 """
 
+unsupported_template_malvm_config = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: something_wrong
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+"""
+
 
 def write_configuration(temp_dir: Path, config: str) -> Path:
     config_path = temp_dir / "malvm_configuration.yml"
@@ -370,3 +392,11 @@ def test_filter_existing_vms_from_config_with_pre_existing_vms(tmp_path, monkeyp
 
     assert pre_existing_vms == ["fkieVM"]
     assert filtered_vms == vm_config_with_no_fkieVM
+
+
+def test_unsupported_template(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, unsupported_template_malvm_config)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    monkeypatch.setattr(helper_methods, "get_vm_ids_dict", lambda: {"fkieVM": "test_id"})
+    with pytest.raises(MisconfigurationException):
+        get_malvm_configuration()

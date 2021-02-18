@@ -9,11 +9,11 @@ from pathlib import Path
 from time import sleep
 from typing import Dict, List, NamedTuple
 
-from ..malvm.utils import print_result
-from ..utils import print_info
+from malvm.cli.malvm.utils import print_result
+from malvm.cli.utils import print_info
 
-from ...controller.controller import Controller
-from ...utils.helper_methods import (
+from malvm.controller.controller import Controller
+from malvm.utils.helper_methods import (
     get_config_root,
     get_data_dir,
     get_vm_malvm_package_file,

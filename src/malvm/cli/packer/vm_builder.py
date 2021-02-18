@@ -17,7 +17,7 @@ from ...utils.helper_methods import (
     get_existing_vagrant_files_paths_iterable,
 )
 from ..utils import print_info
-from .box_template import BoxConfiguration, PackerTemplate
+from malvm.utils.box_template import BoxConfiguration, PackerTemplate
 
 controller = Controller()
 log = logging.getLogger()

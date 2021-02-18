@@ -2,7 +2,8 @@ import subprocess
 from pathlib import Path
 from typing import List
 
-from malvm.utils.helper_methods import remove_path_with_success, get_vagrant_files_json_path, \
+from .box_template import BoxConfiguration
+from .helper_methods import remove_path_with_success, get_vagrant_files_json_path, \
     get_vagrant_files_folder_path, get_vm_id_vagrantfile_path, get_vm_ids_dict, remove_vm_from_vagrant_files
 
 

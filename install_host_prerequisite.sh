@@ -81,7 +81,7 @@ install_packer()
 
 
 # Check OS
-if [ -d "/etc/debian_version" ]
+if [ -f "/etc/debian_version" ]
 then
     echo "Found: Debian based OS."
     # Debian/ Ubuntu distro

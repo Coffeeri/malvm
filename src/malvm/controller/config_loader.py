@@ -70,7 +70,15 @@ def insert_user_conf_in_logging_conf(malvm_conf: MalvmConfigurationSettings, log
 def setup_logging(malvm_configuration: MalvmConfigurationSettings):
     logging_file_content = get_logging_config_content()
     logging_config = insert_user_conf_in_logging_conf(malvm_configuration, logging_file_content)
+    touch_log_file_path(malvm_configuration)
     dictConfig(logging_config)
+
+
+def touch_log_file_path(malvm_configuration):
+    log_file_path = malvm_configuration.logging_settings.rotating_file_path.expanduser()
+    if log_file_path:
+        log_file_path.parent.mkdir(exist_ok=True, parents=True)
+        log_file_path.touch(exist_ok=True)
 
 
 def get_logging_config_content() -> Dict:

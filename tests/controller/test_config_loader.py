@@ -6,10 +6,10 @@ import pytest
 from malvm.controller import config_loader
 from malvm.controller.config_loader import is_configuration_file_valid, \
     parse_malvm_yaml_config, get_malvm_configuration, TEMPLATE_CONFIG_PATH_SUFFIX_YAML, \
-    get_malvm_configuration_file_path, setup_logging, get_logging_config_content, insert_user_conf_in_logging_conf, \
+    get_malvm_configuration_file_path, setup_logging, get_logging_config_template, insert_user_conf_in_logging_conf, \
     MisconfigurationException
 from malvm.utils.vm_managment import get_vm_names_list, filter_existing_vms_from_config
-import malvm.utils.helper_methods as helper_methods
+import malvm.utils.vm_managment as vm_managment
 
 correct_malvm_config = """
 logging:
@@ -344,10 +344,14 @@ def test_insert_into_logging_conf_no_file(tmp_path, monkeypatch):
     monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
     monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YML", yml_path)
     malvm_conf = get_malvm_configuration()
-    logging_conf = insert_user_conf_in_logging_conf(malvm_conf, get_logging_config_content())
-    assert logging_conf["handlers"]["logfile"]["filename"] == str(
-        malvm_conf.logging_settings.rotating_file_path.expanduser().absolute())
-    assert logging_conf["handlers"]["syslog"]["address"] == str(malvm_conf.logging_settings.syslog_address)
+    logging_conf = insert_user_conf_in_logging_conf(malvm_conf, get_logging_config_template())
+    logfile_path_from_file = logging_conf.get("handlers", {}).get("logfile", {}).get("filename", None)
+    logfile_path_from_parser = str(malvm_conf.logging_settings.rotating_file_path.expanduser().absolute()) \
+        if malvm_conf.logging_settings.rotating_file_path else None
+
+    assert logfile_path_from_file == logfile_path_from_parser
+    assert logging_conf.get("handlers", {}).get("syslog", {}).get("address",
+                                                                  None) == malvm_conf.logging_settings.syslog_address
 
 
 def test_insert_user_config_into_logging_config(tmp_path, monkeypatch):
@@ -363,7 +367,7 @@ def test_insert_user_config_into_logging_config_no_logging(tmp_path, monkeypatch
     yaml_path = write_configuration(tmp_path, no_logging_malvm_config)
     monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
     malvm_conf = get_malvm_configuration()
-    logging_conf = insert_user_conf_in_logging_conf(malvm_conf, get_logging_config_content())
+    logging_conf = insert_user_conf_in_logging_conf(malvm_conf, get_logging_config_template())
     assert "syslog" not in logging_conf["handlers"]
     assert "logfile" not in logging_conf["handlers"]
 
@@ -371,7 +375,7 @@ def test_insert_user_config_into_logging_config_no_logging(tmp_path, monkeypatch
 def test_filter_existing_vms_from_config_no_pre_existing_vms(tmp_path, monkeypatch):
     yaml_path = write_configuration(tmp_path, correct_malvm_config)
     monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
-    monkeypatch.setattr(helper_methods, "get_vm_ids_dict", lambda: {})
+    monkeypatch.setattr(vm_managment, "get_vm_ids_dict", lambda: {})
     malvm_conf = get_malvm_configuration()
     pre_existing_vms = get_vm_names_list()
     filtered_vms = filter_existing_vms_from_config(malvm_conf.virtual_machines)
@@ -383,7 +387,7 @@ def test_filter_existing_vms_from_config_no_pre_existing_vms(tmp_path, monkeypat
 def test_filter_existing_vms_from_config_with_pre_existing_vms(tmp_path, monkeypatch):
     yaml_path = write_configuration(tmp_path, correct_malvm_config)
     monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
-    monkeypatch.setattr(helper_methods, "get_vm_ids_dict", lambda: {"fkieVM": "test_id"})
+    monkeypatch.setattr(vm_managment, "get_vm_ids_dict", lambda: {"fkieVM": "test_id"})
     malvm_conf = get_malvm_configuration()
     pre_existing_vms = get_vm_names_list()
     filtered_vms = filter_existing_vms_from_config(malvm_conf.virtual_machines)
@@ -397,6 +401,6 @@ def test_filter_existing_vms_from_config_with_pre_existing_vms(tmp_path, monkeyp
 def test_unsupported_template(tmp_path, monkeypatch):
     yaml_path = write_configuration(tmp_path, unsupported_template_malvm_config)
     monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
-    monkeypatch.setattr(helper_methods, "get_vm_ids_dict", lambda: {"fkieVM": "test_id"})
+    monkeypatch.setattr(vm_managment, "get_vm_ids_dict", lambda: {"fkieVM": "test_id"})
     with pytest.raises(MisconfigurationException):
         get_malvm_configuration()

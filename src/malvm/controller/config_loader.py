@@ -55,34 +55,51 @@ TEMPLATE_CONFIG_PATH_SUFFIX_YAML = get_data_dir() / "template_malvm_config.yml"
 
 def insert_user_conf_in_logging_conf(malvm_conf: MalvmConfigurationSettings, logging_conf: Dict) -> Dict:
     modified_config = logging_conf.copy()
+    modified_config = insert_rotating_logfile_conf(malvm_conf, modified_config)
+    modified_config = insert_syslog_conf(malvm_conf, modified_config)
+    return modified_config
+
+
+def insert_rotating_logfile_conf(malvm_conf: MalvmConfigurationSettings, logging_conf: Dict):
+    modified_config = logging_conf.copy()
     if malvm_conf.logging_settings.rotating_file_path:
         rotating_file_path = str(malvm_conf.logging_settings.rotating_file_path.expanduser().absolute())
         modified_config["handlers"]["logfile"]["filename"] = rotating_file_path
     else:
         modified_config["handlers"].pop("logfile")
+        modified_config.get("loggers", {}).get("testlogger", {}).get("handlers", []).remove("logfile")
+        modified_config.get("root", {}).get("handlers", []).remove("logfile")
+    return modified_config
+
+
+def insert_syslog_conf(malvm_conf: MalvmConfigurationSettings, logging_conf: Dict):
+    modified_config = logging_conf.copy()
     if malvm_conf.logging_settings.syslog_address:
         modified_config["handlers"]["syslog"]["address"] = str(malvm_conf.logging_settings.syslog_address)
     else:
         modified_config["handlers"].pop("syslog")
+        modified_config.get("loggers", {}).get("testlogger", {}).get("handlers", []).remove("syslog")
+        modified_config.get("root", {}).get("handlers", []).remove("syslog")
     return modified_config
 
 
 def setup_logging(malvm_configuration: MalvmConfigurationSettings):
-    logging_file_content = get_logging_config_content()
-    logging_config = insert_user_conf_in_logging_conf(malvm_configuration, logging_file_content)
+    template_config = get_logging_config_template()
+    logging_config = insert_user_conf_in_logging_conf(malvm_configuration, template_config)
     touch_log_file_path(malvm_configuration)
     dictConfig(logging_config)
 
 
 def touch_log_file_path(malvm_configuration):
-    log_file_path = malvm_configuration.logging_settings.rotating_file_path.expanduser()
-    if log_file_path:
-        log_file_path.parent.mkdir(exist_ok=True, parents=True)
-        log_file_path.touch(exist_ok=True)
+    if malvm_configuration.logging_settings.rotating_file_path:
+        log_file_path = malvm_configuration.logging_settings.rotating_file_path.expanduser()
+        if log_file_path:
+            log_file_path.parent.mkdir(exist_ok=True, parents=True)
+            log_file_path.touch(exist_ok=True)
 
 
-def get_logging_config_content() -> Dict:
-    logging_config_path = get_data_dir() / "logging_config.yml"
+def get_logging_config_template() -> Dict:
+    logging_config_path = get_data_dir() / "template_logging_config.yml"
     with logging_config_path.open() as read_config:
         logging_config = yaml.full_load(read_config)
     return logging_config

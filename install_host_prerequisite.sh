@@ -37,6 +37,7 @@ install_vagrant()
       then
         echo "Vagrant ${VAGRANT_VERSION} was successfully installed."
         echo "Repairing Vagrant, this is neccessary.."
+        vagrant plugin install vagrant-vbguest
         vagrant plugin expunge --reinstall -f
       else
         echo "ERROR: Vagrant ${VAGRANT_VERSION} was NOT successfully installed!"
@@ -86,7 +87,7 @@ then
     echo "Found: Debian based OS."
     # Debian/ Ubuntu distro
     IS_DEBIAN=true
-    apt update && apt install -y curl unzip
+    apt update && apt install -y curl unzip libarchive-tools
 
 else
     echo "Found: No Debian based OS, fallback to other Linux OS."

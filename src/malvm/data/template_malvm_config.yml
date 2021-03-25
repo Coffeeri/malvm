@@ -1,5 +1,5 @@
 logging:
-  syslog_address: /dev/log
+  # syslog_address: /dev/log
   rotating_file_path: ~/.local/share/malvm/logs/malvm.log
 base_images:
   malvm-win-10:

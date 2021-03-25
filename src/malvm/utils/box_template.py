@@ -121,6 +121,7 @@ class PackerTemplate:
                 "packer",
                 "build",
                 "--only=virtualbox-iso",
+                "--force",
                 str(self.local_packer_template_path.absolute()),
             ],
             check=True,

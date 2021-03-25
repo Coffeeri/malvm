@@ -173,6 +173,9 @@ class VirtualMachineManager(metaclass=SingletonMeta):
         self.__vms_config: Dict[str, VirtualMachineSettings] = {}
         self.__base_images_config: Dict[str, BaseImageSettings] = {}
 
+    def vm_exists(self, vm_name: str) -> bool:
+        return vm_name in list(self.get_virtual_machines_names_iter())
+
     def set_config(self, vms_config: Dict[str, VirtualMachineSettings],
                    base_images_config: Dict[str, BaseImageSettings]):
         self.__vms_config = vms_config

@@ -64,7 +64,11 @@ def run(name, base_image):
 
         $ malvm box run win10-vm01 windows_10
     """
-
+    if not base_image and not controller.vm_manager.vm_exists(name):
+        log.error(f"Virtual Machine {name} does not exist")
+        print_warning(f"You can create the Virtual Machine {name} with:\n\n"
+                      f"{click.style(f'> malvm box {name} windows_10', fg='yellow')}")
+        sys.exit(1)
     if base_image:
         print_info(
             f"> Starting new [{click.style(base_image, fg='yellow')}] Virtual Machine "

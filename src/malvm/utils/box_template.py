@@ -7,7 +7,6 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, NamedTuple
 
-
 from .helper_methods import (
     get_config_root,
     get_data_dir,
@@ -195,15 +194,3 @@ end
             )
         autounattend_filepath = json_text["variables"]["autounattend"]
         return Path(self.config_path / autounattend_filepath)
-
-# def run_pre_boot_fixes(vm_name: str):
-#     """Runs fixes of characteristics with RUNTIME PRE_BOOT.
-#
-#     Args:
-#         vm_name (str): Name of Virtual Machine in VirtualBox.
-#     """
-#     print_info("> Checking and fixing pre boot characteristics...")
-#     environment = {"os": platform.system(), "vm_name": vm_name}
-#     for characteristic, return_status in controller.apply_pre_boot_fixes(environment):
-#         print_result(characteristic, return_status)
-# TODO

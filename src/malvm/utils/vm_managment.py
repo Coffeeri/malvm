@@ -2,8 +2,8 @@
 import logging
 import os
 import subprocess
+import sys
 from pathlib import Path
-from time import sleep
 from typing import List, Dict, Iterable, Tuple, Optional
 
 from .box_template import BoxConfiguration, PackerTemplate
@@ -43,6 +43,9 @@ class Hypervisor(metaclass=SingletonMeta):
     def build_vm(self, vm_name, base_image, vm_settings: VirtualMachineSettings):
         raise NotImplementedError
 
+    def initiate_first_boot(self, vm_name):
+        raise NotImplementedError
+
     def start_vm(self, vm_name):
         raise NotImplementedError
 
@@ -56,9 +59,6 @@ class Hypervisor(metaclass=SingletonMeta):
         raise NotImplementedError
 
     def fix_vm(self, vm_name: str):
-        raise NotImplementedError
-
-    def run_pre_boot_fixes(self, vm_name: str):
         raise NotImplementedError
 
     def get_virtual_machines_names_iter(self) -> Iterable[str]:
@@ -85,51 +85,44 @@ class VirtualBoxHypervisor(Hypervisor):
 
     def build_vm(self, vm_name: str, base_image: str, vm_settings: VirtualMachineSettings):
         vagrantfile_path = get_vagrant_files_folder_path() / vm_name
-        if not (vagrantfile_path / "Vagrantfile").exists():
-            log.info(f"Build Virtual Machine {vm_name}.")
-            vagrantfile_path.mkdir(parents=True, exist_ok=True)
-
-            # PackerTemplate(base_image, BOX_TEMPLATES[base_image]).setup_virtualmachine(
-            #     vm_name, vm_settings, vagrantfile_path
-            # )
-            os.chdir(str(vagrantfile_path.absolute()) if vagrantfile_path.is_dir() else str(
-                vagrantfile_path.parent.absolute())
-                     )
-            PackerTemplate(base_image, BOX_TEMPLATES[base_image]).init_vagrantfile(vm_name, vm_settings)
-            log.debug(f"Starting first time VM {vm_name} with `vagrant up`.")
-            add_vm_to_vagrant_files(vm_name, vagrantfile_path)
-            subprocess.run(
-                ["vagrant", "up"], check=True,
-            )
-            log.debug(f"Shutting down VM {vm_name} with `vagrant halt`.")
-            subprocess.run(
-                ["vagrant", "halt"], check=True,
-            )
-            log.info("Wait 3 seconds..")
-            sleep(3)
-            log.debug(f"Running pre boot fixes on VM {vm_name}.")
-
-            self.run_pre_boot_fixes(vm_name)
-            log.info("Wait 3 seconds..")
-            sleep(3)
-            log.debug(f"Starting VM {vm_name} with `vagrant up`.")
-            subprocess.run(
-                ["vagrant", "up"], check=True,
-            )
-            log.debug(f"Running malvm fix on {vm_name}.")
-            subprocess.run(
-                ["vagrant", "winrm", "-e", "-c", "malvm fix"], check=True,
-            )
-            log.debug(f"Save clean-state snapshot for {vm_name}.")
-            subprocess.run(
-                ["vagrant", "snapshot", "save", "clean-state"], check=True,
-            )
-        else:
+        if (vagrantfile_path / "Vagrantfile").exists():
             log.error(f"Virtual Machine {vm_name} has already vagrantfile at {vagrantfile_path}.\n"
                       f"If this was not expected, consider cleaning malvm data or create an issue on gitlab.com.")
+            sys.exit(1)
 
-    def run_pre_boot_fixes(self, vm_name: str):
-        pass  # TODO
+        log.info(f"Build Virtual Machine {vm_name}.")
+        vagrantfile_path.mkdir(parents=True, exist_ok=True)
+
+        # PackerTemplate(base_image, BOX_TEMPLATES[base_image]).setup_virtualmachine(
+        #     vm_name, vm_settings, vagrantfile_path
+        # )
+        os.chdir(str(vagrantfile_path.absolute()) if vagrantfile_path.is_dir() else str(
+            vagrantfile_path.parent.absolute())
+                 )
+        PackerTemplate(base_image, BOX_TEMPLATES[base_image]).init_vagrantfile(vm_name, vm_settings)
+        log.debug(f"Starting first time VM {vm_name} with `vagrant up`.")
+        add_vm_to_vagrant_files(vm_name, vagrantfile_path)
+        subprocess.run(
+            ["vagrant", "up"], check=True,
+        )
+        log.debug(f"Shutting down VM {vm_name} with `vagrant halt`.")
+        subprocess.run(
+            ["vagrant", "halt"], check=True,
+        )
+
+    def initiate_first_boot(self, vm_name: str):
+        log.debug(f"Starting VM {vm_name} with `vagrant up`.")
+        subprocess.run(
+            ["vagrant", "up"], check=True,
+        )
+        log.debug(f"Running malvm fix on {vm_name}.")
+        subprocess.run(
+            ["vagrant", "winrm", "-e", "-c", "malvm fix"], check=True,
+        )
+        log.debug(f"Save clean-state snapshot for {vm_name}.")
+        subprocess.run(
+            ["vagrant", "snapshot", "save", "clean-state"], check=True,
+        )
 
     def start_vm(self, vm_name):
         vagrantfile_path = get_vagrant_files_folder_path() / vm_name
@@ -209,6 +202,11 @@ class VirtualMachineManager(metaclass=SingletonMeta):
         vm_settings = self.__vms_config.get(vm_name, self.__get_default_vm_setting())
         if vm_settings:
             self.__hypervisor.build_vm(vm_name, base_image, vm_settings)
+
+    def initiate_first_boot(self, vm_name: str):
+        vm_settings = self.__vms_config.get(vm_name, self.__get_default_vm_setting())
+        if vm_settings:
+            self.__hypervisor.initiate_first_boot(vm_name)
 
     def start_vm(self, vm_name: str):
         self.__hypervisor.start_vm(vm_name)

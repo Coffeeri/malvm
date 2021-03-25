@@ -1,4 +1,5 @@
 """This module contains helper methods for cli malvm-core."""
+import platform
 from typing import List, Iterator, Tuple
 
 import click
@@ -36,7 +37,10 @@ def print_result(characteristic: CharacteristicBase, status: CheckType):
 
 
 def print_pre_boot_fix_results(vm_name: str):
-    print_results(controller.apply_pre_boot_fixes({"vm_name": vm_name}))
+    environment = {"os": platform.system(), "vm_name": vm_name}
+    # for characteristic, return_status in controller.apply_pre_boot_fixes(environment):
+    #   print_result(characteristic, return_status)
+    print_results(controller.apply_pre_boot_fixes(environment))
 
 
 def print_pre_boot_check_results(vm_name: str):

@@ -1,14 +1,16 @@
 """This module contains the CLI for creating sanitized windows Virtual Machines."""
 import logging
 import sys
+from time import sleep
 
 import click
 import inquirer  # type: ignore
 
+from ..malvm.utils import print_pre_boot_fix_results
 from ...utils.vm_managment import BOX_TEMPLATE_CHOICES
 from ...controller import Controller
 from ...utils.helper_methods import get_vm_malvm_package_file
-from ..utils import print_info
+from ..utils import print_info, print_warning
 
 controller = Controller()
 log = logging.getLogger()
@@ -75,6 +77,12 @@ def run(name, base_image):
             f"{click.style(name, fg='yellow')}..."
         )
         controller.vm_manager.build_vm(name, base_image)
+        log.info("Wait 3 seconds..")
+        sleep(3)
+        print_pre_boot_fix_results(name)
+        log.info("Wait 3 seconds..")
+        sleep(3)
+        controller.vm_manager.initiate_first_boot(name)
     else:
         print_info(f"Starting Virtual Machine {click.style(name, fg='yellow')}...")
         controller.vm_manager.start_vm(name)

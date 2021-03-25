@@ -18,6 +18,7 @@ from ..characteristics.abstract_characteristic import (
     Runtime,
     Characteristic,
 )
+from ..utils.helper_methods import get_config_root
 from ..utils.metaclasses import SingletonMeta
 from ..utils.vm_managment import _clean_malvm_data, VirtualMachineManager
 
@@ -42,6 +43,14 @@ class Controller(metaclass=SingletonMeta):
         setup_logging(self.configuration)
         self.vm_manager = VirtualMachineManager()
         self.vm_manager.set_config(self.configuration.virtual_machines, self.configuration.base_images)
+        self.dirty_paths = self.__get_dirty_paths()
+
+    def __get_dirty_paths(self) -> List[Path]:
+        paths = [get_config_root()]
+        logging_filepath = self.configuration.logging_settings.rotating_file_path
+        if logging_filepath and logging_filepath.exists():
+            paths.append(logging_filepath)
+        return paths
 
     def __load_and_add_characteristics(self) -> None:
         for characteristic in load_characteristics_by_path(self.characteristics_path):
@@ -117,9 +126,8 @@ class Controller(metaclass=SingletonMeta):
             )
         ]
 
-    # TODO add clean_paths data into controller so it depends on self
-    def clean_malvm_data(self, clean_paths: List[Path], clean_soft: bool):
-        _clean_malvm_data(clean_paths, clean_soft)
+    def clean_malvm_data(self, clean_soft: bool):
+        _clean_malvm_data(self.dirty_paths, clean_soft)
 
     # def create_configured_vms(self):
     #     vms_config = filter_existing_vms_from_config(self.configuration.virtual_machines)

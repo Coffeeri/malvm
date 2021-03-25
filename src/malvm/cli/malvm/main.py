@@ -113,17 +113,15 @@ def clean(force: bool, soft: bool) -> None:
     This includes Virtual Machines and their Vagrantfiles, packer cache..
     This does not remove the malvm package itself.
     """
-    clean_paths = [
-        get_config_root(),
-    ]
+
     vagrantfile_paths = get_existing_vagrant_files_paths_iterable()
     if force:
-        controller.clean_malvm_data(clean_paths, soft)
+        controller.clean_malvm_data(soft)
     else:
         if not soft:
             print_info("The following data will be deleted:",
                        command=f"malvm clean {'-f' if force else ''}")
-            for path in clean_paths:
+            for path in controller.dirty_paths:
                 print_info(f"Path: {path.absolute()}", command="clean()")
 
         print_info("VMs and Vagrantfiles will be destroyed and removed:")
@@ -132,7 +130,7 @@ def clean(force: bool, soft: bool) -> None:
 
         user_conformation = input("Sure? This cannot be reversed. [y/n]").lower()
         if user_conformation == "y":
-            controller.clean_malvm_data(clean_paths, soft)
+            controller.clean_malvm_data(soft)
 
 
 @click.command()

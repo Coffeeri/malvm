@@ -3,7 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 from time import sleep
-from typing import List, Dict, Iterable, Tuple
+from typing import List, Dict, Iterable, Tuple, Optional
 
 from .box_template import BoxConfiguration, PackerTemplate
 from .exceptions import BaseImageExists
@@ -60,7 +60,7 @@ class Hypervisor(metaclass=SingletonMeta):
     def run_pre_boot_fixes(self, vm_name: str):
         raise NotImplementedError
 
-    def get_virtual_machines_names_iter(self) -> List[str]:
+    def get_virtual_machines_names_iter(self) -> Iterable[str]:
         raise NotImplementedError
 
 
@@ -177,13 +177,13 @@ class VirtualMachineManager(metaclass=SingletonMeta):
         self.__vms_config = vms_config
         self.__base_images_config = base_images_config
 
-    def __get_default_vm_setting(self) -> VirtualMachineSettings:
+    def __get_default_vm_setting(self) -> Optional[VirtualMachineSettings]:
         return self.__vms_config.get("default", None)
 
     def set_hypervisor(self, hypervisor: Hypervisor):
         self.__hypervisor = hypervisor
 
-    def get_virtual_machines_names_iter(self) -> List[str]:
+    def get_virtual_machines_names_iter(self) -> Iterable[str]:
         return self.__hypervisor.get_virtual_machines_names_iter()
 
     def build_base_image(self, image_template_name: str, config: BoxConfiguration):
@@ -203,7 +203,8 @@ class VirtualMachineManager(metaclass=SingletonMeta):
 
     def build_vm(self, vm_name: str, base_image: str):
         vm_settings = self.__vms_config.get(vm_name, self.__get_default_vm_setting())
-        self.__hypervisor.build_vm(vm_name, base_image, vm_settings)
+        if vm_settings:
+            self.__hypervisor.build_vm(vm_name, base_image, vm_settings)
 
     def start_vm(self, vm_name: str):
         self.__hypervisor.start_vm(vm_name)

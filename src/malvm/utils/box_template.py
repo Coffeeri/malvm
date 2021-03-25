@@ -5,10 +5,8 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
-from time import sleep
 from typing import Dict, List, NamedTuple
 
-from ..cli.utils import print_info
 
 from .helper_methods import (
     get_config_root,

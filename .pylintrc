@@ -1,6 +1,6 @@
 [MESSAGES CONTROL]
 enable=all
-disable=suppressed-message,locally-disabled,bad-continuation, missing-function-docstring,logging-fstring-interpolation,missing-class-docstring
+disable=suppressed-message,locally-disabled,bad-continuation, missing-function-docstring,logging-fstring-interpolation,missing-class-docstring,unsubscriptable-object,too-few-public-methods
 
 [REPORTS]
 reports=yes

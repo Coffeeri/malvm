@@ -11,7 +11,7 @@ from importlib import import_module
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Iterator
 
-from .config_loader import setup_logging, get_malvm_configuration, VirtualMachineSettings
+from .config_loader import setup_logging, get_malvm_configuration
 from ..characteristics.abstract_characteristic import (
     CharacteristicBase,
     CheckResult,
@@ -19,7 +19,7 @@ from ..characteristics.abstract_characteristic import (
     Characteristic,
 )
 from ..utils.metaclasses import SingletonMeta
-from ..utils.vm_managment import _clean_malvm_data, VirtualMachineManager, filter_existing_vms_from_config
+from ..utils.vm_managment import _clean_malvm_data, VirtualMachineManager
 
 
 class CharacteristicAction(Enum):
@@ -117,6 +117,7 @@ class Controller(metaclass=SingletonMeta):
             )
         ]
 
+    # TODO add clean_paths data into controller so it depends on self
     def clean_malvm_data(self, clean_paths: List[Path], clean_soft: bool):
         _clean_malvm_data(clean_paths, clean_soft)
 

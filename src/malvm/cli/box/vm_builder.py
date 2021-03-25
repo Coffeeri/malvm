@@ -1,17 +1,13 @@
 """This module contains the CLI for creating sanitized windows Virtual Machines."""
 import logging
-import subprocess
 import sys
 
 import click
 import inquirer  # type: ignore
 
-from ...utils.vm_managment import BOX_TEMPLATE_CHOICES, get_vm_ids_dict
+from ...utils.vm_managment import BOX_TEMPLATE_CHOICES
 from ...controller import Controller
-from ...utils.helper_methods import (
-    get_vm_malvm_package_file,
-    get_existing_vagrant_files_paths_iterable,
-)
+from ...utils.helper_methods import get_vm_malvm_package_file
 from ..utils import print_info
 
 controller = Controller()

@@ -1,3 +1,4 @@
+"""This module contains classes and functions for virtual machine management."""
 import logging
 import os
 import subprocess

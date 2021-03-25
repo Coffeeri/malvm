@@ -139,3 +139,4 @@ def clean(force: bool, soft: bool) -> None:
 @click.option("-f", "--force", type=bool, is_flag=True, default=False)
 def up(force: bool):
     """Creates baseimages and Virtual Machines from configuration file."""
+    pass

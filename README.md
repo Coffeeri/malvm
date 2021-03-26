@@ -1,7 +1,7 @@
 <div align="center">
 <img src="https://gitlab.com/uploads/-/system/project/avatar/18734431/computer.png" align="center" width="150" alt="Project icon">
 <h1>malvm</h1>
-<h4>Build non detectable virtual machines for maleware analysis.</h4>
+<h4>Build non detectable virtual machines for malware analysis.</h4>
 <h4>We currently only support Linux!</h4>
 
 ![pipeline](https://gitlab.com/shk_fkie/analysevm/badges/master/pipeline.svg "Pipeline")
@@ -9,7 +9,7 @@
 
 
 The tool malvm is used to create sanitized virtual environments, such that a
-Maleware is not able to determine, if it's in a virtual machine or not.
+Malware is not able to determine, if it's in a virtual machine or not.
 
 ## Getting Started
 ### Table of Content
@@ -75,19 +75,19 @@ source bootstrap.sh
 
 ### First VM
 
-In the following we are going to create a Windows 10 VM called "malewareVM".
+In the following we are going to create a Windows 10 VM called "malwareVM".
 We use two commands chained together.
 
 ```shell
 malvm box build windows_10
-malvm box run windows_10 malewareVM
+malvm box run windows_10 malwareVM
 ```
-First `maleware box build windows_10` builds the Windows 10 image for Vagrant.
-Next `malvm box run windows_10 malewareVM` spins up a VirtualMachine instance of the previously created image.
+First `malware box build windows_10` builds the Windows 10 image for Vagrant.
+Next `malvm box run windows_10 malwareVM` spins up a VirtualMachine instance of the previously created image.
 
 Both commands can be chained into a single command:
 ```shell
-malvm box build windows_10 run windows_10 malewareVM
+malvm box build windows_10 run windows_10 malwareVM
 ```
 
 ---

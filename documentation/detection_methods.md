@@ -54,7 +54,7 @@ Other points of interests are the following structures:
 
 ## **Communication Channel Check**
 
-Maleware can test IN instruction, which is privileged (Ring 0).
+Malware can test IN instruction, which is privileged (Ring 0).
 If it is executed in Ring 3, it will throw usually an exception.
 However no exception will be thrown within a VM, instead will e connection be raised with the host and Magic Number "*VMxh*" is returned into *EBX* register.
 

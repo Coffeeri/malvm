@@ -9,7 +9,15 @@
 
 
 The tool malvm is used to create sanitized virtual environments, such that a
-Malware is not able to determine, if it's in a virtual machine or not.
+Malware is not able to determine, if it's in a virtual environment or not.
+Create and integrate your own analysis images:
+
++ **Build:** OS images with [Packer](https://www.packer.io/) and deploy them with [Vagrant](https://www.vagrantup.com/). All centralized controlled by malvm.
++ **Configure:** Set your settings such as logging and default VM configuration.
+  Predefine your environment in *malvm_config.yaml* and build + deploy it with `malvm up`.
++ **Integrate:** Add your own characteristic fixes and let malvm run them inside your VM.
++ **Extendable:** The entire project is build very modular, you can integrate your own hypervisor,
+view and (sub-)controller.
 
 ## Getting Started
 ### Table of Content

@@ -35,9 +35,9 @@
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
       "type": "qemu",
       "vm_name": "{{user `vm_name`}}",
-      "winrm_password": "insert_password",
+      "winrm_password": "{{user `password`}}",
       "winrm_timeout": "{{user `winrm_timeout`}}",
-      "winrm_username": "insert_username"
+      "winrm_username": "{{user `username`}}"
     },
     {
       "boot_wait": "6m",
@@ -64,9 +64,9 @@
       "switch_name": "{{user `switch_name`}}",
       "type": "hyperv-iso",
       "vm_name": "{{user `vm_name`}}",
-      "winrm_password": "insert_password",
+      "winrm_password": "{{user `password`}}",
       "winrm_timeout": "{{user `winrm_timeout`}}",
-      "winrm_username": "insert_username"
+      "winrm_username": "{{user `username`}}"
     },
     {
       "boot_command": "",
@@ -103,9 +103,9 @@
       "vmx_remove_ethernet_interfaces": true,
       "vnc_port_max": 5980,
       "vnc_port_min": 5900,
-      "winrm_password": "insert_password",
+      "winrm_password": "{{user `password`}}",
       "winrm_timeout": "{{user `winrm_timeout`}}",
-      "winrm_username": "insert_username"
+      "winrm_username": "{{user `username`}}"
     },
     {
       "boot_command": "",
@@ -133,9 +133,9 @@
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
       "type": "virtualbox-iso",
       "vm_name": "{{user `vm_name`}}",
-      "winrm_password": "insert_password",
+      "winrm_password": "{{user `password`}}",
       "winrm_timeout": "{{user `winrm_timeout`}}",
-      "winrm_username": "insert_username"
+      "winrm_username": "{{user `username`}}"
     },
     {
       "boot_command": "",
@@ -177,9 +177,9 @@
         ]
       ],
       "vm_name": "{{user `vm_name`}}",
-      "winrm_password": "insert_password",
+      "winrm_password": "{{user `password`}}",
       "winrm_timeout": "{{user `winrm_timeout`}}",
-      "winrm_username": "insert_username"
+      "winrm_username": "{{user `username`}}"
     }
   ],
   "post-processors": [
@@ -238,7 +238,7 @@
     },
     {
       "destination": "C:/tmp/",
-      "source": "insert_analysevm_path",
+      "source": "{{user `analyse_vm_path`}}",
       "type": "file"
     },
     {
@@ -253,13 +253,17 @@
     "disk_size": "61440",
     "disk_type_id": "1",
     "memory": "2048",
-    "headless": "false",
+    "headless": "true",
     "iso_checksum": "sha256:f1a4f2176259167cd2c8bf83f3f5a4039753b6cc28c35ac624da95a36e9620fc",
     "iso_url": "https://software-download.microsoft.com/download/pr/19041.264.200511-0456.vb_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso",
     "restart_timeout": "5m",
     "vhv_enable": "false",
     "virtio_win_iso": "~/virtio-win.iso",
     "vm_name": "windows_10",
-    "winrm_timeout": "6h"
+    "winrm_timeout": "6h",
+    "username": "insert_username",
+    "password": "insert_password",
+    "analyse_vm_path": "insert_analysevm_path"
+
   }
 }

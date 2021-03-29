@@ -54,12 +54,12 @@ def edit_last_line_of_text(file: Path, text):
 class PackerTemplate:
     """VM template creation class for Packer."""
 
-    def __init__(self, template: str, configuration: BoxConfiguration):
-        self.name = template
+    def __init__(self, configuration: BoxConfiguration):
         self.configuration = configuration
+        self.name = configuration.packer_template_path.name.split(".")[0]
         self.config_path = get_config_root() / f"data/{self.name}/"
         self.local_packer_template_path = (
-                self.config_path / self.configuration.packer_template_path.name
+                self.config_path / configuration.packer_template_path.name
         )
         self.configured = False
 

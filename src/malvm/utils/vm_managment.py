@@ -3,6 +3,7 @@ import logging
 import os
 import subprocess
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import List, Dict, Iterable, Tuple, Optional
 
@@ -16,31 +17,36 @@ from .metaclasses import SingletonMeta
 from ..controller.config_loader import VirtualMachineSettings, BaseImageSettings, VirtualMachinesType
 
 log = logging.getLogger()
+PACKER_PATH = get_data_dir() / "packer"
 
 
 class BaseImage:
-    def __init__(self, image_template_name: str, config: BoxConfiguration):
-        self.image_template_name = image_template_name
+    def __init__(self, config: BoxConfiguration):
         self.config = config
-        log.debug(f"Init base image {image_template_name} with config {config}.")
+        log.debug(f"Init base image {config.vagrant_box_name} with config {config}.")
 
     def build(self):
         log.debug(self.config)
-        packer_template = PackerTemplate(self.image_template_name, self.config)
+        packer_template = PackerTemplate(self.config)
         packer_template.configure()
         packer_template.build()
         packer_template.add_to_vagrant()
 
 
 class Hypervisor(metaclass=SingletonMeta):
+    def __init__(self, base_images: Dict[str, Optional[BaseImageSettings]] = {}):
+        self._base_images = base_images.copy()
 
-    def build_base_image(self, image_template_name: str, config: BoxConfiguration):
+    def set_base_images_dict(self, base_images: Dict[str, BaseImageSettings]):
+        self._base_images = base_images.copy()
+
+    def build_base_image(self, config: BoxConfiguration):
         raise NotImplementedError
 
     def __base_image_exists(self, image_name: str) -> bool:
         raise NotImplementedError
 
-    def build_vm(self, vm_name, base_image, vm_settings: VirtualMachineSettings):
+    def build_vm(self, vm_name, base_image_name: str, vm_settings: VirtualMachineSettings):
         raise NotImplementedError
 
     def initiate_first_boot(self, vm_name):
@@ -67,15 +73,14 @@ class Hypervisor(metaclass=SingletonMeta):
 
 class VirtualBoxHypervisor(Hypervisor):
 
-    def __init__(self):
-        super().__init__()
-        self.__base_images = {}
+    def __init__(self, base_images: Dict[str, Optional[BaseImageSettings]] = {}):
+        super().__init__(base_images)
 
-    def build_base_image(self, image_template_name: str, config: BoxConfiguration):
-        if not self.__base_image_exists(image_template_name):
-            log.debug(f"Try to build image {image_template_name} with configuration {config}.")
-            image = BaseImage(image_template_name, config)
-            self.__base_images[image_template_name] = image
+    def build_base_image(self, config: BoxConfiguration):
+        if not self.__base_image_exists(config.vagrant_box_name):
+            log.debug(f"Try to build image {config.vagrant_box_name} with configuration {config}.")
+            image = BaseImage(config)
+            self._base_images[config.vagrant_box_name] = image
             image.build()
         else:
             raise BaseImageExists("Base image already exists.")
@@ -83,7 +88,10 @@ class VirtualBoxHypervisor(Hypervisor):
     def __base_image_exists(self, image_name: str) -> bool:
         return image_name in get_vagrant_box_list()
 
-    def build_vm(self, vm_name: str, base_image: str, vm_settings: VirtualMachineSettings):
+    def build_vm(self, vm_name: str, base_image_name: str, vm_settings: VirtualMachineSettings):
+        log.debug(f"Current base images dict: {self._base_images}")
+        base_image_settings = self._base_images[
+            base_image_name]
         vagrantfile_path = get_vagrant_files_folder_path() / vm_name
         if (vagrantfile_path / "Vagrantfile").exists():
             log.error(f"Virtual Machine {vm_name} has already vagrantfile at {vagrantfile_path}.\n"
@@ -93,13 +101,12 @@ class VirtualBoxHypervisor(Hypervisor):
         log.info(f"Build Virtual Machine {vm_name}.")
         vagrantfile_path.mkdir(parents=True, exist_ok=True)
 
-        # PackerTemplate(base_image, BOX_TEMPLATES[base_image]).setup_virtualmachine(
-        #     vm_name, vm_settings, vagrantfile_path
-        # )
         os.chdir(str(vagrantfile_path.absolute()) if vagrantfile_path.is_dir() else str(
             vagrantfile_path.parent.absolute())
                  )
-        PackerTemplate(base_image, BOX_TEMPLATES[base_image]).init_vagrantfile(vm_name, vm_settings)
+        log.debug(f"Building vm {vm_name} with base_image_settings {base_image_settings}.")
+        box_template = generate_box_template(base_image_name, base_image_settings)
+        PackerTemplate(box_template).init_vagrantfile(vm_name, vm_settings)
         log.debug(f"Starting first time VM {vm_name} with `vagrant up`.")
         add_vm_to_vagrant_files(vm_name, vagrantfile_path)
         subprocess.run(
@@ -173,21 +180,27 @@ class VirtualMachineManager(metaclass=SingletonMeta):
                    base_images_config: Dict[str, BaseImageSettings]):
         self.__vms_config = vms_config
         self.__base_images_config = base_images_config
+        self.__hypervisor.set_base_images_dict(self.__base_images_config)
 
     def __get_default_vm_setting(self) -> Optional[VirtualMachineSettings]:
         return self.__vms_config.get("default", None)
 
     def set_hypervisor(self, hypervisor: Hypervisor):
         self.__hypervisor = hypervisor
+        self.__hypervisor.set_base_images_dict(self.__base_images_config)
 
     def get_virtual_machines_names_iter(self) -> Iterable[str]:
         return self.__hypervisor.get_virtual_machines_names_iter()
 
-    def build_base_image(self, image_template_name: str, config: BoxConfiguration):
-        self.__hypervisor.build_base_image(image_template_name, config)
+    def build_base_image(self, config: BoxConfiguration):
+        self.__hypervisor.build_base_image(config)
 
     def generate_box_config_by_base_image_name(self, base_image_name: str) -> BoxConfiguration:
         base_images = self.__base_images_config
+        if base_image_name not in base_images.keys():
+            log.error(f"Baseimage {base_image_name} was not defined in "
+                      f"configuration file.")
+            sys.exit(1)
         return BoxConfiguration(
             packer_template_path=(PACKER_PATH / f"{base_images[base_image_name].template}.json"),
             packer_box_name=f"{base_images[base_image_name].template}_virtualbox.box",
@@ -198,10 +211,20 @@ class VirtualMachineManager(metaclass=SingletonMeta):
             language_code=base_images[base_image_name].language_code,
         )
 
-    def build_vm(self, vm_name: str, base_image: str):
+    def build_vm(self, vm_name: str, base_image_name: str):
         vm_settings = self.__vms_config.get(vm_name, self.__get_default_vm_setting())
         if vm_settings:
-            self.__hypervisor.build_vm(vm_name, base_image, vm_settings)
+            log.debug(f"VMManager: Building VM name: {vm_name}, base_image_name: {base_image_name}.")
+            self.__hypervisor.build_vm(vm_name, base_image_name, vm_settings)
+
+    def build_vms_in_config(self):
+        for vm_name, vm_setting in self.__vms_config.items():
+            if vm_name is not "default" and not self.vm_exists(vm_name):
+                log.debug(f"Building VM from config [{vm_name}]...")
+                self.build_vm(vm_name, vm_setting.base_image_name)
+
+    def build_base_images_in_config(self):
+        pass
 
     def initiate_first_boot(self, vm_name: str):
         vm_settings = self.__vms_config.get(vm_name, self.__get_default_vm_setting())
@@ -268,18 +291,26 @@ def remove_vbox_vm_and_data(vm_name: str):
     remove_vm_from_vagrant_files(vm_name)
 
 
-PACKER_PATH = get_data_dir() / "packer"
-WIN_10_CONFIG = BoxConfiguration(
-    packer_template_path=(PACKER_PATH / "windows_10.json"),
-    packer_box_name="windows_10_virtualbox.box",
-    vagrant_box_name="malvm-win-10",
-    username="max",
-    password="123456",
-    computer_name="Computer",
-    language_code="de-De",
-)
-BOX_TEMPLATES = {"windows_10": WIN_10_CONFIG}
-BOX_TEMPLATE_CHOICES = list(BOX_TEMPLATES.keys())
+class OperatingSystem(Enum):
+    """Enum defining the execution-time of a characteristic."""
+
+    WINDOWS_10 = 1
+
+
+def generate_box_template(base_image_name: str, base_image_settings: BaseImageSettings):
+    if base_image_settings.template == "windows_10":
+        return BoxConfiguration(
+            packer_template_path=(PACKER_PATH / "windows_10.json"),
+            packer_box_name=f"windows_10_{base_image_name}_virtualbox.box",
+            vagrant_box_name=base_image_name,
+            username=base_image_settings.username,
+            password=base_image_settings.password,
+            computer_name=base_image_settings.computer_name,
+            language_code=base_image_settings.language_code,
+        )
+    else:
+        raise NotImplementedError(f"Base-Image template {base_image_settings.template} "
+                                  f"does not exist/ is not supported.")
 
 
 def add_vm_to_vagrant_files(name: str, vagrant_parent_path: Path):

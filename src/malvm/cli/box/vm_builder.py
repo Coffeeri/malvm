@@ -7,7 +7,6 @@ import click
 import inquirer  # type: ignore
 
 from ..malvm.utils import print_pre_boot_fix_results
-from ...utils.vm_managment import BOX_TEMPLATE_CHOICES
 from ...controller import Controller
 from ...utils.helper_methods import get_vm_malvm_package_file
 from ..utils import print_info, print_warning
@@ -22,7 +21,7 @@ def box():
 
 
 @box.command()
-@click.argument("template", type=click.Choice(BOX_TEMPLATE_CHOICES), required=False)
+@click.argument("template", type=click.Choice(["windows_10"]), required=False)
 @click.argument("base_image_name", default="malvm-win-10")
 def build(template: str, base_image_name: str):
     """Builds a Malbox template."""
@@ -33,14 +32,14 @@ def build(template: str, base_image_name: str):
             inquirer.List(
                 "box-template",
                 message="What Windows box template should be build?",
-                choices=BOX_TEMPLATE_CHOICES,
+                choices=["windows_10"],
             ),
         ]
         template = inquirer.prompt(questions)["box-template"]
     click.clear()
     print_info(f"> Building template {click.style(template, fg='yellow')}...")
     box_config = controller.vm_manager.generate_box_config_by_base_image_name(base_image_name)
-    controller.vm_manager.build_base_image(template, box_config)
+    controller.vm_manager.build_base_image(box_config)
 
 
 def check_needed_files():
@@ -54,7 +53,7 @@ def check_needed_files():
 @box.command()
 @click.argument("name")
 @click.argument(
-    "base_image", type=click.Choice(BOX_TEMPLATE_CHOICES), required=False
+    "base_image", type=click.Choice(["windows_10"]), required=False
 )
 def run(name, base_image):
     """Run TEMPLATE as NAME in Virtualbox via Vagrant.

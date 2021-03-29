@@ -131,7 +131,6 @@ def clean(force: bool, soft: bool) -> None:
 
 
 @click.command()
-@click.option("-f", "--force", type=bool, is_flag=True, default=False)
-def up(force: bool):
-    """Creates baseimages and Virtual Machines from configuration file."""
-    pass
+def up():
+    """Creates base images and Virtual Machines from configuration file."""
+    controller.vm_manager.build_vms_in_config()

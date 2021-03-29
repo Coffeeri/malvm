@@ -38,6 +38,7 @@ install_vagrant()
         echo "Vagrant ${VAGRANT_VERSION} was successfully installed."
         echo "Repairing Vagrant, this is neccessary.."
         vagrant plugin install vagrant-vbguest
+        vagrant plugin install vagrant-disksize
         vagrant plugin expunge --reinstall -f
       else
         echo "ERROR: Vagrant ${VAGRANT_VERSION} was NOT successfully installed!"

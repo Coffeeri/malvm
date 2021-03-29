@@ -27,7 +27,7 @@ class BaseImageSettings(NamedTuple):
 
 
 class VirtualMachineSettings(NamedTuple):
-    base_image: str
+    base_image_name: str
     disk_size: str
     memory: str
     choco_applications: Optional[List[str]]
@@ -173,7 +173,7 @@ def parse_malvm_yaml_config(yaml_path: Path) -> MalvmConfigurationSettings:
 
 def check_base_image_mismatch(base_images_settings_dict, virtual_machines_setting_dict):
     found_base_images = set(base_images_settings_dict.keys())
-    found_vm_used_base_images = {vm.base_image for vm in virtual_machines_setting_dict.values()}
+    found_vm_used_base_images = {vm.base_image_name for vm in virtual_machines_setting_dict.values()}
     if not found_vm_used_base_images.issubset(found_base_images):
         raise KeyError("The base images do not match the ones, used in Virtual Machine settings.")
 
@@ -218,7 +218,7 @@ def parse_vm_settings(vm_settings_dict: Optional[Dict]) -> VirtualMachinesType:
         return {}
     virtual_machines_setting_dict = {
         vm_name: VirtualMachineSettings(
-            base_image=vm_setting["base_image"],
+            base_image_name=vm_setting["base_image"],
             disk_size=vm_setting["disk_size"],
             memory=vm_setting["memory"],
             choco_applications=vm_setting["choco_applications"],

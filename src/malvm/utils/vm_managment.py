@@ -34,8 +34,8 @@ class BaseImage:
 
 
 class Hypervisor(metaclass=SingletonMeta):
-    def __init__(self, base_images: Dict[str, Optional[BaseImageSettings]] = {}):
-        self._base_images = base_images.copy()
+    def __init__(self, base_images: Dict[str, BaseImageSettings] = None):
+        self._base_images = base_images.copy() if base_images else {}
 
     def set_base_images_dict(self, base_images: Dict[str, BaseImageSettings]):
         self._base_images = base_images.copy()
@@ -73,14 +73,11 @@ class Hypervisor(metaclass=SingletonMeta):
 
 class VirtualBoxHypervisor(Hypervisor):
 
-    def __init__(self, base_images: Dict[str, Optional[BaseImageSettings]] = {}):
-        super().__init__(base_images)
-
     def build_base_image(self, config: BoxConfiguration):
         if not self.__base_image_exists(config.vagrant_box_name):
             log.debug(f"Try to build image {config.vagrant_box_name} with configuration {config}.")
             image = BaseImage(config)
-            self._base_images[config.vagrant_box_name] = image
+            # self._base_images[config.vagrant_box_name] = image # add base image setting instead of base image
             image.build()
         else:
             raise BaseImageExists("Base image already exists.")
@@ -219,7 +216,7 @@ class VirtualMachineManager(metaclass=SingletonMeta):
 
     def build_vms_in_config(self):
         for vm_name, vm_setting in self.__vms_config.items():
-            if vm_name is not "default" and not self.vm_exists(vm_name):
+            if vm_name != "default" and not self.vm_exists(vm_name):
                 log.debug(f"Building VM from config [{vm_name}]...")
                 self.build_vm(vm_name, vm_setting.base_image_name)
 
@@ -308,9 +305,8 @@ def generate_box_template(base_image_name: str, base_image_settings: BaseImageSe
             computer_name=base_image_settings.computer_name,
             language_code=base_image_settings.language_code,
         )
-    else:
-        raise NotImplementedError(f"Base-Image template {base_image_settings.template} "
-                                  f"does not exist/ is not supported.")
+    raise NotImplementedError(f"Base-Image template {base_image_settings.template} "
+                              f"does not exist/ is not supported.")
 
 
 def add_vm_to_vagrant_files(name: str, vagrant_parent_path: Path):

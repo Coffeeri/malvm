@@ -131,6 +131,6 @@ def clean(force: bool, soft: bool) -> None:
 
 
 @click.command()
-def up():
+def up():  # pylint: disable=invalid-name
     """Creates base images and Virtual Machines from configuration file."""
     controller.vm_manager.build_vms_in_config()

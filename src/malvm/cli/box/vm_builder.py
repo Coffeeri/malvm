@@ -53,7 +53,7 @@ def check_needed_files():
 @box.command()
 @click.argument("name")
 @click.argument(
-    "base_image", type=click.Choice(["windows_10"]), required=False
+    "base_image", required=False, type=click.Choice(controller.configuration.base_images.keys())
 )
 def run(name, base_image):
     """Run TEMPLATE as NAME in Virtualbox via Vagrant.

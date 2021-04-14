@@ -112,7 +112,7 @@ class PackerTemplate:
         """Inserts parameter into Vagrantfile."""
         vagrantfile_template_config = {
             "insert_username": self.configuration.username,
-            "insert_password": self.configuration.password,
+            "insert_password": self.configuration.password
         }
         vagrantfile_template_path = (
                 self.config_path / f"vagrantfile-{self.name.lower()}.template"
@@ -166,6 +166,7 @@ class PackerTemplate:
         )
 
         modified_vagrantfile_tail = f"""
+   config.disksize.size = "{vm_settings.disk_size}"
    config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     vb.gui = true

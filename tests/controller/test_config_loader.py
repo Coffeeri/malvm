@@ -10,32 +10,7 @@ from malvm.controller.config_loader import is_configuration_file_valid, \
     MisconfigurationException
 from malvm.utils.vm_managment import get_vm_names_list, filter_existing_vms_from_config
 import malvm.utils.vm_managment as vm_managment
-
-correct_malvm_config = """
-logging:
-    syslog_address: /dev/log
-    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
-base_images:
-  malvm-win-10:
-    template: windows_10
-    username: max
-    password: 123456
-    computer_name: Computer
-    language_code: de-De
-virtual_machines:
-  default:
-    base_image: malvm-win-10
-    disk_size: 120GB
-    memory: 2048
-    choco_applications: []
-    pip_applications: []
-  fkieVM:
-    base_image: malvm-win-10
-    disk_size: 120GB
-    memory: 2048
-    choco_applications: [git]
-    pip_applications: [black, pytest]
-"""
+from ..conftest import correct_malvm_config, write_configuration
 
 no_default_vm_malvm_config = """
 logging:
@@ -232,13 +207,6 @@ virtual_machines:
     choco_applications: []
     pip_applications: []
 """
-
-
-def write_configuration(temp_dir: Path, config: str) -> Path:
-    config_path = temp_dir / "malvm_configuration.yml"
-    with config_path.open("w") as opened_file:
-        opened_file.write(config)
-    return config_path
 
 
 def test_wrong_suffix(tmp_path, caplog):

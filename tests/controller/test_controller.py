@@ -12,7 +12,7 @@ from malvm.controller.controller import (
 )
 
 
-def test_singleton_controller(example_controller, ):
+def test_singleton_controller(example_controller):
     controller_second = Controller()
     assert example_controller == controller_second
 

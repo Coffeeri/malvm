@@ -221,7 +221,12 @@ class VirtualMachineManager(metaclass=SingletonMeta):
                 self.build_vm(vm_name, vm_setting.base_image_name)
 
     def build_base_images_in_config(self):
-        pass
+        for base_image in self.__base_images_config.keys():
+            box_config = self.generate_box_config_by_base_image_name(base_image)
+            try:
+                self.build_base_image(box_config)
+            except BaseImageExists:
+                log.debug(f"Base image {base_image} already exists.")
 
     def initiate_first_boot(self, vm_name: str):
         vm_settings = self.__vms_config.get(vm_name, self.__get_default_vm_setting())

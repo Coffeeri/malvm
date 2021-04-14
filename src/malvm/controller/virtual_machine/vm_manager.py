@@ -4,7 +4,7 @@ from typing import Dict, Optional, Iterable
 
 from ..config_loader import VirtualMachineSettings, BaseImageSettings
 from .hypervisor.hypervisor import Hypervisor
-from .hypervisor.virtualbox import VirtualBoxHypervisor
+from .hypervisor.virtualbox.virtualbox import VirtualBoxHypervisor
 from ...utils.box_template import BoxConfiguration
 from ...utils.exceptions import BaseImageExists
 from ...utils.metaclasses import SingletonMeta

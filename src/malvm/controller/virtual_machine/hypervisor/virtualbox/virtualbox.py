@@ -4,12 +4,12 @@ import subprocess
 import sys
 from typing import Iterable
 
-from ...config_loader import VirtualMachineSettings
-from .hypervisor import Hypervisor
-from ....utils.box_template import BoxConfiguration, PackerTemplate
-from ....utils.exceptions import BaseImageExists
-from ....utils.helper_methods import get_vagrant_box_list, get_vagrant_files_folder_path
-from ....utils.vm_managment import log, BaseImage, generate_box_template, add_vm_to_vagrant_files, get_vm_ids_dict, \
+from ....config_loader import VirtualMachineSettings
+from ..hypervisor import Hypervisor
+from .....utils.box_template import BoxConfiguration, PackerTemplate
+from .....utils.exceptions import BaseImageExists
+from .....utils.helper_methods import get_vagrant_box_list, get_vagrant_files_folder_path
+from .....utils.vm_managment import log, BaseImage, generate_box_template, add_vm_to_vagrant_files, get_vm_ids_dict, \
     remove_vbox_vm_and_data, get_vm_names_list
 
 

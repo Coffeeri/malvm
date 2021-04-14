@@ -68,7 +68,7 @@ def run(name, base_image):
     if not base_image and not controller.vm_manager.vm_exists(name):
         log.error(f"Virtual Machine {name} does not exist")
         print_warning(f"You can create the Virtual Machine {name} with:\n\n"
-                      f"{click.style(f'> malvm box {name} windows_10', fg='yellow')}")
+                      f"{click.style(f'> malvm box run {name} windows_10', fg='yellow')}")
         sys.exit(1)
     if base_image:
         print_info(

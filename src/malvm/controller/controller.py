@@ -20,7 +20,8 @@ from ..characteristics.abstract_characteristic import (
 )
 from ..utils.helper_methods import get_config_root
 from ..utils.metaclasses import SingletonMeta
-from ..utils.vm_managment import _clean_malvm_data, VirtualMachineManager
+from ..utils.vm_managment import _clean_malvm_data
+from .virtual_machine.vm_manager import VirtualMachineManager
 
 
 class CharacteristicAction(Enum):

@@ -18,9 +18,9 @@ from ..characteristics.abstract_characteristic import (
     Runtime,
     Characteristic,
 )
-from ..utils.helper_methods import get_config_root
 from ..utils.metaclasses import SingletonMeta
-from ..utils.vm_managment import _clean_malvm_data
+from .virtual_machine.hypervisor.virtualbox.vagrant import _clean_malvm_data
+from ..utils.helper_methods import get_config_root
 from .virtual_machine.vm_manager import VirtualMachineManager
 
 

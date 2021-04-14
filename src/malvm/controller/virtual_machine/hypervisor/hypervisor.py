@@ -2,7 +2,7 @@
 from typing import Dict, Iterable
 
 from ...config_loader import BaseImageSettings, VirtualMachineSettings
-from ....utils.box_template import BoxConfiguration
+from .virtualbox.packer import BoxConfiguration
 from ....utils.metaclasses import SingletonMeta
 
 

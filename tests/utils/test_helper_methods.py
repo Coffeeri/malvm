@@ -1,10 +1,10 @@
 """This module contains tests for helper methods."""
 import json
 
-from malvm.utils import helper_methods
+import malvm.controller.virtual_machine.hypervisor.virtualbox.vagrant as vagrant_helper
 
-from malvm.utils.helper_methods import remove_key_from_json_file, \
-    remove_vm_from_vagrant_files
+from malvm.controller.virtual_machine.hypervisor.virtualbox.vagrant import remove_vm_from_vagrant_files, \
+    remove_key_from_json_file
 
 test_vagrantfile_json = {
     "fkieVM": "~/.local/share/malvm/vagrantfiles/fkieVM/Vagrantfile",
@@ -33,7 +33,7 @@ def test_remove_vm_from_vagrant_files(monkeypatch, tmp_path):
     with json_path().open(mode="w") as opened_file:
         json.dump(test_vagrantfile_json, opened_file)
 
-    monkeypatch.setattr(helper_methods, "get_vagrant_files_json_path", json_path)
+    monkeypatch.setattr(vagrant_helper, "get_vagrant_files_json_path", json_path)
     remove_vm_from_vagrant_files("abcVM")
 
     with json_path().open() as opened_file:

@@ -9,7 +9,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Tuple, Union
 
-from ...utils.helper_methods import get_project_root, read_json_file
+from ...utils.helper_methods import get_project_root
+from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import read_json_file
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 
 log = logging.getLogger()

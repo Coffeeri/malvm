@@ -1,4 +1,5 @@
 """This module contains the hypervisor VirtualBox."""
+import logging
 import os
 import subprocess
 import sys
@@ -6,11 +7,12 @@ from typing import Iterable
 
 from ....config_loader import VirtualMachineSettings
 from ..hypervisor import Hypervisor
-from .....utils.box_template import BoxConfiguration, PackerTemplate
 from .....utils.exceptions import BaseImageExists
-from .....utils.helper_methods import get_vagrant_box_list, get_vagrant_files_folder_path
-from .....utils.vm_managment import log, BaseImage, generate_box_template, add_vm_to_vagrant_files, get_vm_ids_dict, \
-    remove_vbox_vm_and_data, get_vm_names_list
+from .packer import generate_box_template, BoxConfiguration, PackerTemplate
+from .vagrant import remove_vbox_vm_and_data, add_vm_to_vagrant_files, get_vm_ids_dict, get_vm_names_list, \
+    get_vagrant_files_folder_path, get_vagrant_box_list
+
+log = logging.getLogger()
 
 
 class VirtualBoxHypervisor(Hypervisor):
@@ -103,3 +105,16 @@ class VirtualBoxHypervisor(Hypervisor):
 
     def get_virtual_machines_names_iter(self) -> Iterable[str]:
         return get_vm_names_list()
+
+
+class BaseImage:
+    def __init__(self, config: BoxConfiguration):
+        self.config = config
+        log.debug(f"Init base image {config.vagrant_box_name} with config {config}.")
+
+    def build(self):
+        log.debug(self.config)
+        packer_template = PackerTemplate(self.config)
+        packer_template.configure()
+        packer_template.build()
+        packer_template.add_to_vagrant()

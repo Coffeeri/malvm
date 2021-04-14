@@ -4,7 +4,8 @@ from typing import List, Tuple
 
 from malvm.characteristics.abstract_characteristic import LambdaCharacteristic
 from malvm.characteristics.files import FileVBCharacteristic
-from malvm.utils.helper_methods import get_project_root, read_json_file
+from malvm.utils.helper_methods import get_project_root
+from malvm.controller.virtual_machine.hypervisor.virtualbox.vagrant import read_json_file
 
 
 def test_characteristic_init() -> None:

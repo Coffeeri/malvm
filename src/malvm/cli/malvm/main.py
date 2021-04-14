@@ -11,7 +11,7 @@ from .utils import (print_pre_boot_fix_results,
                     print_characteristics,
                     print_results,
                     )
-from ...utils.helper_methods import get_existing_vagrant_files_paths_iterable
+from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import get_existing_vagrant_files_paths_iterable
 
 controller: Controller = Controller()
 log = logging.getLogger()

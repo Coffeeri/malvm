@@ -11,6 +11,7 @@ from importlib import import_module
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Iterator
 
+from .config_loader import setup_logging, get_malvm_configuration
 from ..characteristics.abstract_characteristic import (
     CharacteristicBase,
     CheckResult,
@@ -18,6 +19,9 @@ from ..characteristics.abstract_characteristic import (
     Characteristic,
 )
 from ..utils.metaclasses import SingletonMeta
+from .virtual_machine.hypervisor.virtualbox.vagrant import _clean_malvm_data
+from ..utils.helper_methods import get_config_root
+from .virtual_machine.vm_manager import VirtualMachineManager
 
 
 class CharacteristicAction(Enum):
@@ -36,6 +40,18 @@ class Controller(metaclass=SingletonMeta):
         )
         self.characteristics: Dict[str, CharacteristicBase] = {}
         self.__load_and_add_characteristics()
+        self.configuration = get_malvm_configuration()
+        setup_logging(self.configuration)
+        self.vm_manager = VirtualMachineManager()
+        self.vm_manager.set_config(self.configuration.virtual_machines, self.configuration.base_images)
+        self.dirty_paths = self.__get_dirty_paths()
+
+    def __get_dirty_paths(self) -> List[Path]:
+        paths = [get_config_root()]
+        logging_filepath = self.configuration.logging_settings.rotating_file_path
+        if logging_filepath and logging_filepath.exists():
+            paths.append(logging_filepath)
+        return paths
 
     def __load_and_add_characteristics(self) -> None:
         for characteristic in load_characteristics_by_path(self.characteristics_path):
@@ -84,7 +100,7 @@ class Controller(metaclass=SingletonMeta):
         )
 
     def __action_on_characteristic_with_results(
-        self, slug_searched: str, action: CharacteristicAction
+            self, slug_searched: str, action: CharacteristicAction
     ) -> CheckResult:
         characteristic = self.__get_all_characteristics_dict().get(slug_searched, None)
         if characteristic:
@@ -93,9 +109,9 @@ class Controller(metaclass=SingletonMeta):
             raise ValueError("Characteristic was not found.")
 
     def get_characteristic_list(
-        self,
-        include_sub_characteristics: bool = False,
-        selected_runtime: Optional[Runtime] = Runtime.DEFAULT,
+            self,
+            include_sub_characteristics: bool = False,
+            selected_runtime: Optional[Runtime] = Runtime.DEFAULT,
     ) -> List[CharacteristicBase]:
         if include_sub_characteristics:
             characteristics = self.__get_all_characteristics()
@@ -106,14 +122,23 @@ class Controller(metaclass=SingletonMeta):
             characteristic
             for characteristic in characteristics
             if (
-                (characteristic.attributes.runtime == selected_runtime)
-                or (selected_runtime is None)
+                    (characteristic.attributes.runtime == selected_runtime)
+                    or (selected_runtime is None)
             )
         ]
 
+    def clean_malvm_data(self, clean_soft: bool):
+        _clean_malvm_data(self.dirty_paths, clean_soft)
+
+    # def create_configured_vms(self):
+    #     vms_config = filter_existing_vms_from_config(self.configuration.virtual_machines)
+    #
+    # def create_vm_by_config(self, vm_name: str, vm_config: VirtualMachineSettings):
+    #     ...
+
 
 def action_on_characteristic(
-    characteristic: CharacteristicBase, action: CharacteristicAction
+        characteristic: CharacteristicBase, action: CharacteristicAction
 ) -> CheckResult:
     if action == CharacteristicAction.CHECK:
         yield from characteristic.check()
@@ -129,16 +154,16 @@ def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
         for i in dir(imported_module):
             attribute = getattr(imported_module, i)
             if (
-                inspect.isclass(attribute)
-                and issubclass(attribute, Characteristic)
-                and attribute is not Characteristic
+                    inspect.isclass(attribute)
+                    and issubclass(attribute, Characteristic)
+                    and attribute is not Characteristic
             ):
                 setattr(sys.modules[__name__], name, attribute)
                 yield attribute()
 
 
 def get_sub_characteristics(
-    characteristic: CharacteristicBase,
+        characteristic: CharacteristicBase,
 ) -> Iterator[CharacteristicBase]:
     if characteristic.sub_characteristics:
         yield from characteristic.sub_characteristics.values()

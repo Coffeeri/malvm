@@ -3,6 +3,7 @@
 Classes:
     CPUidHypervisorCharacteristic: Checks and Fixes cpuid hypervisor bit in Virtualbox.
 """
+import logging
 import subprocess
 from typing import Optional
 
@@ -13,6 +14,8 @@ from ..abstract_characteristic import (
     CheckResult,
     Runtime,
 )
+
+log = logging.getLogger()
 
 
 class CPUidHypervisorCharacteristic(Characteristic):
@@ -28,6 +31,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
     def fix(self) -> CheckResult:
         vm_name = self.get_vm_name()
         if vm_name:
+            log.debug(f" run VBoxManage modifyvm {vm_name} --paravirtprovider none")
             subprocess.run(
                 ["VBoxManage", "modifyvm", vm_name, "--paravirtprovider", "none"],
                 check=True,
@@ -39,6 +43,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
         vm_name = self.get_vm_name()
         is_fixed: bool = False
         if vm_name:
+            log.debug(f" run VBoxManage showvminfo {vm_name} --machinereadable")
             result = subprocess.run(
                 ["VBoxManage", "showvminfo", vm_name, "--machinereadable"],
                 stdout=subprocess.PIPE,
@@ -50,7 +55,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
         yield self, CheckType(self.description, is_fixed)
 
     def get_vm_name(self) -> Optional[str]:
-        """Returns the virtual machine name if set."""
+        """Returns the Virtual Machine name if set."""
         if "vm_name" not in self.environment:
             return None
         return self.environment["vm_name"]

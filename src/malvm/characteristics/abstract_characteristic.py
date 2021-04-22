@@ -1,7 +1,7 @@
 """This module contains an interface for characteristics.
 
 A characteristic is an indication of the existence/ being inside
-a virtual machine.
+a Virtual Machine.
 
 Classes:
     CharacteristicBase: Baseclass with data for inheriting classes, such as
@@ -44,7 +44,7 @@ class CharacteristicAttributes(NamedTuple):
 
 
 class VMType(NamedTuple):
-    """Attributes of a virtual machine."""
+    """Attributes of a Virtual Machine."""
 
     name: str
 

@@ -1,27 +1,17 @@
 """This module contians cli for the malvm core."""
 import logging
-import subprocess
 import sys
-from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 
 import click
 
 from ..utils import print_info
 from ...controller import Controller
-from .utils import (
-    get_vm_name,
-    print_pre_boot_fix_results,
-    print_characteristics,
-    print_results,
-)
-from ...utils.helper_methods import (
-    get_config_root,
-    get_existing_vagrantfiles_paths_iterable,
-    remove_path_with_success,
-    get_vm_id_vagrantfile_path, get_vagrantfiles_folder_path,
-    get_vagrant_files_json_path, get_vm_ids_dict,
-)
+from .utils import (print_pre_boot_fix_results,
+                    print_characteristics,
+                    print_results,
+                    )
+from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import get_existing_vagrant_files_paths_iterable
 
 controller: Controller = Controller()
 log = logging.getLogger()
@@ -44,12 +34,10 @@ def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
 
     # Müssen wir Auge machen.
     if not vm_name:
-        vm_name = get_vm_name()
-        if not vm_name:
-            log.warning("No vm was found in your environment.\n"
-                        "You can manually pass the vm-name with [-v VM_NAME].\n"
-                        "If this ran in the VM, this can be ignored.")
-            sys.exit(0)
+        log.warning("No vm was found in your environment.\n"
+                    "You can manually pass the vm-name with [-v VM_NAME].\n"
+                    "If this ran in the VM, this can be ignored.")
+        sys.exit(0)
     print_pre_boot_fix_results(vm_name)
 
 
@@ -79,12 +67,10 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
 
     # Müssen wir Auge machen.
     if not vm_name:
-        vm_name = get_vm_name()
-        if not vm_name:
-            log.warning("No vm was found in your environment.\n"
-                        "You can manually pass the vm-name with [-v VM_NAME].\n"
-                        "If this ran in the VM, this can be ignored.")
-            sys.exit(0)
+        log.warning("No vm was found in your environment.\n"
+                    "You can manually pass the vm-name with [-v VM_NAME].\n"
+                    "If this ran in the VM, this can be ignored.")
+        sys.exit(0)
     print_pre_boot_fix_results(vm_name)
 
 
@@ -121,20 +107,18 @@ def show(show_all: bool) -> None:
 def clean(force: bool, soft: bool) -> None:
     """Removes all malvm data.
 
-    This includes virtual machines and their Vagrantfiles, packer cache..
+    This includes Virtual Machines and their Vagrantfiles, packer cache..
     This does not remove the malvm package itself.
     """
-    clean_paths = [
-        get_config_root(),
-    ]
-    vagrantfile_paths = get_existing_vagrantfiles_paths_iterable()
+
+    vagrantfile_paths = get_existing_vagrant_files_paths_iterable()
     if force:
-        clean_malvm_data(clean_paths, soft)
+        controller.clean_malvm_data(soft)
     else:
         if not soft:
             print_info("The following data will be deleted:",
                        command=f"malvm clean {'-f' if force else ''}")
-            for path in clean_paths:
+            for path in controller.dirty_paths:
                 print_info(f"Path: {path.absolute()}", command="clean()")
 
         print_info("VMs and Vagrantfiles will be destroyed and removed:")
@@ -143,47 +127,11 @@ def clean(force: bool, soft: bool) -> None:
 
         user_conformation = input("Sure? This cannot be reversed. [y/n]").lower()
         if user_conformation == "y":
-            clean_malvm_data(clean_paths, soft)
+            controller.clean_malvm_data(soft)
 
 
-def delete_vagrant_boxes():
-    # CAN: only delete if box exists not in `vagrant box list --machine-readable`
-    subprocess.run(
-        ["vagrant", "box", "remove", "malvm-win-10", "--all"], check=True,
-    )
-
-
-def clean_malvm_data(clean_paths: List[Path], clean_soft: bool):
-    destroy_virtual_machines()
-    delete_vagrantfiles_data()
-    if not clean_soft:
-        delete_vagrant_boxes()
-        delete_malvm_data_paths(clean_paths)
-
-
-def delete_vagrantfiles_data():
-    remove_path_with_success(str(get_vagrant_files_json_path()))
-    remove_path_with_success(str(get_vagrantfiles_folder_path()))
-
-
-def delete_malvm_data_paths(clean_paths: List[Path]):
-    for path in clean_paths:
-        remove_path_with_success(str(path.absolute()))
-
-
-def destroy_virtual_machines():
-    for vm_id, vagrantfile_path in get_vm_id_vagrantfile_path():
-        destroy_virtual_machine(vm_id)
-        remove_path_with_success(vagrantfile_path)
-
-
-def destroy_virtual_machine(vm_id: str):
-    subprocess.run(
-        ["vagrant", "destroy", "--force", vm_id], check=True,
-    )
-
-
-def remove_vm_and_data(vm_name: str):
-    vm_id = get_vm_ids_dict()[vm_name]
-    destroy_virtual_machine(vm_id)
-    remove_path_with_success(str(get_vagrantfiles_folder_path() / vm_name))
+@click.command()
+def up():  # pylint: disable=invalid-name
+    """Creates base images and Virtual Machines from configuration file."""
+    controller.vm_manager.build_base_images_in_config()
+    controller.vm_manager.build_vms_in_config()

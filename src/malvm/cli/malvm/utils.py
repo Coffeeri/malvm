@@ -1,7 +1,6 @@
 """This module contains helper methods for cli malvm-core."""
-import re
-from pathlib import Path
-from typing import Optional, List, Iterator, Tuple
+import platform
+from typing import List, Iterator, Tuple
 
 import click
 
@@ -37,22 +36,11 @@ def print_result(characteristic: CharacteristicBase, status: CheckType):
     )
 
 
-def get_vm_name() -> Optional[str]:
-    """Returns vm-name related to Vagrantfile in current path."""
-    path = Path.cwd() / "Vagrantfile"
-    if path.exists():
-
-        text_file = open(str(path.absolute()), "r")
-        text_file_content = text_file.read()
-        text_file.close()
-        matches = re.findall(r"vb\.name = \"(\S+)\"", text_file_content)
-        if matches:
-            return matches[0]
-    return None
-
-
 def print_pre_boot_fix_results(vm_name: str):
-    print_results(controller.apply_pre_boot_fixes({"vm_name": vm_name}))
+    environment = {"os": platform.system(), "vm_name": vm_name}
+    # for characteristic, return_status in controller.apply_pre_boot_fixes(environment):
+    #   print_result(characteristic, return_status)
+    print_results(controller.apply_pre_boot_fixes(environment))
 
 
 def print_pre_boot_check_results(vm_name: str):

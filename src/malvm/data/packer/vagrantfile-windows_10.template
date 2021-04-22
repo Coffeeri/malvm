@@ -7,6 +7,7 @@ Vagrant.configure("2") do |config|
     config.vm.define "vagrant-windows-10-preview"
     config.vm.box = "windows_10_preview"
     config.vm.communicator = "winrm"
+    config.disksize.size = '80GB'
 
     # Admin user name and password
     config.winrm.username = "insert_username"

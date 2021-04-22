@@ -27,7 +27,7 @@ Tool for VirtualBox, pretty old (2012) - still somewhat active.1
 - Change CD-ROM vendor name.
 - Randomize VM MAC address, based on the host interface MAC.
 - Set the numbers of CPUs to be used.
-- Set the virtual machine memory size.
+- Set the Virtual Machine memory size.
 - Check if hostonlyifs (host-only network interfaces) IP address is- default.
 - Check paravirtualization interface.
 - Check if audio support is enabled.

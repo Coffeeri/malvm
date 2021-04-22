@@ -12,13 +12,13 @@ from malvm.controller.controller import (
 )
 
 
-def test_singleton_controller(example_controller,):
+def test_singleton_controller(example_controller):
     controller_second = Controller()
     assert example_controller == controller_second
 
 
 def test_add_characteristic(
-    example_controller, example_characteristic,
+        example_controller, example_characteristic,
 ):
     expected = {
         example_characteristic.slug: example_characteristic,
@@ -31,17 +31,17 @@ def test_add_characteristic(
 
 
 def test_characteristic_loaded(
-    example_controller, example_characteristic,
+        example_controller, example_characteristic,
 ):
     characteristics = (
         *load_characteristics_by_path(example_controller.characteristics_path),
         example_characteristic,
     )
-    expected_list = sorted(characteristics, key=lambda c: c.slug,)
+    expected_list = sorted(characteristics, key=lambda c: c.slug, )
 
     actual_list = sorted(
-        example_controller.get_characteristic_list(False, Runtime.DEFAULT,)
-        + example_controller.get_characteristic_list(False, Runtime.PRE_BOOT,),
+        example_controller.get_characteristic_list(False, Runtime.DEFAULT, )
+        + example_controller.get_characteristic_list(False, Runtime.PRE_BOOT, ),
         key=lambda c: c.slug,
     )
 
@@ -49,7 +49,7 @@ def test_characteristic_loaded(
 
 
 def test_sub_characteristics_included(
-    example_controller, example_characteristic,
+        example_controller, example_characteristic,
 ):
     characteristics = list(
         load_characteristics_by_path(example_controller.characteristics_path)
@@ -63,8 +63,8 @@ def test_sub_characteristics_included(
         expected_sub_characteristics, key=lambda c: c.slug,
     )
     actual_sub_characteristics = sorted(
-        example_controller.get_characteristic_list(True, Runtime.DEFAULT,)
-        + example_controller.get_characteristic_list(True, Runtime.PRE_BOOT,),
+        example_controller.get_characteristic_list(True, Runtime.DEFAULT, )
+        + example_controller.get_characteristic_list(True, Runtime.PRE_BOOT, ),
         key=lambda c: c.slug,
     )
     assert expected_sub_characteristics == actual_sub_characteristics
@@ -155,34 +155,3 @@ def test_get_characteristic_list(example_controller, example_characteristic):
 def test_check_unknown_characteristic(example_controller):
     with pytest.raises(ValueError):
         [*example_controller.get_check_results("random_slug")]
-
-
-# def test_nested_characteristics_run_check(
-#     fixture_test_controller, fixture_sub_characteristic_multi
-# ):
-#     fixture_test_controller.characteristics[
-#         fixture_sub_characteristic_multi.slug
-#     ] = fixture_sub_characteristic_multi
-#     fixture_test_controller.characteristics_with_sub_characteristics[
-#         fixture_sub_characteristic_multi.slug
-#     ] = fixture_sub_characteristic_multi
-#     fixture_test_controller.characteristics_with_sub_characteristics[
-#         list(fixture_sub_characteristic_multi.sub_characteristics.values())[0].slug
-#     ] = list(fixture_sub_characteristic_multi.sub_characteristics.values())[0]
-#
-#     assert isinstance(fixture_test_controller.get_all_checks_results(), Generator)
-
-#
-# @pytest.fixture
-# def fixture_sub_characteristic_multi() -> Characteristic:
-#     characteristic = Characteristic("SRC001", "Single Return Characteristic",)
-#     characteristic.add_sub_characteristic(
-#         LambdaCharacteristic(
-#             "SRC002",
-#             "Single Return Characteristic 2",
-#             "",
-#             lambda x: False,
-#             lambda x: True,
-#         )
-#     )
-#     return characteristic

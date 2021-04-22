@@ -9,10 +9,10 @@ from typing import List, Iterator
 
 from ...utils.helper_methods import (
     get_project_root,
-    read_json_file,
     remove_path_with_success,
     check_path_not_exists,
 )
+from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import read_json_file
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 
 

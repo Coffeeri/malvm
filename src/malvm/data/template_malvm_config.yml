@@ -1,0 +1,17 @@
+logging:
+  # syslog_address: /dev/log
+  rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [ ]
+    pip_applications: [ ]

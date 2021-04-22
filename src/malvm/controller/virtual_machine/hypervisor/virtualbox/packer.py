@@ -1,26 +1,37 @@
-"""Module containing a generic template with configuration for virtual machines."""
+"""This module contains helper methods for controlling and communicate with Packer, building base images."""
 import logging
+
 import os
-import platform
 import re
 import shutil
 import subprocess
 from pathlib import Path
-from time import sleep
-from typing import Dict, List, NamedTuple
+from typing import NamedTuple, Dict, List
 
-from ..malvm.utils import print_result
-from ..utils import print_info
-
-from ...controller.controller import Controller
-from ...utils.helper_methods import (
-    get_config_root,
-    get_data_dir,
-    get_vm_malvm_package_file,
-    read_json_file,
-)
+from .vagrant import read_json_file
+from ....config_loader import BaseImageSettings, VirtualMachineSettings
+from .....utils.helper_methods import get_data_dir, get_config_root, get_vm_malvm_package_file
 
 log = logging.getLogger()
+
+PACKER_PATH = get_data_dir() / "packer"
+
+
+def generate_box_template(base_image_name: str, base_image_settings: BaseImageSettings):
+    if base_image_settings.template == "windows_10":
+        return BoxConfiguration(
+            packer_template_path=(PACKER_PATH / "windows_10.json"),
+            packer_box_name=f"windows_10_{base_image_name}_virtualbox.box",
+            vagrant_box_name=base_image_name,
+            username=base_image_settings.username,
+            password=base_image_settings.password,
+            computer_name=base_image_settings.computer_name,
+            language_code=base_image_settings.language_code,
+        )
+    raise NotImplementedError(f"Base-Image template {base_image_settings.template} "
+                              f"does not exist/ is not supported.")
+
+
 PACKER_FILE_DIR = get_data_dir() / "packer"
 
 
@@ -59,12 +70,12 @@ def edit_last_line_of_text(file: Path, text):
 class PackerTemplate:
     """VM template creation class for Packer."""
 
-    def __init__(self, name: str, configuration: BoxConfiguration):
-        self.name = name
+    def __init__(self, configuration: BoxConfiguration):
         self.configuration = configuration
+        self.name = configuration.packer_template_path.name.split(".")[0]
         self.config_path = get_config_root() / f"data/{self.name}/"
         self.local_packer_template_path = (
-                self.config_path / self.configuration.packer_template_path.name
+                self.config_path / configuration.packer_template_path.name
         )
         self.configured = False
 
@@ -101,7 +112,7 @@ class PackerTemplate:
         """Inserts parameter into Vagrantfile."""
         vagrantfile_template_config = {
             "insert_username": self.configuration.username,
-            "insert_password": self.configuration.password,
+            "insert_password": self.configuration.password
         }
         vagrantfile_template_path = (
                 self.config_path / f"vagrantfile-{self.name.lower()}.template"
@@ -123,6 +134,7 @@ class PackerTemplate:
                 "packer",
                 "build",
                 "--only=virtualbox-iso",
+                "--force",
                 str(self.local_packer_template_path.absolute()),
             ],
             check=True,
@@ -144,63 +156,28 @@ class PackerTemplate:
             check=True,
         )
 
-    def init_vagrantfile(self, vm_name: str):
-        """Initialize Vagrantfile for virtual machine."""
+    def init_vagrantfile(self, vm_name: str, vm_settings: VirtualMachineSettings):
+        """Initialize Vagrantfile for Virtual Machine."""
+        # virtual_machines = Controller().configuration.virtual_machines
+        # vm_settings = virtual_machines.get(vm_name, virtual_machines["default"])
+        log.debug(f"Initialize Vagrantfile for {vm_name} with settings {vm_settings}")
         subprocess.run(
             ["vagrant", "init", self.configuration.vagrant_box_name], check=True,
         )
 
-        ignore_vbguest_additions = f"""
+        modified_vagrantfile_tail = f"""
+   config.disksize.size = "{vm_settings.disk_size}"
    config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     vb.gui = true
     # Customize the amount of memory on the VM:
-    vb.memory = "2048"
+    vb.memory = "{vm_settings.memory}"
     vb.name = "{vm_name}"
   end
   config.vbguest.auto_update = false
 end
         """
-        edit_last_line_of_text(Path("Vagrantfile"), ignore_vbguest_additions)
-
-    def setup_virtualmachine(self, vm_name: str, vagrantfile_output: Path = Path.cwd()):
-        """Setup and start virtual machine with vagrant.
-
-        This method initializes the Vagrantfile, starts the virtual machine,
-        fixes all characteristics and saves a snapshot of the clean state.
-        """
-        os.chdir(
-            str(vagrantfile_output.absolute())
-            if vagrantfile_output.is_dir()
-            else str(vagrantfile_output.parent.absolute())
-        )
-        self.init_vagrantfile(vm_name)
-        log.debug(f"Starting first time VM {vm_name} with `vagrant up`.")
-        subprocess.run(
-            ["vagrant", "up"], check=True,
-        )
-        log.debug(f"Shutting down VM {vm_name} with `vagrant halt`.")
-        subprocess.run(
-            ["vagrant", "halt"], check=True,
-        )
-        print_info("Wait 3 seconds..")
-        sleep(3)
-        log.debug(f"Running pre boot fixes on VM {vm_name}.")
-        run_pre_boot_fixes(vm_name)
-        print_info("Wait 3 seconds..")
-        sleep(3)
-        log.debug(f"Starting VM {vm_name} with `vagrant up`.")
-        subprocess.run(
-            ["vagrant", "up"], check=True,
-        )
-        log.debug(f"Running malvm fix on {vm_name}.")
-        subprocess.run(
-            ["vagrant", "winrm", "-e", "-c", "malvm fix"], check=True,
-        )
-        log.debug(f"Save clean-state snapshot for {vm_name}.")
-        subprocess.run(
-            ["vagrant", "snapshot", "save", "clean-state"], check=True,
-        )
+        edit_last_line_of_text(Path("Vagrantfile"), modified_vagrantfile_tail)
 
     def copy_necessary_files(self):
         """Copies all data and configuration files for Packer and Vagrant."""
@@ -234,16 +211,3 @@ end
             )
         autounattend_filepath = json_text["variables"]["autounattend"]
         return Path(self.config_path / autounattend_filepath)
-
-
-def run_pre_boot_fixes(vm_name: str):
-    """Runs fixes of characteristics with RUNTIME PRE_BOOT.
-
-    Args:
-        vm_name (str): Name of virtual machine in VirtualBox.
-    """
-    controller: Controller = Controller()
-    print_info("> Checking and fixing pre boot characteristics...")
-    environment = {"os": platform.system(), "vm_name": vm_name}
-    for characteristic, return_status in controller.apply_pre_boot_fixes(environment):
-        print_result(characteristic, return_status)

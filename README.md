@@ -46,10 +46,13 @@ Please make sure that the following dependencies are installed:
 #### with pip
 
 You need to create a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).
+Scope needed: `read_api`
+[Read more](https://docs.gitlab.com/ee/user/packages/pypi_repository/#install-a-pypi-package)
 
 ```shell
-pip install --extra-index-url https://__token__:YOUR_ACCESS_TOKEN@gitlab.com/api/v4/projects/18734431/packages/pypi/simple malvm
+pip install --extra-index-url https://YOUR_ACCESS_TOKEN_NAME:YOUR_ACCESS_TOKEN@gitlab.com/api/v4/projects/18734431/packages/pypi/simple malvm
 ```
+
 
 ---
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-#INSTALL_PATH="/usr/bin/"
-INSTALL_PATH="$HOME/.local/bin/"
+INSTALL_PATH="/usr/bin/"
+#INSTALL_PATH="$HOME/.local/bin/"
 VAGRANT_VERSION="2.2.14"
 PACKER_VERSION="1.6.5"
 
@@ -16,21 +16,21 @@ EXIT_CODE=0
 
 
 
-check_vagrant_installed()
-{
+check_vagrant_installed () {
   if command -v vagrant &> /dev/null
   then
-    return 0
+    echo 0
   else
-    return 1
+    echo 1
   fi
 }
+
 install_vagrant()
 {
   curl -o /tmp/vagrant.zip ${VAGRANT_DOWNLOAD_URL_LINUX}
   unzip /tmp/vagrant.zip -d ${INSTALL_PATH}
-  check_vagrant_installed
-  if [ $? -eq "0" ]
+  VAGRANT_INSTALLED=$(check_vagrant_installed)
+  if [ $VAGRANT_INSTALLED -eq "1" ]
   then
       VAGRANT_VERSION_INSTALLED=`vagrant --version | tr -d "Vagrant "`
       if [ "${VAGRANT_VERSION_INSTALLED}" = "${VAGRANT_VERSION}" ]
@@ -54,9 +54,9 @@ check_packer_installed()
 {
   if command -v packer &> /dev/null
   then
-    return 0
+    echo 0
   else
-    return 1
+    echo 1
   fi
 }
 
@@ -64,8 +64,8 @@ install_packer()
 {
   curl -o /tmp/packer.zip ${PACKER_DOWNLOAD_URL_LINUX}
   unzip /tmp/packer.zip -d ${INSTALL_PATH}
-  check_packer_installed
-  if [ $? -eq "0" ]
+  PACKER_INSTALLED=$(check_packer_installed)
+  if [ $PACKER_INSTALLED -eq "0" ]
   then
       PACKER_VERSION_INSTALLED=`packer --version`
       if [ "${PACKER_VERSION_INSTALLED}" = "${PACKER_VERSION}" ]
@@ -83,7 +83,7 @@ install_packer()
 
 
 # Check OS
-if [ -d "/etc/debian_version" ]
+if [ -f "/etc/debian_version" ]
 then
     echo "Found: Debian based OS."
     # Debian/ Ubuntu distro
@@ -99,8 +99,8 @@ fi
 
 ################## Start of script ##################
 # Check current vagrant version
-check_vagrant_installed
-if [ $? -eq "0" ]
+VAGRANT_INSTALLED=$(check_vagrant_installed)
+if [ $VAGRANT_INSTALLED -eq "0" ]
 then
     VAGRANT_VERSION_INSTALLED=`vagrant --version | tr -d "Vagrant "`
     echo "Found: Vagrant with version ${VAGRANT_VERSION_INSTALLED}"
@@ -122,8 +122,8 @@ fi
 
 
 # Check current packer version
-check_packer_installed
-if [ $? -eq "0" ]
+PACKER_INSTALLED=$(check_packer_installed)
+if [ $PACKER_INSTALLED -eq "0" ]
 then
     PACKER_VERSION_INSTALLED=`packer --version`
     echo "Found: Packer with version ${PACKER_VERSION_INSTALLED}"

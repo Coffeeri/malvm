@@ -20,7 +20,7 @@ def install_choco_applications(choco_applications: Optional[List[str]], vm_name:
         vm_id = get_vm_id_by_vm_name(vm_name)
         for application in choco_applications:
             log.info(f"Installing {application}...")
-            run_command_in_vm(vm_id, f"choco install {application}", True)
+            run_command_in_vm(vm_id, f"choco install {application} -y", True)
 
 
 def install_pip_applications(pip_applications: Optional[List[str]], vm_name: str):
@@ -28,7 +28,7 @@ def install_pip_applications(pip_applications: Optional[List[str]], vm_name: str
         vm_id = get_vm_id_by_vm_name(vm_name)
         for application in pip_applications:
             log.info(f"Installing {application}...")
-            run_command_in_vm(vm_id, f"pip install {application}", True)
+            run_command_in_vm(vm_id, f"pip install --no-input {application} ", True)
 
 
 def run_command_in_vm(vm_id: str, command: str, elevated: bool = False):

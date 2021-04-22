@@ -3,7 +3,7 @@ import logging
 import os
 import subprocess
 import sys
-from typing import Iterable
+from typing import Iterable, Optional, List
 
 from ....config_loader import VirtualMachineSettings
 from ..hypervisor import Hypervisor
@@ -15,7 +15,7 @@ from .vagrant import remove_vbox_vm_and_data, add_vm_to_vagrant_files, get_vm_na
 log = logging.getLogger()
 
 
-def install_choco_applications(choco_applications: Iterable[str], vm_name: str):
+def install_choco_applications(choco_applications: Optional[List[str]], vm_name: str):
     if choco_applications:
         vm_id = get_vm_id_by_vm_name(vm_name)
         for application in choco_applications:
@@ -23,7 +23,7 @@ def install_choco_applications(choco_applications: Iterable[str], vm_name: str):
             run_command_in_vm(vm_id, f"choco install {application}", True)
 
 
-def install_pip_applications(pip_applications: Iterable[str], vm_name: str):
+def install_pip_applications(pip_applications: Optional[List[str]], vm_name: str):
     if pip_applications:
         vm_id = get_vm_id_by_vm_name(vm_name)
         for application in pip_applications:

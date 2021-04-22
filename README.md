@@ -43,10 +43,14 @@ Please make sure that the following dependencies are installed:
 
 ### Install malvm
 
+Please make sure that you have installed all packages in [Prerequisite](#prerequisite).
+
 #### with pip
 
 You need to create a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).
+
 Scope needed: `read_api`
+
 [Read more](https://docs.gitlab.com/ee/user/packages/pypi_repository/#install-a-pypi-package)
 
 ```shell
@@ -57,8 +61,6 @@ pip install --extra-index-url https://YOUR_ACCESS_TOKEN_NAME:YOUR_ACCESS_TOKEN@g
 ---
 
 #### with git clone and manual Installation
-
-Please make sure that you installed all packages in [Prerequisite](#prerequisite).
 
 ##### **1. Clone the Repository and open a shell in the folder.**
 ```shell

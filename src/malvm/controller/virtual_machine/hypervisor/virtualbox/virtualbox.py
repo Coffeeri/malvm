@@ -9,10 +9,37 @@ from ....config_loader import VirtualMachineSettings
 from ..hypervisor import Hypervisor
 from .....utils.exceptions import BaseImageExists
 from .packer import generate_box_template, BoxConfiguration, PackerTemplate
-from .vagrant import remove_vbox_vm_and_data, add_vm_to_vagrant_files, get_vm_ids_dict, get_vm_names_list, \
-    get_vagrant_files_folder_path, get_vagrant_box_list
+from .vagrant import remove_vbox_vm_and_data, add_vm_to_vagrant_files, get_vm_names_list, \
+    get_vagrant_files_folder_path, get_vagrant_box_list, get_vm_id_by_vm_name
 
 log = logging.getLogger()
+
+
+def install_choco_applications(choco_applications: Iterable[str], vm_name: str):
+    if choco_applications:
+        vm_id = get_vm_id_by_vm_name(vm_name)
+        for application in choco_applications:
+            log.info(f"Installing {application}...")
+            run_command_in_vm(vm_id, f"choco install {application}", True)
+
+
+def install_pip_applications(pip_applications: Iterable[str], vm_name: str):
+    if pip_applications:
+        vm_id = get_vm_id_by_vm_name(vm_name)
+        for application in pip_applications:
+            log.info(f"Installing {application}...")
+            run_command_in_vm(vm_id, f"pip install {application}", True)
+
+
+def run_command_in_vm(vm_id: str, command: str, elevated: bool = False):
+    if elevated:
+        subprocess.run(
+            ["vagrant", "winrm", "-e", "-c", command, vm_id], check=True,
+        )
+    else:
+        subprocess.run(
+            ["vagrant", "winrm", "-c", command, vm_id], check=True,
+        )
 
 
 class VirtualBoxHypervisor(Hypervisor):
@@ -52,6 +79,10 @@ class VirtualBoxHypervisor(Hypervisor):
         subprocess.run(
             ["vagrant", "up"], check=True,
         )
+        log.info("Installing choco applications...")
+        install_choco_applications(vm_settings.choco_applications, vm_name)
+        log.info("Installing pip applications...")
+        install_pip_applications(vm_settings.pip_applications, vm_name)
         log.debug(f"Shutting down VM {vm_name} with `vagrant halt`.")
         subprocess.run(
             ["vagrant", "halt"], check=True,
@@ -83,13 +114,13 @@ class VirtualBoxHypervisor(Hypervisor):
             )
 
     def stop_vm(self, vm_name: str):
-        vm_id = get_vm_ids_dict()[vm_name]
+        vm_id = get_vm_id_by_vm_name(vm_name)
         subprocess.run(
             ["vagrant", "suspend", vm_id], check=True,
         )
 
     def reset_vm(self, vm_name: str):
-        vm_id = get_vm_ids_dict()[vm_name]
+        vm_id = get_vm_id_by_vm_name(vm_name)
         subprocess.run(
             ["vagrant", "snapshot", "restore", vm_id, "clean-state"], check=True,
         )
@@ -98,10 +129,8 @@ class VirtualBoxHypervisor(Hypervisor):
         remove_vbox_vm_and_data(vm_name)
 
     def fix_vm(self, vm_name: str):
-        vm_id = get_vm_ids_dict()[vm_name]
-        subprocess.run(
-            ["vagrant winrm -e -c malvm fix", vm_id], check=True,
-        )
+        vm_id = get_vm_id_by_vm_name(vm_name)
+        run_command_in_vm(vm_id, "malvm fix", True)
 
     def get_virtual_machines_names_iter(self) -> Iterable[str]:
         return get_vm_names_list()

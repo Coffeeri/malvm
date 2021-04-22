@@ -69,6 +69,10 @@ def get_vm_ids_dict() -> Dict[str, str]:
     return vms_with_id
 
 
+def get_vm_id_by_vm_name(vm_name):
+    return get_vm_ids_dict()[vm_name]
+
+
 def get_vm_names_list() -> Iterable[str]:
     return list(get_vm_ids_dict().keys())
 

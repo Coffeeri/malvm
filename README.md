@@ -27,6 +27,7 @@ view and (sub-)controller.
 3. [Quick start: Create your first VM](#first-vm)
 4. [Quick start: Check and Fix your VM-Environment](#checks-and-fixes)
 5. [Implementation of characteristics](#Characteristics)
+6. [Configuration file](#configuration-file)
 
 ### Prerequisite
 Please make sure that the following dependencies are installed:
@@ -133,3 +134,43 @@ Each Module defines a characteristic and consists of a class, which inherits fro
 Each Characteristic-Module can have multiple Sub-Characteristics.
 In the example of `FilesCharacteristic` - each File would be its own
 Sub-Characteristic.
+
+
+## Configuration file
+
+The configfile is usually located at `~/.local/share/malvm/malvm_config.yaml`.
+You are able to configure syslog, logging path and Base Images/ Virtual Machines.
+A default Virtual Machine has to exist at any time, which will be used for `malvm box run ..`.
+After configuring *malvm_config.yaml* you are able to build and defined Base Images/ VMs
+via the command `malvm up`.
+
+*Note*:
++ *disk_size* needs a size prefix such as GB
++ *memory* does not need a prefix, it is MB by default
+
+### Example
+```yaml
+logging:
+  syslog_address: /dev/log
+  rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [ ]
+    pip_applications: [ ]
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 4096
+    choco_applications: [adobereader, firefox, 7zip.install]
+    pip_applications: [requests]
+```

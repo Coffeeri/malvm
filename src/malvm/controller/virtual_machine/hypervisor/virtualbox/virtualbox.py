@@ -42,13 +42,14 @@ def run_command_in_vm(vm_id: str, command: str, elevated: bool = False):
         )
 
 
-def setup_network(network_configuration: VirtualMachineNetworkSettings, vm_name: str):
-    if network_configuration.default_gateway:
+def setup_network(network_configuration: Optional[VirtualMachineNetworkSettings], vm_name: str):
+    if network_configuration and network_configuration.default_gateway:
         vm_id = get_vm_id_by_vm_name(vm_name)
         log.info(f"Setting {network_configuration.default_gateway} as default gateway.")
         run_command_in_vm(vm_id, "route DELETE -p 0.0.0.0", elevated=True)
         run_command_in_vm(vm_id,
-                          "reg delete HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\PersistentRoutes /va /f",
+                          "reg delete HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\PersistentRoutes "
+                          "/va /f",
                           elevated=True)
         run_command_in_vm(vm_id, f"route add -p 0.0.0.0 mask 0.0.0.0 {network_configuration.default_gateway}",
                           elevated=True)

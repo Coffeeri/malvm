@@ -34,7 +34,7 @@ class NetworkInterface(NamedTuple):
 
 class VirtualMachineNetworkSettings(NamedTuple):
     default_gateway: Optional[str]
-    interfaces: List[NetworkInterface]
+    interfaces: Optional[List[NetworkInterface]]
 
 
 class VirtualMachineSettings(NamedTuple):
@@ -43,7 +43,7 @@ class VirtualMachineSettings(NamedTuple):
     memory: str
     choco_applications: Optional[List[str]]
     pip_applications: Optional[List[str]]
-    network_configuration: VirtualMachineNetworkSettings
+    network_configuration: Optional[VirtualMachineNetworkSettings]
 
 
 VirtualMachinesType = Dict[str, VirtualMachineSettings]
@@ -233,11 +233,10 @@ def parse_network_interfaces(network_interfaces: Optional[Dict]) -> Optional[Lis
         ip_address = config.get("ip", None) if config else None
         if not ip_address:
             raise MisconfigurationException(f"IP address of interface {interface_name} is not configured")
-        else:
-            ip_address = str(ip_address)
-            if not is_valid_ipv4_address(ip_address):
-                raise MisconfigurationException(
-                    f"IP address of interface {interface_name} is not in the correct IPV4 format.")
+        ip_address = str(ip_address)
+        if not is_valid_ipv4_address(ip_address):
+            raise MisconfigurationException(
+                f"IP address of interface {interface_name} is not in the correct IPV4 format.")
         interface_list.append(
             NetworkInterface(
                 interface_name=interface_name,
@@ -267,7 +266,7 @@ def parse_network_configuration(network_configuration: Optional[Dict]) -> Option
     if gateway:
         gateway = str(gateway)
         if not is_valid_ipv4_address(gateway):
-            raise MisconfigurationException(f"IP address of gateway is not in the correct IPV4 format.")
+            raise MisconfigurationException("IP address of gateway is not in the correct IPV4 format.")
     network_config = VirtualMachineNetworkSettings(
         default_gateway=gateway,
         interfaces=parse_network_interfaces(network_configuration.get("interfaces", None))

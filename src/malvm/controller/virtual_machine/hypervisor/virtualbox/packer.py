@@ -164,8 +164,12 @@ class PackerTemplate:
         subprocess.run(
             ["vagrant", "init", self.configuration.vagrant_box_name], check=True,
         )
+        interfaces = "\n".join([f'config.vm.network "private_network", ip: "{interface.ip}"' for interface in
+                                vm_settings.network_configuration.interfaces])
 
         modified_vagrantfile_tail = f"""
+   # config.vm.network "private_network", ip: "192.168.56.101"
+   {interfaces}
    config.disksize.size = "{vm_settings.disk_size}"
    config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine

@@ -1,6 +1,7 @@
 """This module contains methods which load and verify the malvm configuration."""
 import logging
 import shutil
+import socket
 from logging.config import dictConfig
 from pathlib import Path
 from typing import NamedTuple, List, Dict, Any, Optional, Tuple
@@ -26,12 +27,23 @@ class BaseImageSettings(NamedTuple):
     language_code: str
 
 
+class NetworkInterface(NamedTuple):
+    interface_name: str
+    ip: str
+
+
+class VirtualMachineNetworkSettings(NamedTuple):
+    default_gateway: Optional[str]
+    interfaces: List[NetworkInterface]
+
+
 class VirtualMachineSettings(NamedTuple):
     base_image_name: str
     disk_size: str
     memory: str
     choco_applications: Optional[List[str]]
     pip_applications: Optional[List[str]]
+    network_configuration: VirtualMachineNetworkSettings
 
 
 VirtualMachinesType = Dict[str, VirtualMachineSettings]
@@ -213,6 +225,56 @@ def parse_base_images_settings(base_image_settings_dict: Optional[Dict]) -> Base
     return base_images_dict
 
 
+def parse_network_interfaces(network_interfaces: Optional[Dict]) -> Optional[List[NetworkInterface]]:
+    if not network_interfaces:
+        return None
+    interface_list = []
+    for interface_name, config in network_interfaces.items():
+        ip_address = config.get("ip", None) if config else None
+        if not ip_address:
+            raise MisconfigurationException(f"IP address of interface {interface_name} is not configured")
+        else:
+            ip_address = str(ip_address)
+            if not is_valid_ipv4_address(ip_address):
+                raise MisconfigurationException(
+                    f"IP address of interface {interface_name} is not in the correct IPV4 format.")
+        interface_list.append(
+            NetworkInterface(
+                interface_name=interface_name,
+                ip=ip_address)
+        )
+    return interface_list
+
+
+def is_valid_ipv4_address(address: str) -> bool:
+    try:
+        socket.inet_pton(socket.AF_INET, address)
+    except AttributeError:
+        try:
+            socket.inet_aton(address)
+        except socket.error:
+            return False
+        return address.count('.') == 3
+    except socket.error:
+        return False
+    return True
+
+
+def parse_network_configuration(network_configuration: Optional[Dict]) -> Optional[VirtualMachineNetworkSettings]:
+    if not network_configuration:
+        return None
+    gateway = network_configuration.get("default_gateway", None)
+    if gateway:
+        gateway = str(gateway)
+        if not is_valid_ipv4_address(gateway):
+            raise MisconfigurationException(f"IP address of gateway is not in the correct IPV4 format.")
+    network_config = VirtualMachineNetworkSettings(
+        default_gateway=gateway,
+        interfaces=parse_network_interfaces(network_configuration.get("interfaces", None))
+    )
+    return network_config
+
+
 def parse_vm_settings(vm_settings_dict: Optional[Dict]) -> VirtualMachinesType:
     if not vm_settings_dict:
         return {}
@@ -222,7 +284,8 @@ def parse_vm_settings(vm_settings_dict: Optional[Dict]) -> VirtualMachinesType:
             disk_size=vm_setting["disk_size"],
             memory=vm_setting["memory"],
             choco_applications=vm_setting["choco_applications"],
-            pip_applications=vm_setting["pip_applications"]
+            pip_applications=vm_setting["pip_applications"],
+            network_configuration=parse_network_configuration(vm_setting.get("network", None))
         ) for vm_name, vm_setting in
         vm_settings_dict.items()
     }

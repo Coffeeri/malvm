@@ -208,6 +208,232 @@ virtual_machines:
     choco_applications: []
     pip_applications: []
 """
+correct_network_malvm_config = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      interfaces:
+        interface01:
+          ip: 192.168.56.101
+"""
+no_default_gateway_malvm_config = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      interfaces:
+        interface01:
+          ip: 192.168.56.101
+"""
+no_interfaces_malvm_config = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+"""
+empty_network_malvm_config = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+"""
+ip_missing_malvm_config = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      interfaces:
+        interface01:
+"""
+empty_interfaces_malvm_config = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      interfaces:
+"""
+wrong_gateway_ip_network_malvm_config = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 123
+"""
+wrong_interface_ip_malvm_config = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      interfaces:
+        interface01:
+          ip: 123
+"""
 
 
 def test_wrong_suffix(tmp_path, caplog):
@@ -373,3 +599,75 @@ def test_unsupported_template(tmp_path, monkeypatch):
     monkeypatch.setattr(vagrant_helper, "get_vm_ids_dict", lambda: {"fkieVM": "test_id"})
     with pytest.raises(MisconfigurationException):
         get_malvm_configuration()
+
+
+def test_correct_network_config(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, correct_network_malvm_config)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    malvm_conf = get_malvm_configuration()
+    config = malvm_conf.virtual_machines["fkieVM"]
+    assert config.network_configuration is not None
+    assert config.network_configuration.default_gateway == "192.168.56.1"
+    assert config.network_configuration.interfaces[0].interface_name == "interface01"
+    assert config.network_configuration.interfaces[0].ip == "192.168.56.101"
+
+
+def test_no_gateway_config(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, no_default_gateway_malvm_config)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    malvm_conf = get_malvm_configuration()
+    config = malvm_conf.virtual_machines["fkieVM"]
+    assert config.network_configuration is not None
+    assert config.network_configuration.default_gateway is None
+    assert config.network_configuration.interfaces[0].interface_name == "interface01"
+    assert config.network_configuration.interfaces[0].ip == "192.168.56.101"
+
+
+def test_no_interfaces_config(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, no_interfaces_malvm_config)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    malvm_conf = get_malvm_configuration()
+    config = malvm_conf.virtual_machines["fkieVM"]
+    assert config.network_configuration is not None
+    assert config.network_configuration.default_gateway == "192.168.56.1"
+    assert config.network_configuration.interfaces is None
+
+
+def test_empty_network_config(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, empty_network_malvm_config)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    malvm_conf = get_malvm_configuration()
+    config = malvm_conf.virtual_machines["fkieVM"]
+    assert config.network_configuration is None
+
+
+def test_ip_missing_config(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, ip_missing_malvm_config)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    with pytest.raises(MisconfigurationException) as e:
+        get_malvm_configuration()
+    assert str(e.value) == "IP address of interface interface01 is not configured"
+
+
+def test_empty_interfaces_config(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, empty_interfaces_malvm_config)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    malvm_conf = get_malvm_configuration()
+    config = malvm_conf.virtual_machines["fkieVM"]
+    assert config.network_configuration.interfaces is None
+
+
+def test_wrong_gateway_ip_config(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, wrong_gateway_ip_network_malvm_config)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    with pytest.raises(MisconfigurationException) as e:
+        get_malvm_configuration()
+    assert str(e.value) == "IP address of gateway is not in the correct IPV4 format."
+
+
+def test_wrong_interface_ip_config(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, wrong_interface_ip_malvm_config)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    with pytest.raises(MisconfigurationException) as e:
+        get_malvm_configuration()
+    assert str(e.value) == "IP address of interface interface01 is not in the correct IPV4 format."

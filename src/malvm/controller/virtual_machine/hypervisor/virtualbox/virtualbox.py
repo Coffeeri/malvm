@@ -5,7 +5,7 @@ import subprocess
 import sys
 from typing import Iterable, Optional, List
 
-from ....config_loader import VirtualMachineSettings
+from ....config_loader import VirtualMachineSettings, VirtualMachineNetworkSettings
 from ..hypervisor import Hypervisor
 from .....utils.exceptions import BaseImageExists
 from .packer import generate_box_template, BoxConfiguration, PackerTemplate
@@ -40,6 +40,18 @@ def run_command_in_vm(vm_id: str, command: str, elevated: bool = False):
         subprocess.run(
             ["vagrant", "winrm", "-c", command, vm_id], check=True,
         )
+
+
+def setup_network(network_configuration: VirtualMachineNetworkSettings, vm_name: str):
+    if network_configuration.default_gateway:
+        vm_id = get_vm_id_by_vm_name(vm_name)
+        log.info(f"Setting {network_configuration.default_gateway} as default gateway.")
+        run_command_in_vm(vm_id, "route DELETE -p 0.0.0.0", elevated=True)
+        run_command_in_vm(vm_id,
+                          "reg delete HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\PersistentRoutes /va /f",
+                          elevated=True)
+        run_command_in_vm(vm_id, f"route add -p 0.0.0.0 mask 0.0.0.0 {network_configuration.default_gateway}",
+                          elevated=True)
 
 
 class VirtualBoxHypervisor(Hypervisor):
@@ -83,6 +95,7 @@ class VirtualBoxHypervisor(Hypervisor):
         install_choco_applications(vm_settings.choco_applications, vm_name)
         log.info("Installing pip applications...")
         install_pip_applications(vm_settings.pip_applications, vm_name)
+        setup_network(vm_settings.network_configuration, vm_name)
         log.debug(f"Shutting down VM {vm_name} with `vagrant halt`.")
         subprocess.run(
             ["vagrant", "halt"], check=True,

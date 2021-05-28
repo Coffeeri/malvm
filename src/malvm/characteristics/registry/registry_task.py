@@ -148,16 +148,19 @@ def remove_key(task: RegistryTask) -> None:
 
 def delete_sub_key(key0: int, current_key: str, arch_key: int = 0) -> None:
     """Deletes registry key including all sub-keys."""
-    open_key = OpenKey(key0, current_key, 0, KEY_ALL_ACCESS | arch_key)
-    info_key = QueryInfoKey(open_key)
-    for _ in range(0, info_key[0]):
-        sub_key = EnumKey(open_key, 0)
-        try:
-            DeleteKey(open_key, sub_key)
-        except OSError:
-            delete_sub_key(key0, "\\".join([current_key, sub_key]), arch_key)
-    DeleteKey(open_key, "")
-    open_key.Close()
+    try:
+        open_key = OpenKey(key0, current_key, 0, KEY_ALL_ACCESS | arch_key)
+        info_key = QueryInfoKey(open_key)
+        for _ in range(0, info_key[0]):
+            sub_key = EnumKey(open_key, 0)
+            try:
+                DeleteKey(open_key, sub_key)
+            except OSError:
+                delete_sub_key(key0, "\\".join([current_key, sub_key]), arch_key)
+        DeleteKey(open_key, "")
+        open_key.Close()
+    except OSError as exception:
+        log.debug(f"Key {current_key} does not exist. OSErrr-exception: {exception}")
 
 
 def sub_characteristics_virtualbox() -> List[LambdaCharacteristic]:

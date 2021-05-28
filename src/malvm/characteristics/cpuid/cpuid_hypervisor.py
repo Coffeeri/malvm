@@ -31,7 +31,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
     def fix(self) -> CheckResult:
         vm_name = self.get_vm_name()
         if vm_name:
-            log.debug(f" run VBoxManage modifyvm {vm_name} --paravirtprovider none")
+            log.debug(f"Run VBoxManage modifyvm {vm_name} --paravirtprovider none")
             subprocess.run(
                 ["VBoxManage", "modifyvm", vm_name, "--paravirtprovider", "none"],
                 check=True,
@@ -43,7 +43,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
         vm_name = self.get_vm_name()
         is_fixed: bool = False
         if vm_name:
-            log.debug(f" run VBoxManage showvminfo {vm_name} --machinereadable")
+            log.debug(f"Run VBoxManage showvminfo {vm_name} --machinereadable")
             result = subprocess.run(
                 ["VBoxManage", "showvminfo", vm_name, "--machinereadable"],
                 stdout=subprocess.PIPE,

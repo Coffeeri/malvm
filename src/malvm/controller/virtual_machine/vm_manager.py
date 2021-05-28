@@ -41,6 +41,7 @@ class VirtualMachineManager(metaclass=SingletonMeta):
     def build_base_image(self, config: BoxConfiguration):
         self.__hypervisor.build_base_image(config)
 
+    # TODO Refactor into packer.py, image should be handled by VirtualBox and BoxConfiguration by packer.py
     def generate_box_config_by_base_image_name(self, base_image_name: str) -> BoxConfiguration:
         base_images = self.__base_images_config
         if base_image_name not in base_images.keys():
@@ -60,7 +61,7 @@ class VirtualMachineManager(metaclass=SingletonMeta):
     def build_vm(self, vm_name: str, base_image_name: str):
         vm_settings = self.__vms_config.get(vm_name, self.__get_default_vm_setting())
         if vm_settings:
-            log.debug(f"VMManager: Building VM name: {vm_name}, base_image_name: {base_image_name}.")
+            log.debug(f"VM-Manager: Building VM name: {vm_name}, base_image_name: {base_image_name}.")
             self.__hypervisor.build_vm(vm_name, base_image_name, vm_settings)
 
     def build_vms_in_config(self):
@@ -80,7 +81,7 @@ class VirtualMachineManager(metaclass=SingletonMeta):
     def initiate_first_boot(self, vm_name: str):
         vm_settings = self.__vms_config.get(vm_name, self.__get_default_vm_setting())
         if vm_settings:
-            self.__hypervisor.initiate_first_boot(vm_name)
+            self.__hypervisor.initiate_first_boot(vm_name, vm_settings)
 
     def start_vm(self, vm_name: str):
         self.__hypervisor.start_vm(vm_name)

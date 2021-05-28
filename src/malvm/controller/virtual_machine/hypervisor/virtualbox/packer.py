@@ -164,9 +164,13 @@ class PackerTemplate:
         subprocess.run(
             ["vagrant", "init", self.configuration.vagrant_box_name], check=True,
         )
+        # TODO if netoworkk .. interface.interface_name does not exist, it needs to be created via vbox
         if vm_settings.network_configuration and vm_settings.network_configuration.interfaces:
-            interfaces = "\n".join([f'config.vm.network "private_network", ip: "{interface.ip}"' for interface in
-                                    vm_settings.network_configuration.interfaces if interface])
+            interfaces = "\n".join(
+                [
+                    f'config.vm.network "private_network", ip: "{interface.ip}", name: "{interface.interface_name}"'
+                    for
+                    interface in vm_settings.network_configuration.interfaces if interface])
         else:
             interfaces = ""
         modified_vagrantfile_tail = f"""

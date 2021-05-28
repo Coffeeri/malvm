@@ -94,15 +94,15 @@ We use two commands chained together.
 
 ```shell
 malvm box build windows_10
-malvm box run malwareVM windows_10
+malvm box start malwareVM windows_10
 ```
 First `malware box build windows_10` builds the Windows 10 image for Vagrant.
-Next `malvm box run malwareVM windows_10` spins up a Virtual Machine instance of the 
+Next `malvm box start malwareVM windows_10` spins up a Virtual Machine instance of the 
 previously created image.
 
 Both commands can be chained into a single command:
 ```shell
-malvm box build windows_10 run malwareVM windows_10
+malvm box build windows_10 start malwareVM windows_10
 ```
 
 ---
@@ -145,7 +145,7 @@ Sub-Characteristic.
 
 The configfile is usually located at `~/.local/share/malvm/malvm_config.yaml`.
 You are able to configure syslog, logging path and Base Images/ Virtual Machines.
-A default Virtual Machine has to exist at any time, which will be used for `malvm box run ..`.
+A default Virtual Machine has to exist at any time, which will be used for `malvm box start ..`.
 After configuring *malvm_config.yaml* you are able to build and defined Base Images/ VMs
 via the command `malvm up`.
 

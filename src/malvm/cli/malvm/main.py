@@ -9,7 +9,7 @@ from ..utils import print_info
 from ...controller import Controller
 from .utils import (print_pre_boot_fix_results,
                     print_characteristics,
-                    print_results,
+                    print_results, print_pre_boot_check_results,
                     )
 from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import get_existing_vagrant_files_paths_iterable
 
@@ -21,7 +21,7 @@ log = logging.getLogger()
 @click.argument(
     "characteristic", required=False,
 )
-@click.option("-v", "--vm", "vm_name", type=str, default=False)
+@click.option("-v", "--vm", "vm_name", type=str, default=None)
 def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
     """Checks satisfaction of CHARACTERISTIC.
 
@@ -38,7 +38,7 @@ def check(characteristic: Optional[str], vm_name: Optional[str]) -> None:
                     "You can manually pass the vm-name with [-v VM_NAME].\n"
                     "If this ran in the VM, this can be ignored.")
         sys.exit(0)
-    print_pre_boot_fix_results(vm_name)
+    print_pre_boot_check_results(vm_name)
 
 
 def run_all_checks() -> None:
@@ -56,7 +56,7 @@ def run_specific_check(characteristic: str) -> None:
 
 @click.command()
 @click.argument("characteristic_slug", required=False)
-@click.option("-v", "--vm", "vm_name", type=str, default=False)
+@click.option("-v", "--vm", "vm_name", type=str, default=None)
 def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     """Fixes satisfaction of CHARACTERISTIC."""
     if characteristic_slug:

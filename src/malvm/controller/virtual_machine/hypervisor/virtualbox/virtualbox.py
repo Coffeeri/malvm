@@ -74,7 +74,7 @@ def _prepare_vagrantfile(vagrantfile_path, vm_name):
 def _ensure_vm_running(vm_name: str, vm_id=None):
     if not vm_id:
         vm_id = get_vm_id_by_vm_name(vm_name)
-    subprocess.run(["vagrant", "up", vm_id])
+    subprocess.run(["vagrant", "up", vm_id], check=True)
 
 
 def _install_applications_in_vm(vm_name: str, vm_settings: VirtualMachineSettings):
@@ -126,7 +126,7 @@ class VirtualBoxHypervisor(Hypervisor):
         PackerTemplate(box_template).init_vagrantfile(vm_name, vm_settings)
         log.debug(f"Starting first time VM {vm_name} with `vagrant up`.")
         add_vm_to_vagrant_files(vm_name, vagrantfile_path)
-        subprocess.run(["vagrant", "up"])
+        subprocess.run(["vagrant", "up"], check=True)
         _install_applications_in_vm(vm_name, vm_settings)
         subprocess.run(
             ["vagrant", "halt"], check=True,

@@ -15,7 +15,7 @@ Classes:
 import abc
 import platform
 from enum import Enum
-from typing import Any, Callable, Dict, List, NamedTuple, Tuple, Iterator
+from typing import Any, Callable, Dict, Iterator, List, NamedTuple, Tuple
 
 
 class CheckType(NamedTuple):

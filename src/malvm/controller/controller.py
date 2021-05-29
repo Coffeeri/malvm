@@ -9,18 +9,15 @@ import sys
 from enum import Enum
 from importlib import import_module
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Iterator
+from typing import Any, Dict, Iterator, List, Optional
 
-from .config_loader import setup_logging, get_malvm_configuration
-from ..characteristics.abstract_characteristic import (
-    CharacteristicBase,
-    CheckResult,
-    Runtime,
-    Characteristic,
-)
-from ..utils.metaclasses import SingletonMeta
-from .virtual_machine.hypervisor.virtualbox.vagrant import _clean_malvm_data
+from ..characteristics.abstract_characteristic import (Characteristic,
+                                                       CharacteristicBase,
+                                                       CheckResult, Runtime)
 from ..utils.helper_methods import get_config_root
+from ..utils.metaclasses import SingletonMeta
+from .config_loader import get_malvm_configuration, setup_logging
+from .virtual_machine.hypervisor.virtualbox.vagrant import _clean_malvm_data
 from .virtual_machine.vm_manager import VirtualMachineManager
 
 

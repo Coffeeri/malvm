@@ -3,10 +3,11 @@ import csv
 import json
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Iterable, Tuple, Any
+from typing import Any, Dict, Iterable, List, Tuple
 
+from .....utils.helper_methods import (edit_key_in_json_file, get_config_root,
+                                       remove_path_with_success)
 from ....config_loader import VirtualMachinesType
-from .....utils.helper_methods import remove_path_with_success, edit_key_in_json_file, get_config_root
 
 
 def delete_vagrant_boxes():

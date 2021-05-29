@@ -6,9 +6,9 @@ from time import sleep
 import click
 import inquirer  # type: ignore
 
-from ..malvm.utils import print_pre_boot_fix_results
 from ...controller import Controller
 from ...utils.helper_methods import get_vm_malvm_package_file
+from ..malvm.utils import print_pre_boot_fix_results
 from ..utils import print_info, print_warning
 
 controller = Controller()

@@ -1,14 +1,14 @@
 """This module contains the virtual machine manager."""
 import logging
 import sys
-from typing import Dict, Optional, Iterable, List
+from typing import Dict, Iterable, List, Optional
 
-from ..config_loader import VirtualMachineSettings, BaseImageSettings
-from .hypervisor.hypervisor import Hypervisor
-from .hypervisor.virtualbox.virtualbox import VirtualBoxHypervisor
 from ...utils.exceptions import BaseImageExists
 from ...utils.metaclasses import SingletonMeta
+from ..config_loader import BaseImageSettings, VirtualMachineSettings
+from .hypervisor.hypervisor import Hypervisor
 from .hypervisor.virtualbox.packer import PACKER_PATH, BoxConfiguration
+from .hypervisor.virtualbox.virtualbox import VirtualBoxHypervisor
 
 log = logging.getLogger()
 

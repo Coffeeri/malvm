@@ -4,12 +4,12 @@ import shutil
 import socket
 from logging.config import dictConfig
 from pathlib import Path
-from typing import NamedTuple, List, Dict, Any, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 import yaml
 
 from ..cli.utils import print_info
-from ..utils.helper_methods import get_data_dir, get_config_root
+from ..utils.helper_methods import get_config_root, get_data_dir
 
 log = logging.getLogger()
 

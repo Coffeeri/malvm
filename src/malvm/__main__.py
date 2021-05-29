@@ -1,7 +1,7 @@
 """Malvm Entrypoint."""
+import logging
 import sys
 
-import logging
 from malvm.cli.main import malvm
 
 log = logging.getLogger()

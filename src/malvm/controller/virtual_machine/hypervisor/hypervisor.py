@@ -1,9 +1,9 @@
 """This module defines an abstract definition of a hypervisor object."""
-from typing import Dict, Iterable, Optional, List
+from typing import Dict, Iterable, List, Optional
 
+from ....utils.metaclasses import SingletonMeta
 from ...config_loader import BaseImageSettings, VirtualMachineSettings
 from .virtualbox.packer import BoxConfiguration
-from ....utils.metaclasses import SingletonMeta
 
 
 class Hypervisor(metaclass=SingletonMeta):

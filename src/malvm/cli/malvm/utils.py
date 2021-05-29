@@ -1,12 +1,13 @@
 """This module contains helper methods for cli malvm-core."""
 import platform
-from typing import List, Iterator, Tuple
+from typing import Iterator, List, Tuple
 
 import click
 
-from ..utils import print_info
-from ...characteristics.abstract_characteristic import CharacteristicBase, CheckType
+from ...characteristics.abstract_characteristic import (CharacteristicBase,
+                                                        CheckType)
 from ...controller import Controller
+from ..utils import print_info
 
 controller: Controller = Controller()
 

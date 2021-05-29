@@ -3,14 +3,16 @@ import logging
 import os
 import subprocess
 import sys
-from typing import Iterable, Optional, List
+from typing import Iterable, List, Optional
 
-from .packer import generate_box_template, BoxConfiguration, PackerTemplate
-from .vagrant import remove_vbox_vm_and_data, add_vm_to_vagrant_files, get_vm_names_list, \
-    get_vagrant_files_folder_path, get_vagrant_box_list, get_vm_id_by_vm_name
-from ..hypervisor import Hypervisor
-from ....config_loader import VirtualMachineSettings, VirtualMachineNetworkSettings
 from .....utils.exceptions import BaseImageExists
+from ....config_loader import (VirtualMachineNetworkSettings,
+                               VirtualMachineSettings)
+from ..hypervisor import Hypervisor
+from .packer import BoxConfiguration, PackerTemplate, generate_box_template
+from .vagrant import (add_vm_to_vagrant_files, get_vagrant_box_list,
+                      get_vagrant_files_folder_path, get_vm_id_by_vm_name,
+                      get_vm_names_list, remove_vbox_vm_and_data)
 
 log = logging.getLogger()
 

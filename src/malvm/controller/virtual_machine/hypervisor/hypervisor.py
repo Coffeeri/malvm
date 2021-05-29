@@ -22,7 +22,7 @@ class Hypervisor(metaclass=SingletonMeta):
     def build_vm(self, vm_name, base_image_name: str, vm_settings: VirtualMachineSettings):
         raise NotImplementedError
 
-    def initiate_first_boot(self, vm_name):
+    def initiate_first_boot(self, vm_name, vm_settings: VirtualMachineSettings):
         raise NotImplementedError
 
     def start_vm(self, vm_name):

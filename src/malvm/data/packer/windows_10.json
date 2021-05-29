@@ -212,7 +212,8 @@
     {
       "scripts": [
         "./scripts/set-powerplan.ps1",
-        "./scripts/docker/disable-windows-defender.ps1"
+        "./scripts/docker/disable-windows-defender.ps1",
+        "./scripts/disable-firewall.ps1"
       ],
       "type": "powershell"
     },

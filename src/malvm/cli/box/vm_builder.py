@@ -55,7 +55,7 @@ def check_needed_files():
 @click.argument(
     "base_image", required=False, type=click.Choice(controller.configuration.base_images.keys())
 )
-def run(name, base_image):
+def start(name, base_image):
     """Run TEMPLATE as NAME in Virtualbox via Vagrant.
 
     TEMPLATE is the in `malvm box build` build template.
@@ -63,12 +63,12 @@ def run(name, base_image):
 
     Examples:
 
-        $ malvm box run win10-vm01 windows_10
+        $ malvm box start win10-vm01 windows_10
     """
     if not base_image and not controller.vm_manager.vm_exists(name):
         log.error(f"Virtual Machine {name} does not exist")
         print_warning(f"You can create the Virtual Machine {name} with:\n\n"
-                      f"{click.style(f'> malvm box run {name} windows_10', fg='yellow')}")
+                      f"{click.style(f'> malvm box start {name} YOUR_BASE_IMAGE', fg='yellow')}")
         sys.exit(1)
     if base_image:
         print_info(
@@ -78,6 +78,7 @@ def run(name, base_image):
         controller.vm_manager.build_vm(name, base_image)
         log.info("Wait 3 seconds..")
         sleep(3)
+        # TODO If hardening == True in config
         print_pre_boot_fix_results(name)
         log.info("Wait 3 seconds..")
         sleep(3)
@@ -91,12 +92,12 @@ def run(name, base_image):
         f"A snapshot of the ´clean-state´ was saved.\n"
         f"Don't shutdown the VM, prefer to use these commands:\n\n"
         f"Stop VM:  `malvm box stop {name}`\n"
-        f"Start VM: `malvm box run {name}`\n"
+        f"Start VM: `malvm box start {name}`\n"
         f"Reset VM: `malvm box reset {name}`\n"
-        f"Remove VM: `malvm box remove {name}`\n\n"
+        f"Remove VM: `malvm box destroy {name}`\n\n"
         f"If you need to run `malvm fix` again in an elevated cmd, "
         f"please run on the host:\n"
-        f"`malvm box fix {name}`"
+        f"`malvm box fix {name}`\n"
         f"This will run the malvm in an shell with elevated privileges."
     )
 
@@ -124,10 +125,10 @@ def reset(name: str):
 
 @box.command()
 @click.argument("name")
-def remove(name: str):
-    """Removes Virtual Machine."""
+def destroy(name: str):
+    """Destroys Virtual Machine and removes its data."""
     print_info(f"Destroying VM {name}...",
-               command=f"malvm box remove {name}")
+               command=f"malvm box destroy {name}")
     controller.vm_manager.destroy_vm(name)
 
 
@@ -151,5 +152,5 @@ def list_boxes():
             print_info(f"{vm_name}")
     else:
         print_info("No Virtual Machine setup yet.\n"
-                   "Please create one with `malvm box run [template] [vm_name]`",
+                   "Please create one with `malvm box start [template] [vm_name]`",
                    command="malvm box list")

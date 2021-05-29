@@ -130,12 +130,6 @@ class Controller(metaclass=SingletonMeta):
     def clean_malvm_data(self, clean_soft: bool):
         _clean_malvm_data(self.dirty_paths, clean_soft)
 
-    # def create_configured_vms(self):
-    #     vms_config = filter_existing_vms_from_config(self.configuration.virtual_machines)
-    #
-    # def create_vm_by_config(self, vm_name: str, vm_config: VirtualMachineSettings):
-    #     ...
-
 
 def action_on_characteristic(
         characteristic: CharacteristicBase, action: CharacteristicAction

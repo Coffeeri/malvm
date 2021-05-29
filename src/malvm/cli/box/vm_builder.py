@@ -62,7 +62,6 @@ def start(name, base_image):
     NAME is the selected name of the VM spun up in VirtualBox.
 
     Examples:
-
         $ malvm box start win10-vm01 windows_10
     """
     if not base_image and not controller.vm_manager.vm_exists(name):
@@ -106,8 +105,7 @@ def start(name, base_image):
 @click.argument("name")
 def stop(name: str):
     """Suspends Virtual Machine."""
-    print_info(f"Suspending VM {name}...",
-               command=f"malvm box stop {name}")
+    print_info(f"Suspending VM {name}...", command=f"malvm box stop {name}")
     controller.vm_manager.stop_vm(name)
 
 
@@ -118,8 +116,7 @@ def reset(name: str):
 
     Resetting by restoring the `clean-state` snapshot.
     """
-    print_info(f"Resetting VM {name}...",
-               command=f"malvm box reset {name}")
+    print_info(f"Resetting VM {name}...", command=f"malvm box reset {name}")
     controller.vm_manager.reset_vm(name)
 
 
@@ -127,8 +124,7 @@ def reset(name: str):
 @click.argument("name")
 def destroy(name: str):
     """Destroys Virtual Machine and removes its data."""
-    print_info(f"Destroying VM {name}...",
-               command=f"malvm box destroy {name}")
+    print_info(f"Destroying VM {name}...", command=f"malvm box destroy {name}")
     controller.vm_manager.destroy_vm(name)
 
 
@@ -137,10 +133,7 @@ def destroy(name: str):
 @click.argument('characteristics', nargs=-1)
 def fix(vm_name: str, characteristics):
     """Runs fixes on Virtual Machine."""
-    print(characteristics)
-    print(list(characteristics))
-    print_info(f"Fixing characteristics on VM {vm_name}...",
-               command=f"malvm box fix {vm_name}")
+    print_info(f"Fixing characteristics on VM {vm_name}...", command=f"malvm box fix {vm_name}")
     controller.vm_manager.fix_vm(vm_name, list(characteristics) if characteristics else None)
 
 

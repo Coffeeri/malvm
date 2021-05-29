@@ -1,7 +1,7 @@
 """This module contains the virtual machine manager."""
 import logging
 import sys
-from typing import Dict, Optional, Iterable
+from typing import Dict, Optional, Iterable, List
 
 from ..config_loader import VirtualMachineSettings, BaseImageSettings
 from .hypervisor.hypervisor import Hypervisor
@@ -95,5 +95,5 @@ class VirtualMachineManager(metaclass=SingletonMeta):
     def destroy_vm(self, vm_name: str):
         self.__hypervisor.destroy_vm(vm_name)
 
-    def fix_vm(self, vm_name: str):
-        self.__hypervisor.fix_vm(vm_name)
+    def fix_vm(self, vm_name: str, characteristics: Optional[List[str]]):
+        self.__hypervisor.fix_vm(vm_name, characteristics)

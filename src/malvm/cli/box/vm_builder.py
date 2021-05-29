@@ -133,12 +133,15 @@ def destroy(name: str):
 
 
 @box.command()
-@click.argument("name")
-def fix(name: str):
+@click.argument("vm_name")
+@click.argument('characteristics', nargs=-1)
+def fix(vm_name: str, characteristics):
     """Runs fixes on Virtual Machine."""
-    print_info(f"Fixing characteristics on VM {name}...",
-               command=f"malvm box fix {name}")
-    controller.vm_manager.fix_vm(name)
+    print(characteristics)
+    print(list(characteristics))
+    print_info(f"Fixing characteristics on VM {vm_name}...",
+               command=f"malvm box fix {vm_name}")
+    controller.vm_manager.fix_vm(vm_name, list(characteristics) if characteristics else None)
 
 
 @box.command(name="list")

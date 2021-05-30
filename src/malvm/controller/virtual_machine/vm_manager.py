@@ -28,6 +28,9 @@ class VirtualMachineManager(metaclass=SingletonMeta):
         self.__base_images_config = base_images_config
         self.__hypervisor.set_base_images_dict(self.__base_images_config)
 
+    def get_vm_config(self, vm_name: str) -> Optional[VirtualMachineSettings]:
+        return self.__vms_config.get(vm_name, self.__get_default_vm_setting())
+
     def __get_default_vm_setting(self) -> Optional[VirtualMachineSettings]:
         return self.__vms_config.get("default", None)
 

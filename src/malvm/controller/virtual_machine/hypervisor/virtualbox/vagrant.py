@@ -1,6 +1,7 @@
 """This module contains helper methods for controlling and communicate with Vagrant, building virtual machines."""
 import csv
 import json
+import logging
 import subprocess
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
@@ -8,6 +9,8 @@ from typing import Any, Dict, Iterable, List, Tuple
 from .....utils.helper_methods import (edit_key_in_json_file, get_config_root,
                                        remove_path_with_success)
 from ....config_loader import VirtualMachinesType
+
+log = logging.getLogger()
 
 
 def delete_vagrant_boxes():
@@ -48,8 +51,9 @@ def destroy_virtual_machine(vm_id: str):
 
 
 def remove_vbox_vm_and_data(vm_name: str):
-    vm_id = get_vm_ids_dict()[vm_name]
-    destroy_virtual_machine(vm_id)
+    vm_id = get_vm_ids_dict().get(vm_name, None)
+    if vm_id:
+        destroy_virtual_machine(vm_id)
     remove_path_with_success(str(get_vagrant_files_folder_path() / vm_name))
     remove_vm_from_vagrant_files(vm_name)
 
@@ -111,11 +115,14 @@ def remove_vm_from_vagrant_files(vm_name: str):
 
 def remove_key_from_json_file(key: Any, json_file_path: Path):
     if json_file_path.exists():
-        with json_file_path.open() as opened_file:
-            data = json.load(opened_file)
-        data.pop(key)
-        with json_file_path.open(mode="w") as opened_file:
-            json.dump(data, opened_file)
+        try:
+            with json_file_path.open() as opened_file:
+                data = json.load(opened_file)
+            data.pop(key)
+            with json_file_path.open(mode="w") as opened_file:
+                json.dump(data, opened_file)
+        except KeyError:
+            log.debug(f"KeyError: Key {key} could not be removed from json-file: {str(json_file_path.absolute())}")
 
 
 def get_existing_vagrant_files_paths_iterable() -> Iterable[Tuple[str, Path]]:

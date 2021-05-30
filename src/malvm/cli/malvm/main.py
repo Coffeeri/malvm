@@ -60,17 +60,16 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     """Fixes satisfaction of CHARACTERISTIC."""
     if characteristic_slug:
         run_specific_fix(characteristic_slug)
-
     else:
         run_all_fixes()
-
+        if vm_name:
+            print_pre_boot_fix_results(vm_name)
     # Müssen wir Auge machen.
     if not vm_name:
         log.warning("No vm was found in your environment.\n"
                     "You can manually pass the vm-name with [-v VM_NAME].\n"
                     "If this ran in the VM, this can be ignored.")
         sys.exit(0)
-    print_pre_boot_fix_results(vm_name)
 
 
 def run_specific_fix(characteristic_slug):

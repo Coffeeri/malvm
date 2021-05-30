@@ -73,12 +73,6 @@ def _prepare_vagrantfile(vagrantfile_path, vm_name):
              )
 
 
-def _ensure_vm_running(vm_name: str, vm_id=None):
-    if not vm_id:
-        vm_id = get_vm_id_by_vm_name(vm_name)
-    subprocess.run(["vagrant", "up", vm_id], check=True)
-
-
 def _install_applications_in_vm(vm_name: str, vm_settings: VirtualMachineSettings):
     log.info("Installing choco applications...")
     install_choco_applications(vm_settings.choco_applications, vm_name)
@@ -136,14 +130,15 @@ class VirtualBoxHypervisor(Hypervisor):
 
     def initiate_first_boot(self, vm_name: str, vm_settings: VirtualMachineSettings):
         self.start_vm(vm_name)
-        if vm_settings.hardening_configuration:
-            log.debug(f"Running malvm fix on {vm_name}.")
-            for characteristic in vm_settings.hardening_configuration.characteristics:
-                subprocess.run(
-                    ["vagrant", "winrm", "-e", "-c", f"malvm fix {characteristic}"], check=True,
-                )
+        # if vm_settings.hardening_configuration:
+        #     log.debug(f"Running malvm fix on {vm_name}.")
+        #     # TODO filter pre boot
+        #     for characteristic in vm_settings.hardening_configuration.characteristics:
+        #         subprocess.run(
+        #             ["vagrant", "winrm", "-e", "-c", f"malvm fix {characteristic}"], check=True,
+        #         )
         _setup_network(vm_settings.network_configuration, vm_name)
-        create_snapshot(vm_name, "clean-state")
+        # create_snapshot(vm_name, "clean-state")
 
     def start_vm(self, vm_name):
         vagrantfile_path = get_vagrant_files_folder_path() / vm_name

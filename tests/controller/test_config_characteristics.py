@@ -1,6 +1,5 @@
 import pytest
-from malvm.controller import config_loader
-from malvm.controller.config_loader import parse_malvm_yaml_config, get_malvm_configuration
+from malvm.controller.config_loader import parse_malvm_yaml_config
 
 from tests.conftest import write_configuration
 

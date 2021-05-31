@@ -1,6 +1,7 @@
 """This module contains the virtual machine manager."""
 import logging
 import sys
+from functools import cache
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
@@ -20,6 +21,7 @@ class VirtualMachineManager(metaclass=SingletonMeta):
         self.__vms_config: Dict[str, VirtualMachineSettings] = {}
         self.__base_images_config: Dict[str, BaseImageSettings] = {}
 
+    @cache
     def vm_exists(self, vm_name: str) -> bool:
         return vm_name in list(self.get_virtual_machines_names_iter())
 
@@ -29,6 +31,7 @@ class VirtualMachineManager(metaclass=SingletonMeta):
         self.__base_images_config = base_images_config
         self.__hypervisor.set_base_images_dict(self.__base_images_config)
 
+    @cache
     def get_vm_config(self, vm_name: str) -> Optional[VirtualMachineSettings]:
         return self.__vms_config.get(vm_name, self.__get_default_vm_setting())
 
@@ -39,6 +42,7 @@ class VirtualMachineManager(metaclass=SingletonMeta):
         self.__hypervisor = hypervisor
         self.__hypervisor.set_base_images_dict(self.__base_images_config)
 
+    @cache
     def get_virtual_machines_names_iter(self) -> Iterable[str]:
         return self.__hypervisor.get_virtual_machines_names_iter()
 
@@ -104,3 +108,6 @@ class VirtualMachineManager(metaclass=SingletonMeta):
 
     def upload_file(self, vm_name: str, local_file_path: Path, remote_file_path: str):
         self.__hypervisor.upload_file(vm_name, local_file_path, remote_file_path)
+
+    def exec_command(self, vm_name: str, command: str, elevated=True):
+        self.__hypervisor.exec_command(vm_name, command, elevated)

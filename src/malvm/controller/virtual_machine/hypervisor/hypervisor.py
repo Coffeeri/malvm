@@ -46,3 +46,6 @@ class Hypervisor(metaclass=SingletonMeta):
 
     def upload_file(self, vm_name: str, local_file_path: Path, remote_file_path: str):
         raise NotImplementedError
+
+    def exec_command(self, vm_name: str, command: str, elevated=True):
+        raise NotImplementedError

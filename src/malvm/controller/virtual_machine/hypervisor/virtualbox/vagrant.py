@@ -3,9 +3,11 @@ import csv
 import json
 import logging
 import subprocess
+from functools import cache
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
+from .....utils.exceptions import VMNotExists
 from .....utils.helper_methods import (edit_key_in_json_file, get_config_root,
                                        remove_path_with_success)
 from ....config_loader import VirtualMachinesType
@@ -74,8 +76,12 @@ def get_vm_ids_dict() -> Dict[str, str]:
     return vms_with_id
 
 
+@cache
 def get_vm_id_by_vm_name(vm_name):
-    return get_vm_ids_dict()[vm_name]
+    vm_id = get_vm_ids_dict().get(vm_name, None)
+    if vm_id:
+        return vm_id
+    raise VMNotExists(f"VM {vm_name} does not exist.")
 
 
 def get_vm_names_list() -> Iterable[str]:

@@ -3,7 +3,6 @@ import csv
 import json
 import logging
 import subprocess
-from functools import cache
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
@@ -76,7 +75,6 @@ def get_vm_ids_dict() -> Dict[str, str]:
     return vms_with_id
 
 
-@cache
 def get_vm_id_by_vm_name(vm_name):
     vm_id = get_vm_ids_dict().get(vm_name, None)
     if vm_id:

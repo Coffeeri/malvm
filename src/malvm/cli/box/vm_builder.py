@@ -64,12 +64,12 @@ def start(name, base_image):
     NAME is the selected name of the VM spun up in VirtualBox.
 
     Examples:
-        $ malvm box start win10-vm01 windows_10
+        $ malvm box start win10-vm01
     """
     vm_config = controller.vm_manager.get_vm_config(name)
     vm_config_network = controller.vm_manager.get_vm_config(name).network_configuration
     vm_config_network_interfaces = controller.vm_manager.get_vm_config(name).network_configuration.interfaces
-    base_image = vm_config.base_image_name
+    base_image = vm_config.base_image_name if not base_image else base_image
     if not base_image and not controller.vm_manager.vm_exists(name):
         log.error(f"Virtual Machine {name} does not exist")
         print_warning(f"You can create the Virtual Machine {name} with:\n\n"

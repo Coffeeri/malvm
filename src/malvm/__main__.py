@@ -13,7 +13,7 @@ def add_exception_logger():
             f"EXCEPTION: \n"
             f"TYPE: {exctype.__name__}\n"
             f"VALUE: {value}\n"
-            f"TRACEBACK: {traceback.extract_tb()}"
+            f"TRACEBACK: {str(traceback)}"
         )
 
     sys.excepthook = exception_handler

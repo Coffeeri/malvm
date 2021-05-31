@@ -1,9 +1,9 @@
 """This module defines an abstract definition of a hypervisor object."""
-from typing import Dict, Iterable
+from typing import Dict, Iterable, List, Optional
 
+from ....utils.metaclasses import SingletonMeta
 from ...config_loader import BaseImageSettings, VirtualMachineSettings
 from .virtualbox.packer import BoxConfiguration
-from ....utils.metaclasses import SingletonMeta
 
 
 class Hypervisor(metaclass=SingletonMeta):
@@ -37,7 +37,7 @@ class Hypervisor(metaclass=SingletonMeta):
     def destroy_vm(self, vm_name: str):
         raise NotImplementedError
 
-    def fix_vm(self, vm_name: str):
+    def fix_vm(self, vm_name: str, characteristics: Optional[List[str]]):
         raise NotImplementedError
 
     def get_virtual_machines_names_iter(self) -> Iterable[str]:

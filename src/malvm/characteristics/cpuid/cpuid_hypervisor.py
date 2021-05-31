@@ -7,13 +7,9 @@ import logging
 import subprocess
 from typing import Optional
 
-from ..abstract_characteristic import (
-    Characteristic,
-    CharacteristicAttributes,
-    CheckType,
-    CheckResult,
-    Runtime,
-)
+from ..abstract_characteristic import (Characteristic,
+                                       CharacteristicAttributes, CheckResult,
+                                       CheckType, Runtime)
 
 log = logging.getLogger()
 

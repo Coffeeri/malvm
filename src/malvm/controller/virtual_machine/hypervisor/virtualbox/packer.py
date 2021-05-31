@@ -1,16 +1,16 @@
 """This module contains helper methods for controlling and communicate with Packer, building base images."""
 import logging
-
 import os
 import re
 import shutil
 import subprocess
 from pathlib import Path
-from typing import NamedTuple, Dict, List
+from typing import Dict, List, NamedTuple
 
-from .vagrant import read_json_file
+from .....utils.helper_methods import (get_config_root, get_data_dir,
+                                       get_vm_malvm_package_file)
 from ....config_loader import BaseImageSettings, VirtualMachineSettings
-from .....utils.helper_methods import get_data_dir, get_config_root, get_vm_malvm_package_file
+from .vagrant import read_json_file
 
 log = logging.getLogger()
 

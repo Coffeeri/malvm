@@ -9,18 +9,15 @@ import sys
 from enum import Enum
 from importlib import import_module
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Iterator
+from typing import Any, Dict, Iterator, List, Optional
 
-from .config_loader import setup_logging, get_malvm_configuration
-from ..characteristics.abstract_characteristic import (
-    CharacteristicBase,
-    CheckResult,
-    Runtime,
-    Characteristic,
-)
-from ..utils.metaclasses import SingletonMeta
-from .virtual_machine.hypervisor.virtualbox.vagrant import _clean_malvm_data
+from ..characteristics.abstract_characteristic import (Characteristic,
+                                                       CharacteristicBase,
+                                                       CheckResult, Runtime)
 from ..utils.helper_methods import get_config_root
+from ..utils.metaclasses import SingletonMeta
+from .config_loader import get_malvm_configuration, setup_logging
+from .virtual_machine.hypervisor.virtualbox.vagrant import _clean_malvm_data
 from .virtual_machine.vm_manager import VirtualMachineManager
 
 
@@ -90,9 +87,12 @@ class Controller(metaclass=SingletonMeta):
             yield from self.apply_fix_get_results(characteristic.slug)
 
     def apply_pre_boot_fixes(self, environment: Dict[str, Any]) -> CheckResult:
-        for characteristic in self.get_characteristic_list(False, Runtime.PRE_BOOT):
-            self.characteristics[characteristic.slug].environment = environment
-            yield from self.apply_fix_get_results(characteristic.slug)
+        loaded_characteristics = [c.slug for c in self.get_characteristic_list(True, Runtime.PRE_BOOT)]
+        loaded_pre_boot_characteristics: List[str] = environment.get("pre_boot_characteristics",
+                                                                     loaded_characteristics)
+        for characteristic in loaded_pre_boot_characteristics:
+            self.characteristics[characteristic].environment = environment
+            yield from self.apply_fix_get_results(characteristic)
 
     def apply_fix_get_results(self, slug_searched: str) -> CheckResult:
         yield from self.__action_on_characteristic_with_results(
@@ -108,24 +108,15 @@ class Controller(metaclass=SingletonMeta):
         else:
             raise ValueError("Characteristic was not found.")
 
-    def get_characteristic_list(
-            self,
-            include_sub_characteristics: bool = False,
-            selected_runtime: Optional[Runtime] = Runtime.DEFAULT,
-    ) -> List[CharacteristicBase]:
+    def get_characteristic_list(self, include_sub_characteristics: bool = False,
+                                selected_runtime: Optional[Runtime] = Runtime.DEFAULT,
+                                ) -> List[CharacteristicBase]:
         if include_sub_characteristics:
             characteristics = self.__get_all_characteristics()
         else:
             characteristics = iter(self.characteristics.values())
-
-        return [
-            characteristic
-            for characteristic in characteristics
-            if (
-                    (characteristic.attributes.runtime == selected_runtime)
-                    or (selected_runtime is None)
-            )
-        ]
+        return [characteristic for characteristic in characteristics if
+                ((characteristic.attributes.runtime == selected_runtime) or (selected_runtime is None))]
 
     def clean_malvm_data(self, clean_soft: bool):
         _clean_malvm_data(self.dirty_paths, clean_soft)

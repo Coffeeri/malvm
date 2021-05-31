@@ -4,12 +4,12 @@ import shutil
 import socket
 from logging.config import dictConfig
 from pathlib import Path
-from typing import NamedTuple, List, Dict, Any, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 import yaml
 
 from ..cli.utils import print_info
-from ..utils.helper_methods import get_data_dir, get_config_root
+from ..utils.helper_methods import get_config_root, get_data_dir
 
 log = logging.getLogger()
 
@@ -37,6 +37,10 @@ class VirtualMachineNetworkSettings(NamedTuple):
     interfaces: Optional[List[NetworkInterface]]
 
 
+class HardeningSettings(NamedTuple):
+    characteristics: List[str]
+
+
 class VirtualMachineSettings(NamedTuple):
     base_image_name: str
     disk_size: str
@@ -44,6 +48,7 @@ class VirtualMachineSettings(NamedTuple):
     choco_applications: Optional[List[str]]
     pip_applications: Optional[List[str]]
     network_configuration: Optional[VirtualMachineNetworkSettings]
+    hardening_configuration: Optional[HardeningSettings]
 
 
 VirtualMachinesType = Dict[str, VirtualMachineSettings]
@@ -284,8 +289,15 @@ def parse_vm_settings(vm_settings_dict: Optional[Dict]) -> VirtualMachinesType:
             memory=vm_setting["memory"],
             choco_applications=vm_setting["choco_applications"],
             pip_applications=vm_setting["pip_applications"],
-            network_configuration=parse_network_configuration(vm_setting.get("network", None))
+            network_configuration=parse_network_configuration(vm_setting.get("network", None)),
+            hardening_configuration=parse_hardening_configuration(vm_setting.get("hardening", None))
         ) for vm_name, vm_setting in
         vm_settings_dict.items()
     }
     return virtual_machines_setting_dict
+
+
+def parse_hardening_configuration(hardening_config: Optional[Dict]) -> Optional[HardeningSettings]:
+    if not hardening_config or not hardening_config.get("characteristics", None):
+        return None
+    return HardeningSettings(characteristics=str(hardening_config['characteristics']).replace(" ", "").split(","))

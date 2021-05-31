@@ -15,7 +15,7 @@ Classes:
 import abc
 import platform
 from enum import Enum
-from typing import Any, Callable, Dict, List, NamedTuple, Tuple, Iterator
+from typing import Any, Callable, Dict, Iterator, List, NamedTuple, Tuple
 
 
 class CheckType(NamedTuple):
@@ -43,12 +43,6 @@ class CharacteristicAttributes(NamedTuple):
     runtime: Runtime
 
 
-class VMType(NamedTuple):
-    """Attributes of a Virtual Machine."""
-
-    name: str
-
-
 def get_current_runtime() -> Runtime:
     """Returns the current os, in which malvm is executed."""
     if platform.system() == "Windows":
@@ -60,7 +54,7 @@ class CharacteristicBase:
     """Base class for Characteristic class or any sub-characteristic class."""
 
     def __init__(
-        self, slug: str, description: str, attributes: CharacteristicAttributes,
+            self, slug: str, description: str, attributes: CharacteristicAttributes,
     ):
         self.__slug = slug.upper()
         self.__description = description
@@ -71,9 +65,9 @@ class CharacteristicBase:
     def __eq__(self, other: Any) -> bool:
         """Returns true if compared characteristic is equal."""
         return (
-            self.slug == other.slug
-            and self.description == other.description
-            and self.sub_characteristics == other.sub_characteristics
+                self.slug == other.slug
+                and self.description == other.description
+                and self.sub_characteristics == other.sub_characteristics
         )
 
     @abc.abstractmethod
@@ -148,7 +142,7 @@ class CharacteristicBase:
         self.__sub_characteristics[sub_characteristic.slug] = sub_characteristic
 
     def add_sub_characteristic_list(
-        self, sub_characteristic_list: List["CharacteristicBase"]
+            self, sub_characteristic_list: List["CharacteristicBase"]
     ) -> None:
         """Add a list of sub-characteristics.
 
@@ -167,12 +161,12 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
     """Interface for a characteristics."""
 
     def __init__(
-        self,
-        slug: str = "",
-        description: str = "",
-        attributes: CharacteristicAttributes = CharacteristicAttributes(
-            runtime=Runtime.DEFAULT
-        ),
+            self,
+            slug: str = "",
+            description: str = "",
+            attributes: CharacteristicAttributes = CharacteristicAttributes(
+                runtime=Runtime.DEFAULT
+            ),
     ):
         super().__init__(slug, description, attributes)
         self.__slug = slug
@@ -221,15 +215,15 @@ class LambdaCharacteristic(CharacteristicBase):
     """
 
     def __init__(
-        self,
-        slug: str,
-        description: str,
-        value: Any,
-        check_func: Callable[[Any], bool],
-        fix_func: Callable[[Any], bool],
-        attributes: CharacteristicAttributes = CharacteristicAttributes(
-            runtime=Runtime.DEFAULT
-        ),
+            self,
+            slug: str,
+            description: str,
+            value: Any,
+            check_func: Callable[[Any], bool],
+            fix_func: Callable[[Any], bool],
+            attributes: CharacteristicAttributes = CharacteristicAttributes(
+                runtime=Runtime.DEFAULT
+            ),
     ):
         """Initializes function pointers of LambdaCharacteristic.
 

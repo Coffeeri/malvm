@@ -1,14 +1,14 @@
 """This module contains the virtual machine manager."""
 import logging
 import sys
-from typing import Dict, Optional, Iterable
+from typing import Dict, Iterable, List, Optional
 
-from ..config_loader import VirtualMachineSettings, BaseImageSettings
-from .hypervisor.hypervisor import Hypervisor
-from .hypervisor.virtualbox.virtualbox import VirtualBoxHypervisor
 from ...utils.exceptions import BaseImageExists
 from ...utils.metaclasses import SingletonMeta
+from ..config_loader import BaseImageSettings, VirtualMachineSettings
+from .hypervisor.hypervisor import Hypervisor
 from .hypervisor.virtualbox.packer import PACKER_PATH, BoxConfiguration
+from .hypervisor.virtualbox.virtualbox import VirtualBoxHypervisor
 
 log = logging.getLogger()
 
@@ -27,6 +27,9 @@ class VirtualMachineManager(metaclass=SingletonMeta):
         self.__vms_config = vms_config
         self.__base_images_config = base_images_config
         self.__hypervisor.set_base_images_dict(self.__base_images_config)
+
+    def get_vm_config(self, vm_name: str) -> Optional[VirtualMachineSettings]:
+        return self.__vms_config.get(vm_name, self.__get_default_vm_setting())
 
     def __get_default_vm_setting(self) -> Optional[VirtualMachineSettings]:
         return self.__vms_config.get("default", None)
@@ -95,5 +98,5 @@ class VirtualMachineManager(metaclass=SingletonMeta):
     def destroy_vm(self, vm_name: str):
         self.__hypervisor.destroy_vm(vm_name)
 
-    def fix_vm(self, vm_name: str):
-        self.__hypervisor.fix_vm(vm_name)
+    def fix_vm(self, vm_name: str, characteristics: Optional[List[str]]):
+        self.__hypervisor.fix_vm(vm_name, characteristics)

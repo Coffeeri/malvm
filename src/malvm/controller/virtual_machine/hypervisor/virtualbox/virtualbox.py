@@ -3,14 +3,16 @@ import logging
 import os
 import subprocess
 import sys
-from typing import Iterable, Optional, List
+from typing import Iterable, List, Optional
 
-from .packer import generate_box_template, BoxConfiguration, PackerTemplate
-from .vagrant import remove_vbox_vm_and_data, add_vm_to_vagrant_files, get_vm_names_list, \
-    get_vagrant_files_folder_path, get_vagrant_box_list, get_vm_id_by_vm_name
-from ..hypervisor import Hypervisor
-from ....config_loader import VirtualMachineSettings, VirtualMachineNetworkSettings
 from .....utils.exceptions import BaseImageExists
+from ....config_loader import (VirtualMachineNetworkSettings,
+                               VirtualMachineSettings)
+from ..hypervisor import Hypervisor
+from .packer import BoxConfiguration, PackerTemplate, generate_box_template
+from .vagrant import (add_vm_to_vagrant_files, get_vagrant_box_list,
+                      get_vagrant_files_folder_path, get_vm_id_by_vm_name,
+                      get_vm_names_list, remove_vbox_vm_and_data)
 
 log = logging.getLogger()
 
@@ -71,12 +73,6 @@ def _prepare_vagrantfile(vagrantfile_path, vm_name):
              )
 
 
-def _ensure_vm_running(vm_name: str, vm_id=None):
-    if not vm_id:
-        vm_id = get_vm_id_by_vm_name(vm_name)
-    subprocess.run(["vagrant", "up", vm_id], check=True)
-
-
 def _install_applications_in_vm(vm_name: str, vm_settings: VirtualMachineSettings):
     log.info("Installing choco applications...")
     install_choco_applications(vm_settings.choco_applications, vm_name)
@@ -134,13 +130,15 @@ class VirtualBoxHypervisor(Hypervisor):
 
     def initiate_first_boot(self, vm_name: str, vm_settings: VirtualMachineSettings):
         self.start_vm(vm_name)
-        # TODO if hardening = True in config
-        # log.debug(f"Running malvm fix on {vm_name}.")
-        # subprocess.run(
-        #     ["vagrant", "winrm", "-e", "-c", "malvm fix"], check=True,
-        # )
+        # if vm_settings.hardening_configuration:
+        #     log.debug(f"Running malvm fix on {vm_name}.")
+        #     # TODO filter pre boot
+        #     for characteristic in vm_settings.hardening_configuration.characteristics:
+        #         subprocess.run(
+        #             ["vagrant", "winrm", "-e", "-c", f"malvm fix {characteristic}"], check=True,
+        #         )
         _setup_network(vm_settings.network_configuration, vm_name)
-        create_snapshot(vm_name, "clean-state")
+        # create_snapshot(vm_name, "clean-state")
 
     def start_vm(self, vm_name):
         vagrantfile_path = get_vagrant_files_folder_path() / vm_name
@@ -165,9 +163,13 @@ class VirtualBoxHypervisor(Hypervisor):
     def destroy_vm(self, vm_name: str):
         remove_vbox_vm_and_data(vm_name)
 
-    def fix_vm(self, vm_name: str):
+    def fix_vm(self, vm_name: str, characteristics: Optional[List[str]]):
         vm_id = get_vm_id_by_vm_name(vm_name)
-        run_command_in_vm(vm_id, "malvm fix", True)
+        if characteristics:
+            for characteristic in characteristics:
+                run_command_in_vm(vm_id, f"malvm fix {characteristic}", True)
+        else:
+            run_command_in_vm(vm_id, "malvm fix", True)
 
     def get_virtual_machines_names_iter(self) -> Iterable[str]:
         return get_vm_names_list()

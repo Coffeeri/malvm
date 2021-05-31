@@ -2,8 +2,8 @@
 import click
 
 from .. import __version__
-from .malvm.main import check, fix, show, clean, up
 from .box.vm_builder import box
+from .malvm.main import check, clean, fix, show, up
 
 
 @click.group()

@@ -5,13 +5,12 @@ from typing import Optional
 
 import click
 
-from ..utils import print_info
 from ...controller import Controller
-from .utils import (print_pre_boot_fix_results,
-                    print_characteristics,
-                    print_results, print_pre_boot_check_results,
-                    )
-from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import get_existing_vagrant_files_paths_iterable
+from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import \
+    get_existing_vagrant_files_paths_iterable
+from ..utils import print_info
+from .utils import (print_characteristics, print_pre_boot_check_results,
+                    print_pre_boot_fix_results, print_results)
 
 controller: Controller = Controller()
 log = logging.getLogger()
@@ -61,17 +60,16 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     """Fixes satisfaction of CHARACTERISTIC."""
     if characteristic_slug:
         run_specific_fix(characteristic_slug)
-
     else:
         run_all_fixes()
-
+        if vm_name:
+            print_pre_boot_fix_results(vm_name)
     # Müssen wir Auge machen.
     if not vm_name:
         log.warning("No vm was found in your environment.\n"
                     "You can manually pass the vm-name with [-v VM_NAME].\n"
                     "If this ran in the VM, this can be ignored.")
         sys.exit(0)
-    print_pre_boot_fix_results(vm_name)
 
 
 def run_specific_fix(characteristic_slug):

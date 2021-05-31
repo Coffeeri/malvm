@@ -1,6 +1,7 @@
 """This module contains the CLI for creating sanitized windows Virtual Machines."""
 import logging
 import sys
+from pathlib import Path
 from time import sleep
 
 import click
@@ -195,3 +196,12 @@ def list_boxes():
         print_info("No Virtual Machine setup yet.\n"
                    "Please create one with `malvm box start [template] [vm_name]`",
                    command="malvm box list")
+
+
+@box.command()
+@click.argument('src', nargs=-1)
+@click.argument('dest')
+@click.argument("vm_name")
+def upload(src, dest, vm_name):
+    for file_path in src:
+        controller.vm_manager.upload_file(vm_name, Path(file_path), dest)

@@ -1,4 +1,5 @@
 """This module defines an abstract definition of a hypervisor object."""
+from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
 from ....utils.metaclasses import SingletonMeta
@@ -41,4 +42,7 @@ class Hypervisor(metaclass=SingletonMeta):
         raise NotImplementedError
 
     def get_virtual_machines_names_iter(self) -> Iterable[str]:
+        raise NotImplementedError
+
+    def upload_file(self, vm_name: str, local_file_path: Path, remote_file_path: str):
         raise NotImplementedError

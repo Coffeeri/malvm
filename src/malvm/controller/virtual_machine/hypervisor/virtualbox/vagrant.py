@@ -186,3 +186,9 @@ def decode_vagrant_output(result):
     result_decoded = result.stdout.decode("utf-8")
     reader = csv.reader(result_decoded.split("\n"), delimiter=",")
     return reader
+
+
+def upload_file_to_vm(vm_id: str, local_file_path: Path, remote_file_path: str):
+    subprocess.run(
+        ["vagrant", "upload", str(local_file_path.absolute()), remote_file_path, vm_id], check=True,
+    )

@@ -1,6 +1,7 @@
 """This module contains the virtual machine manager."""
 import logging
 import sys
+from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
 from ...utils.exceptions import BaseImageExists
@@ -100,3 +101,6 @@ class VirtualMachineManager(metaclass=SingletonMeta):
 
     def fix_vm(self, vm_name: str, characteristics: Optional[List[str]]):
         self.__hypervisor.fix_vm(vm_name, characteristics)
+
+    def upload_file(self, vm_name: str, local_file_path: Path, remote_file_path: str):
+        self.__hypervisor.upload_file(vm_name, local_file_path, remote_file_path)

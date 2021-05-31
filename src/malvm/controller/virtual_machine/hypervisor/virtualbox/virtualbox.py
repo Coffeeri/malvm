@@ -3,6 +3,7 @@ import logging
 import os
 import subprocess
 import sys
+from pathlib import Path
 from typing import Iterable, List, Optional
 
 from .....utils.exceptions import BaseImageExists
@@ -12,7 +13,7 @@ from ..hypervisor import Hypervisor
 from .packer import BoxConfiguration, PackerTemplate, generate_box_template
 from .vagrant import (add_vm_to_vagrant_files, get_vagrant_box_list,
                       get_vagrant_files_folder_path, get_vm_id_by_vm_name,
-                      get_vm_names_list, remove_vbox_vm_and_data)
+                      get_vm_names_list, remove_vbox_vm_and_data, upload_file_to_vm)
 
 log = logging.getLogger()
 
@@ -139,6 +140,10 @@ class VirtualBoxHypervisor(Hypervisor):
         #         )
         _setup_network(vm_settings.network_configuration, vm_name)
         # create_snapshot(vm_name, "clean-state")
+
+    def upload_file(self, vm_name: str, local_file_path: Path, remote_file_path: str):
+        vm_id = get_vm_id_by_vm_name(vm_name)
+        upload_file_to_vm(vm_id, local_file_path, remote_file_path)
 
     def start_vm(self, vm_name):
         vagrantfile_path = get_vagrant_files_folder_path() / vm_name

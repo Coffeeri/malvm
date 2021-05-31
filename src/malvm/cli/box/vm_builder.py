@@ -204,6 +204,7 @@ def list_boxes():
 @click.argument("dest")
 @click.argument("vm_name")
 def upload(src, dest, vm_name):
+    """Uploads one or multiple files to the Virtual Machine."""
     for file_path in src:
         controller.vm_manager.upload_file(vm_name, Path(file_path), dest)
 
@@ -212,9 +213,22 @@ def upload(src, dest, vm_name):
 @click.argument("vm_name")
 @click.argument("command", nargs=-1)
 def exec_command_in_vm(vm_name, command):
+    """Executes a command in an elevated shell inside a specified Virtual Machine."""
     command_with_args = " ".join(command)
     print_info(f"Executing in {vm_name}\n> {command_with_args}..")
     if controller.vm_manager.vm_exists(vm_name):
         controller.vm_manager.exec_command(vm_name, command_with_args, elevated=True)
+    else:
+        print_info(f"VM {vm_name} does not exist.")
+
+
+@box.command()
+@click.argument("vm_name")
+@click.argument("snapshot_name")
+def snapshot(vm_name, snapshot_name):
+    """Creates a snapshot of the current state of a Virtual Machine."""
+    print_info(f"Creating snapshot of {vm_name} [{snapshot_name}]..")
+    if controller.vm_manager.vm_exists(vm_name):
+        controller.vm_manager.create_snapshot(vm_name, snapshot_name)
     else:
         print_info(f"VM {vm_name} does not exist.")

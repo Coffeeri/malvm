@@ -184,6 +184,9 @@ class VirtualBoxHypervisor(Hypervisor):
     def get_virtual_machines_names_iter(self) -> Iterable[str]:
         return get_vm_names_list()
 
+    def create_snapshot(self, vm_name: str, snapshot_name: str):
+        create_snapshot(vm_name, snapshot_name)
+
 
 class BaseImage:
     def __init__(self, config: BoxConfiguration):

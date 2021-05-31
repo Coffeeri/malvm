@@ -3,3 +3,7 @@
 
 class BaseImageExists(Exception):
     pass
+
+
+class VMNotExists(Exception):
+    pass

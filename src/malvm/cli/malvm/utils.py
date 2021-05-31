@@ -1,6 +1,6 @@
 """This module contains helper methods for cli malvm-core."""
 import platform
-from typing import Iterator, List, Tuple, Dict
+from typing import Dict, Iterator, List, Tuple
 
 import click
 

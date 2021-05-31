@@ -104,3 +104,6 @@ class VirtualMachineManager(metaclass=SingletonMeta):
 
     def upload_file(self, vm_name: str, local_file_path: Path, remote_file_path: str):
         self.__hypervisor.upload_file(vm_name, local_file_path, remote_file_path)
+
+    def exec_command(self, vm_name: str, command: str, elevated=True):
+        self.__hypervisor.exec_command(vm_name, command, elevated)

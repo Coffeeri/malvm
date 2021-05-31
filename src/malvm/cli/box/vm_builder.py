@@ -6,7 +6,8 @@ from time import sleep
 
 import click
 import inquirer  # type: ignore
-from malvm.controller.virtual_machine.hypervisor.virtualbox.virtualbox import create_snapshot
+from malvm.controller.virtual_machine.hypervisor.virtualbox.virtualbox import \
+    create_snapshot
 
 from ...characteristics.abstract_characteristic import Runtime
 from ...controller import Controller
@@ -199,9 +200,21 @@ def list_boxes():
 
 
 @box.command()
-@click.argument('src', nargs=-1)
-@click.argument('dest')
+@click.argument("src", nargs=-1)
+@click.argument("dest")
 @click.argument("vm_name")
 def upload(src, dest, vm_name):
     for file_path in src:
         controller.vm_manager.upload_file(vm_name, Path(file_path), dest)
+
+
+@box.command("exec")
+@click.argument("vm_name")
+@click.argument("command", nargs=-1)
+def exec_command_in_vm(vm_name, command):
+    command_with_args = " ".join(command)
+    print_info(f"Executing in {vm_name}\n> {command_with_args}..")
+    if controller.vm_manager.vm_exists(vm_name):
+        controller.vm_manager.exec_command(vm_name, command_with_args, elevated=True)
+    else:
+        print_info(f"VM {vm_name} does not exist.")

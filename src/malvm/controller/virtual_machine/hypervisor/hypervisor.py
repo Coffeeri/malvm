@@ -49,3 +49,6 @@ class Hypervisor(metaclass=SingletonMeta):
 
     def exec_command(self, vm_name: str, command: str, elevated=True):
         raise NotImplementedError
+
+    def create_snapshot(self, vm_name: str, snapshot_name: str):
+        raise NotImplementedError

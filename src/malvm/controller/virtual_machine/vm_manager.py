@@ -107,3 +107,6 @@ class VirtualMachineManager(metaclass=SingletonMeta):
 
     def exec_command(self, vm_name: str, command: str, elevated=True):
         self.__hypervisor.exec_command(vm_name, command, elevated)
+
+    def create_snapshot(self, vm_name: str, snapshot_name):
+        self.__hypervisor.create_snapshot(vm_name, snapshot_name)

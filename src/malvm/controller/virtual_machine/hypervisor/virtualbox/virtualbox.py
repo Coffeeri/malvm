@@ -36,14 +36,17 @@ def install_pip_applications(pip_applications: Optional[List[str]], vm_name: str
 
 
 def run_command_in_vm(vm_id: str, command: str, elevated: bool = False):
-    if elevated:
-        subprocess.run(
-            ["vagrant", "winrm", "-e", "-c", command, vm_id], check=True,
-        )
-    else:
-        subprocess.run(
-            ["vagrant", "winrm", "-c", command, vm_id], check=True,
-        )
+    try:
+        if elevated:
+            subprocess.run(
+                ["vagrant", "winrm", "-e", "-c", command, vm_id], check=True,
+            )
+        else:
+            subprocess.run(
+                ["vagrant", "winrm", "-c", command, vm_id], check=True,
+            )
+    except subprocess.CalledProcessError as error:
+        log.debug(str(error))
 
 
 def _set_default_network_in_vm(default_gateway: Optional[str], vm_name: str):

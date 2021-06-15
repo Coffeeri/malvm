@@ -435,6 +435,163 @@ virtual_machines:
           ip: 123
 """
 
+network_config_with_dns_server = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      dns_server: [1.1.1.1, 8.8.8.8]
+      interfaces:
+        interface01:
+          ip: 192.168.56.101
+"""
+network_config_with_dns_server_single_string = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      dns_server: 1.1.1.1
+      interfaces:
+        interface01:
+          ip: 192.168.56.101
+"""
+network_config_with_dns_server_invalid_ip = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      dns_server: abc
+      interfaces:
+        interface01:
+          ip: 192.168.56.101
+"""
+network_config_with_dns_server_invalid_ips = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      dns_server: [1,2]
+      interfaces:
+        interface01:
+          ip: 192.168.56.101
+"""
+
+network_config_with_dns_server_too_many_ips = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      dns_server: [1.1.1.1, 1.0.0.1, 8.8.8.8]
+      interfaces:
+        interface01:
+          ip: 192.168.56.101
+"""
+
 
 def test_wrong_suffix(tmp_path, caplog):
     path = tmp_path / "test.txt"
@@ -671,3 +828,41 @@ def test_wrong_interface_ip_config(tmp_path, monkeypatch):
     with pytest.raises(MisconfigurationException) as e:
         get_malvm_configuration()
     assert str(e.value) == "IP address of interface interface01 is not in the correct IPV4 format."
+
+
+def test_dns_server_config(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, network_config_with_dns_server)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    config = get_malvm_configuration()
+    assert config.virtual_machines["fkieVM"].network_configuration.dns_server == ["1.1.1.1", "8.8.8.8"]
+
+
+def test_dns_server_config_single_string(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, network_config_with_dns_server_single_string)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    config = get_malvm_configuration()
+    assert config.virtual_machines["fkieVM"].network_configuration.dns_server == ["1.1.1.1", ""]
+
+
+def test_dns_server_config_invalid_ip(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, network_config_with_dns_server_invalid_ip)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    with pytest.raises(MisconfigurationException) as exc:
+        get_malvm_configuration()
+    assert str(exc.value) == "Invalid DNS configuration. Invalid IPv4 address."
+
+
+def test_dns_server_config_invalid_ips(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, network_config_with_dns_server_invalid_ips)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    with pytest.raises(MisconfigurationException) as exc:
+        get_malvm_configuration()
+    assert str(exc.value) == "Invalid DNS configuration. Invalid IPv4 address."
+
+
+def test_dns_server_config_too_many_ips(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, network_config_with_dns_server_too_many_ips)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    with pytest.raises(MisconfigurationException) as exc:
+        get_malvm_configuration()
+    assert str(exc.value) == "Too many DNS servers in configuration. The maximum is 2."

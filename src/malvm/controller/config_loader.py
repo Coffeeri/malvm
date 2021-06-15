@@ -4,7 +4,7 @@ import shutil
 import socket
 from logging.config import dictConfig
 from pathlib import Path
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
 
 import yaml
 
@@ -34,6 +34,7 @@ class NetworkInterface(NamedTuple):
 
 class VirtualMachineNetworkSettings(NamedTuple):
     default_gateway: Optional[str]
+    dns_server: Optional[List[str]]
     interfaces: Optional[List[NetworkInterface]]
 
 
@@ -148,7 +149,7 @@ def get_malvm_configuration_file_path() -> Optional[Path]:
     return None
 
 
-def get_json_from_yaml_file(yaml_path: Path) -> Dict[str, Any]:
+def get_dict_from_yaml_file(yaml_path: Path) -> Dict[str, Any]:
     with yaml_path.open() as opened_file:
         loaded_configuration = yaml.full_load(opened_file)
     return loaded_configuration
@@ -170,9 +171,13 @@ def is_configuration_file_valid(yaml_path: Path) -> bool:
 
 
 def parse_malvm_yaml_config(yaml_path: Path) -> MalvmConfigurationSettings:
-    loaded_configuration = get_json_from_yaml_file(yaml_path)
+    loaded_configuration = get_dict_from_yaml_file(yaml_path)
+    return parse_malvm_dict_config(loaded_configuration)
+
+
+def parse_malvm_dict_config(configuration: Dict[str, Any]) -> MalvmConfigurationSettings:
     base_image_settings_dict, logging_settings_dict, vm_settings_dict = fetch_settings_dict_or_none(
-        loaded_configuration)
+        configuration)
 
     base_images_settings_dict = parse_base_images_settings(base_image_settings_dict)
     logging_settings_object = parse_logging_settings(logging_settings_dict)
@@ -264,6 +269,22 @@ def is_valid_ipv4_address(address: str) -> bool:
     return True
 
 
+def parse_dns_server(dns_server: Union[List[str], str]) -> Optional[List[str]]:
+    if not dns_server:
+        return None
+    if isinstance(dns_server, str):
+        if not is_valid_ipv4_address(dns_server):
+            raise MisconfigurationException("Invalid DNS configuration. Invalid IPv4 address.")
+        return [dns_server, ""]
+    elif isinstance(dns_server, List):
+        if len(dns_server) > 2:
+            raise MisconfigurationException("Too many DNS servers in configuration. The maximum is 2.")
+        if not all(map(is_valid_ipv4_address, map(str, dns_server))):
+            raise MisconfigurationException("Invalid DNS configuration. Invalid IPv4 address.")
+        return dns_server
+    raise MisconfigurationException("Invalid DNS configuration.")
+
+
 def parse_network_configuration(network_configuration: Optional[Dict]) -> Optional[VirtualMachineNetworkSettings]:
     if not network_configuration:
         return None
@@ -274,6 +295,7 @@ def parse_network_configuration(network_configuration: Optional[Dict]) -> Option
             raise MisconfigurationException("IP address of gateway is not in the correct IPV4 format.")
     network_config = VirtualMachineNetworkSettings(
         default_gateway=gateway,
+        dns_server=parse_dns_server(network_configuration.get("dns_server", None)),
         interfaces=parse_network_interfaces(network_configuration.get("interfaces", None))
     )
     return network_config

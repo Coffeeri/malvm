@@ -49,7 +49,16 @@ def run_command_in_vm(vm_id: str, command: str, elevated: bool = False):
         log.debug(str(error))
 
 
-def _set_default_network_in_vm(default_gateway: Optional[str], vm_name: str):
+def _set_dns_server_in_vm(dns_server: Optional[List[str]], vm_name: str):
+    if dns_server:
+        vm_id = get_vm_id_by_vm_name(vm_name)
+        run_command_in_vm(vm_id,
+                          f"Set-DnsClientServerAddress -InterfaceIndex 12 -ServerAddresses "
+                          f"(\"{dns_server[0]}\",\"{dns_server[1]}\")",
+                          elevated=True)
+
+
+def _set_default_gateway_in_vm(default_gateway: Optional[str], vm_name: str):
     if default_gateway:
         vm_id = get_vm_id_by_vm_name(vm_name)
         log.info(f"Setting {default_gateway} as default gateway.")
@@ -58,13 +67,13 @@ def _set_default_network_in_vm(default_gateway: Optional[str], vm_name: str):
                           "reg delete HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\PersistentRoutes "
                           "/va /f",
                           elevated=True)
-        run_command_in_vm(vm_id, f"route add -p 0.0.0.0 mask 0.0.0.0 {default_gateway}",
-                          elevated=True)
+        run_command_in_vm(vm_id, f"route add -p 0.0.0.0 mask 0.0.0.0 {default_gateway}", elevated=True)
 
 
 def _setup_network(network_configuration: Optional[VirtualMachineNetworkSettings], vm_name: str):
     if network_configuration:
-        _set_default_network_in_vm(network_configuration.default_gateway, vm_name)
+        _set_default_gateway_in_vm(network_configuration.default_gateway, vm_name)
+        _set_dns_server_in_vm(network_configuration.dns_server, vm_name)
 
 
 def _prepare_vagrantfile(vagrantfile_path, vm_name):

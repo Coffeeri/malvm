@@ -1,5 +1,6 @@
 """This module contains methods which load and verify the malvm configuration."""
 import logging
+import re
 import shutil
 import socket
 from logging.config import dictConfig
@@ -30,6 +31,7 @@ class BaseImageSettings(NamedTuple):
 class NetworkInterface(NamedTuple):
     interface_name: str
     ip: str
+    mac_address: str
 
 
 class VirtualMachineNetworkSettings(NamedTuple):
@@ -241,16 +243,24 @@ def parse_network_interfaces(network_interfaces: Optional[Dict]) -> Optional[Lis
     interface_list = []
     for interface_name, config in network_interfaces.items():
         ip_address = config.get("ip", None) if config else None
+        mac_address = config.get("mac", None) if config else None
         if not ip_address:
             raise MisconfigurationException(f"IP address of interface {interface_name} is not configured")
         ip_address = str(ip_address)
         if not is_valid_ipv4_address(ip_address):
             raise MisconfigurationException(
                 f"IP address of interface {interface_name} is not in the correct IPV4 format.")
+
+        if mac_address and not re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac_address.lower()):
+            raise MisconfigurationException(f"Invalid MAC-Address: {mac_address}.")
+
         interface_list.append(
             NetworkInterface(
                 interface_name=interface_name,
-                ip=ip_address)
+                ip=ip_address,
+                mac_address=mac_address.lower() if mac_address else None
+            )
+
         )
     return interface_list
 
@@ -272,17 +282,17 @@ def is_valid_ipv4_address(address: str) -> bool:
 def parse_dns_server(dns_server: Union[List[str], str]) -> Optional[List[str]]:
     if not dns_server:
         return None
+    if not isinstance(dns_server, str) and not isinstance(dns_server, list):
+        raise MisconfigurationException("Invalid DNS configuration.")
     if isinstance(dns_server, str):
         if not is_valid_ipv4_address(dns_server):
             raise MisconfigurationException("Invalid DNS configuration. Invalid IPv4 address.")
         return [dns_server, ""]
-    elif isinstance(dns_server, List):
-        if len(dns_server) > 2:
-            raise MisconfigurationException("Too many DNS servers in configuration. The maximum is 2.")
-        if not all(map(is_valid_ipv4_address, map(str, dns_server))):
-            raise MisconfigurationException("Invalid DNS configuration. Invalid IPv4 address.")
-        return dns_server
-    raise MisconfigurationException("Invalid DNS configuration.")
+    if len(dns_server) > 2:
+        raise MisconfigurationException("Too many DNS servers in configuration. The maximum is 2.")
+    if not all(map(is_valid_ipv4_address, map(str, dns_server))):
+        raise MisconfigurationException("Invalid DNS configuration. Invalid IPv4 address.")
+    return dns_server
 
 
 def parse_network_configuration(network_configuration: Optional[Dict]) -> Optional[VirtualMachineNetworkSettings]:

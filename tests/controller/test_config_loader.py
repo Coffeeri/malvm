@@ -592,6 +592,69 @@ virtual_machines:
           ip: 192.168.56.101
 """
 
+network_config_with_mac_address = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      interfaces:
+        interface01:
+          ip: 192.168.56.101
+          mac: 19:6E:68:24:AB:E3
+"""
+network_config_with_mac_address_dashed = """
+logging:
+    syslog_address: /dev/log
+    rotating_file_path: ~/.local/share/malvm/logs/malvm.log
+base_images:
+  malvm-win-10:
+    template: windows_10
+    username: max
+    password: 123456
+    computer_name: Computer
+    language_code: de-De
+virtual_machines:
+  default:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: []
+    pip_applications: []
+  fkieVM:
+    base_image: malvm-win-10
+    disk_size: 120GB
+    memory: 2048
+    choco_applications: [git]
+    pip_applications: [black, pytest]
+    network:
+      default_gateway: 192.168.56.1
+      interfaces:
+        interface01:
+          ip: 192.168.56.101
+          mac: 19-6E-68-24-AB-E3
+"""
+
 
 def test_wrong_suffix(tmp_path, caplog):
     path = tmp_path / "test.txt"
@@ -866,3 +929,19 @@ def test_dns_server_config_too_many_ips(tmp_path, monkeypatch):
     with pytest.raises(MisconfigurationException) as exc:
         get_malvm_configuration()
     assert str(exc.value) == "Too many DNS servers in configuration. The maximum is 2."
+
+
+def test_mac_address(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, network_config_with_mac_address)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    config = get_malvm_configuration()
+    assert config.virtual_machines["fkieVM"].network_configuration.interfaces[
+               0].mac_address == "19:6E:68:24:AB:E3".lower()
+
+
+def test_mac_address_dashed(tmp_path, monkeypatch):
+    yaml_path = write_configuration(tmp_path, network_config_with_mac_address_dashed)
+    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+    config = get_malvm_configuration()
+    assert config.virtual_machines["fkieVM"].network_configuration.interfaces[
+               0].mac_address == "19-6E-68-24-AB-E3".lower()

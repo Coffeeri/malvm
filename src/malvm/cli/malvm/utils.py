@@ -1,11 +1,11 @@
 """This module contains helper methods for cli malvm-core."""
 import platform
-from typing import Dict, Iterator, List, Tuple
+from typing import Iterator, List, Tuple
 
 import click
 
 from ...characteristics.abstract_characteristic import (CharacteristicBase,
-                                                        CheckType)
+                                                        CheckType, PreBootEnvironment)
 from ...controller import Controller
 from ..utils import print_info
 
@@ -37,17 +37,19 @@ def print_result(characteristic: CharacteristicBase, status: CheckType):
     )
 
 
-def print_pre_boot_fix_results(vm_name: str, env: Dict = None):
-    environment = {"os": platform.system(), "vm_name": vm_name}
-    if env:
-        environment = {**environment, **env}
-    # for characteristic, return_status in controller.apply_pre_boot_fixes(environment):
-    #   print_result(characteristic, return_status)
+def print_pre_boot_fix_results(vm_name: str, characteristic_list: List[str] = None):
+    if not characteristic_list:
+        characteristic_list = controller.get_pre_boot_characteristic_str_list()
+    environment = PreBootEnvironment(operating_system=platform.system(), vm_name=vm_name,
+                                     characteristic_list=characteristic_list)
     print_results(controller.apply_pre_boot_fixes(environment))
 
 
 def print_pre_boot_check_results(vm_name: str):
-    print_results(controller.get_pre_boot_checks_results({"vm_name": vm_name}))
+    characteristic_list = controller.get_pre_boot_characteristic_str_list()
+    environment = PreBootEnvironment(operating_system=platform.system(), vm_name=vm_name,
+                                     characteristic_list=characteristic_list)
+    print_results(controller.get_pre_boot_checks_results(environment))
 
 
 def print_characteristics(characteristic_list: List[CharacteristicBase]):

@@ -4,7 +4,7 @@ import pytest
 
 from malvm.characteristics.abstract_characteristic import (
     Runtime,
-    CheckType,
+    CheckType, PreBootEnvironment,
 )
 from malvm.controller.controller import (
     Controller,
@@ -122,7 +122,8 @@ def test_pre_boot_check(example_controller, example_pre_boot_characteristic):
 def test_pre_boot_fix(example_controller, example_pre_boot_characteristic):
     example_controller.characteristics = {}
     example_controller.add_characteristic(example_pre_boot_characteristic)
-    example_env = {"test_env": "test"}
+    example_env = PreBootEnvironment(operating_system="linux", vm_name="test_vm",
+                                     characteristic_list=list(example_controller.characteristics.keys()))
     actual_post_boot_list = example_controller.get_characteristic_list(
         True, Runtime.DEFAULT
     )
@@ -152,6 +153,16 @@ def test_get_characteristic_list(example_controller, example_characteristic):
     assert expected_characteristics_with_sub == actual_characteristics_with_sub
 
 
+def test_get_pre_boot_characteristic_list(example_controller, example_pre_boot_characteristic, example_characteristic):
+    example_controller.characteristics = {}
+    example_controller.add_characteristic(example_pre_boot_characteristic)
+    example_controller.add_characteristic(example_characteristic)
+    expected_characteristics = [example_pre_boot_characteristic.slug]
+
+    actual_characteristics = example_controller.get_pre_boot_characteristic_str_list()
+    assert expected_characteristics == actual_characteristics
+
+
 def test_check_unknown_characteristic(example_controller):
     with pytest.raises(ValueError):
-        [*example_controller.get_check_results("random_slug")]
+        [x for x in example_controller.get_check_results("random_slug")]

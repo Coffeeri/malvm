@@ -37,6 +37,12 @@ class Runtime(Enum):
         return NotImplemented
 
 
+class PreBootEnvironment(NamedTuple):
+    operating_system: str
+    vm_name: str
+    characteristic_list: List[str]
+
+
 class CharacteristicAttributes(NamedTuple):
     """Attributes of a characteristic."""
 
@@ -60,7 +66,7 @@ class CharacteristicBase:
         self.__description = description
         self.__sub_characteristics: Dict[str, CharacteristicBase] = {}
         self.__attributes: CharacteristicAttributes = attributes
-        self.__environment: Dict[str, Any] = {}
+        self.__environment: PreBootEnvironment = PreBootEnvironment("", "", [])
 
     def __eq__(self, other: Any) -> bool:
         """Returns true if compared characteristic is equal."""
@@ -124,12 +130,12 @@ class CharacteristicBase:
         return self.__attributes
 
     @property
-    def environment(self) -> Dict[str, Any]:
+    def environment(self) -> PreBootEnvironment:
         """Returns environment of characteristic."""
         return self.__environment
 
     @environment.setter
-    def environment(self, value: Dict[str, Any]) -> None:
+    def environment(self, value: PreBootEnvironment) -> None:
         self.__environment = value
 
     def add_sub_characteristic(self, sub_characteristic: "CharacteristicBase") -> None:

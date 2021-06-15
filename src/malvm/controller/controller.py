@@ -9,16 +9,16 @@ import sys
 from enum import Enum
 from importlib import import_module
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional
 
+from .config_loader import get_malvm_configuration, setup_logging
+from .virtual_machine.hypervisor.virtualbox.vagrant import clean_malvm_data
+from .virtual_machine.vm_manager import VirtualMachineManager
 from ..characteristics.abstract_characteristic import (Characteristic,
                                                        CharacteristicBase,
-                                                       CheckResult, Runtime)
+                                                       CheckResult, Runtime, PreBootEnvironment)
 from ..utils.helper_methods import get_config_root
 from ..utils.metaclasses import SingletonMeta
-from .config_loader import get_malvm_configuration, setup_logging
-from .virtual_machine.hypervisor.virtualbox.vagrant import _clean_malvm_data
-from .virtual_machine.vm_manager import VirtualMachineManager
 
 
 class CharacteristicAction(Enum):
@@ -72,7 +72,7 @@ class Controller(metaclass=SingletonMeta):
         for characteristic in self.get_characteristic_list():
             yield from self.get_check_results(characteristic.slug)
 
-    def get_pre_boot_checks_results(self, environment: Dict[str, Any]) -> CheckResult:
+    def get_pre_boot_checks_results(self, environment: PreBootEnvironment) -> CheckResult:
         for characteristic in self.get_characteristic_list(False, Runtime.PRE_BOOT):
             self.characteristics[characteristic.slug].environment = environment
             yield from self.get_check_results(characteristic.slug)
@@ -86,11 +86,8 @@ class Controller(metaclass=SingletonMeta):
         for characteristic in self.get_characteristic_list():
             yield from self.apply_fix_get_results(characteristic.slug)
 
-    def apply_pre_boot_fixes(self, environment: Dict[str, Any]) -> CheckResult:
-        loaded_characteristics = [c.slug for c in self.get_characteristic_list(True, Runtime.PRE_BOOT)]
-        loaded_pre_boot_characteristics: List[str] = environment.get("pre_boot_characteristics",
-                                                                     loaded_characteristics)
-        for characteristic in loaded_pre_boot_characteristics:
+    def apply_pre_boot_fixes(self, environment: PreBootEnvironment) -> CheckResult:
+        for characteristic in environment.characteristic_list:
             self.characteristics[characteristic].environment = environment
             yield from self.apply_fix_get_results(characteristic)
 
@@ -118,13 +115,14 @@ class Controller(metaclass=SingletonMeta):
         return [characteristic for characteristic in characteristics if
                 ((characteristic.attributes.runtime == selected_runtime) or (selected_runtime is None))]
 
+    def get_pre_boot_characteristic_str_list(self) -> List[str]:
+        return [c.slug for c in self.get_characteristic_list(True, Runtime.PRE_BOOT)]
+
     def clean_malvm_data(self, clean_soft: bool):
-        _clean_malvm_data(self.dirty_paths, clean_soft)
+        clean_malvm_data(self.dirty_paths, clean_soft)
 
 
-def action_on_characteristic(
-        characteristic: CharacteristicBase, action: CharacteristicAction
-) -> CheckResult:
+def action_on_characteristic(characteristic: CharacteristicBase, action: CharacteristicAction) -> CheckResult:
     if action == CharacteristicAction.CHECK:
         yield from characteristic.check()
     elif action == CharacteristicAction.FIX:
@@ -147,8 +145,6 @@ def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
                 yield attribute()
 
 
-def get_sub_characteristics(
-        characteristic: CharacteristicBase,
-) -> Iterator[CharacteristicBase]:
+def get_sub_characteristics(characteristic: CharacteristicBase) -> Iterator[CharacteristicBase]:
     if characteristic.sub_characteristics:
         yield from characteristic.sub_characteristics.values()

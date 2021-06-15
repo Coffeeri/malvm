@@ -12,6 +12,7 @@ from malvm.characteristics.abstract_characteristic import (
     CheckType,
 )
 from malvm.controller.controller import Controller
+from malvm.controller.virtual_machine.vm_manager import VirtualMachineManager
 
 correct_malvm_config = """
 logging:
@@ -38,6 +39,11 @@ virtual_machines:
     choco_applications: [git]
     pip_applications: [black, pytest]
 """
+
+
+@pytest.fixture
+def example_vm_manager():
+    return VirtualMachineManager()
 
 
 @pytest.fixture

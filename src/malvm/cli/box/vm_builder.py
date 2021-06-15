@@ -109,7 +109,7 @@ def start(name, base_image):
                                                                                   selected_runtime=Runtime.PRE_BOOT)]
             pre_boot_characteristic_list = filter(lambda c: c.upper() in loaded_pre_boot_characteristics,
                                                   vm_characteristic_list)
-            print_pre_boot_fix_results(name, env={"pre_boot_characteristics": pre_boot_characteristic_list})
+            print_pre_boot_fix_results(name, list(pre_boot_characteristic_list))
             log.info("Wait 3 seconds..")
             sleep(3)
             loaded_post_boot_characteristics = [c.slug for c in
@@ -232,3 +232,5 @@ def snapshot(vm_name, snapshot_name):
         controller.vm_manager.create_snapshot(vm_name, snapshot_name)
     else:
         print_info(f"VM {vm_name} does not exist.")
+
+# def restore(..):....

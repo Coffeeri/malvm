@@ -101,7 +101,7 @@ def start(name, base_image):
         controller.vm_manager.build_vm(name, base_image)
         log.info("Wait 3 seconds..")
         sleep(3)
-        # TODO Refactor: remove preboot logic from View
+        # TODO Refactor: remove preboot logic from View, currently malvm up does only exec build_vm(...)
         if vm_config.hardening_configuration:
             vm_characteristic_list = vm_config.hardening_configuration.characteristics
             loaded_pre_boot_characteristics = [c.slug for c in

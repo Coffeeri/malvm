@@ -21,12 +21,18 @@ def delete_vagrant_boxes():
     )
 
 
-def _clean_malvm_data(clean_paths: List[Path], clean_soft: bool):
+def clean_malvm_data(clean_paths: List[Path], clean_soft: bool):
     destroy_virtual_machines()
     delete_vagrantfiles_data()
+    delete_vbox_folder()
     if not clean_soft:
         delete_vagrant_boxes()
         delete_malvm_data_paths(clean_paths)
+
+
+def delete_vbox_folder():
+    for vm_folder in (Path.home() / "VirtualBox VMs").glob("*"):
+        remove_path_with_success(str(vm_folder.absolute()))
 
 
 def delete_vagrantfiles_data():

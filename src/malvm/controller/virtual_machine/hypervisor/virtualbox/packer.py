@@ -67,6 +67,12 @@ def edit_last_line_of_text(file: Path, text):
         opened_file.writelines(lines)
 
 
+def get_mac_interface_configuration(mac_address: str) -> str:
+    if mac_address:
+        return f", mac: \"{mac_address.upper().replace(':', '').replace(' - ', '')}\""
+    return ""
+
+
 class PackerTemplate:
     """VM template creation class for Packer."""
 
@@ -168,7 +174,8 @@ class PackerTemplate:
         if vm_settings.network_configuration and vm_settings.network_configuration.interfaces:
             interfaces = "\n".join(
                 [
-                    f'config.vm.network "private_network", ip: "{interface.ip}", name: "{interface.interface_name}"'
+                    f'config.vm.network "private_network", ip: "{interface.ip}"'
+                    f'{get_mac_interface_configuration(interface.mac_address)}'
                     for
                     interface in vm_settings.network_configuration.interfaces if interface])
         else:

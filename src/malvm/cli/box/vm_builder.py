@@ -101,7 +101,7 @@ def start(name, base_image):
         controller.vm_manager.build_vm(name, base_image)
         log.info("Wait 3 seconds..")
         sleep(3)
-        # TODO Refactor: remove preboot logic from View
+        # TODO Refactor: remove preboot logic from View, currently malvm up does only exec build_vm(...)
         if vm_config.hardening_configuration:
             vm_characteristic_list = vm_config.hardening_configuration.characteristics
             loaded_pre_boot_characteristics = [c.slug for c in
@@ -109,7 +109,7 @@ def start(name, base_image):
                                                                                   selected_runtime=Runtime.PRE_BOOT)]
             pre_boot_characteristic_list = filter(lambda c: c.upper() in loaded_pre_boot_characteristics,
                                                   vm_characteristic_list)
-            print_pre_boot_fix_results(name, env={"pre_boot_characteristics": pre_boot_characteristic_list})
+            print_pre_boot_fix_results(name, list(pre_boot_characteristic_list))
             log.info("Wait 3 seconds..")
             sleep(3)
             loaded_post_boot_characteristics = [c.slug for c in
@@ -232,3 +232,5 @@ def snapshot(vm_name, snapshot_name):
         controller.vm_manager.create_snapshot(vm_name, snapshot_name)
     else:
         print_info(f"VM {vm_name} does not exist.")
+
+# def restore(..):....

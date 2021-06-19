@@ -5,7 +5,6 @@ Classes:
 """
 import logging
 import subprocess
-from typing import Optional
 
 from ..abstract_characteristic import (Characteristic,
                                        CharacteristicAttributes, CheckResult,
@@ -25,7 +24,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
         )
 
     def fix(self) -> CheckResult:
-        vm_name = self.get_vm_name()
+        vm_name = self.environment.vm_name
         if vm_name:
             log.debug(f"Run VBoxManage modifyvm {vm_name} --paravirtprovider none")
             subprocess.run(
@@ -36,7 +35,7 @@ class CPUidHypervisorCharacteristic(Characteristic):
 
     def check(self) -> CheckResult:
         """Checks if `paravirtprovider` is none."""
-        vm_name = self.get_vm_name()
+        vm_name = self.environment.vm_name
         is_fixed: bool = False
         if vm_name:
             log.debug(f"Run VBoxManage showvminfo {vm_name} --machinereadable")
@@ -49,9 +48,3 @@ class CPUidHypervisorCharacteristic(Characteristic):
                 "\n"
             )
         yield self, CheckType(self.description, is_fixed)
-
-    def get_vm_name(self) -> Optional[str]:
-        """Returns the Virtual Machine name if set."""
-        if "vm_name" not in self.environment:
-            return None
-        return self.environment["vm_name"]

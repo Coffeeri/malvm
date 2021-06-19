@@ -21,10 +21,11 @@ class PnPDeviceCharacteristic(Characteristic):
 
     def fix(self) -> CheckResult:
         dev_man_view_path = get_data_dir() / "DevManView.exe"
-        if not dev_man_view_path.exists():
+        if dev_man_view_path.is_file():
+            subprocess.Popen([f'{str(dev_man_view_path.absolute())}', '/uninstall * "DEV_CAFE" * / use_wildcard'])
+        else:
             log.error(f"Path {dev_man_view_path.absolute()} does not exist.")
-            raise FileNotFoundError
-        subprocess.Popen([f'{str(dev_man_view_path.absolute())} /uninstall *"DEV_CAFE"* /use_wildcard'])
+            raise FileNotFoundError(f"File {dev_man_view_path.absolute()} was not found.")
         return self.check()
 
     def check(self) -> CheckResult:
@@ -37,4 +38,5 @@ class PnPDeviceCharacteristic(Characteristic):
                 if "DEV_CAFE" in str(result):
                     yield self, CheckType(self.description, False)
             yield self, CheckType(self.description, True)
+            return
         yield self, CheckType("Skipped, malvm is not running on Windows.", False)

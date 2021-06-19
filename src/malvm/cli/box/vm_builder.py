@@ -183,7 +183,7 @@ def fix(vm_name: str, characteristics):
         controller.vm_manager.fix_vm(vm_name, list(characteristics))
     elif not characteristics:
         controller.vm_manager.fix_vm(vm_name, characteristics=None)
-    print_pre_boot_fix_results(vm_name)
+    # print_pre_boot_fix_results(vm_name)
 
 
 @box.command(name="list")

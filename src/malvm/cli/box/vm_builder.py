@@ -70,7 +70,7 @@ def start(name, base_image):
     """
     vm_config = controller.vm_manager.get_vm_config(name)
     vm_config_network = controller.vm_manager.get_vm_config(name).network_configuration
-    vm_config_network_interfaces = controller.vm_manager.get_vm_config(name).network_configuration.interfaces
+
     base_image = vm_config.base_image_name if not base_image else base_image
     if not base_image and not controller.vm_manager.vm_exists(name):
         log.error(f"Virtual Machine {name} does not exist")
@@ -94,9 +94,9 @@ def start(name, base_image):
                    f"Network:\n"
                    f"=========\n"
                    f"Default Gateway: "
-                   f"{vm_config_network.default_gateway if vm_config_network.default_gateway else 'Not set'}\n"
+                   f"{vm_config_network.default_gateway if vm_config_network and vm_config_network.default_gateway else 'Not set'}\n"
                    f"Interfaces:\n"
-                   f"{vm_config_network_interfaces}\n\n"
+                   f"{vm_config_network.interfaces if vm_config_network else 'Not set'}\n\n"
                    )
         controller.vm_manager.build_vm(name, base_image)
         log.info("Wait 3 seconds..")

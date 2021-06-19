@@ -83,6 +83,8 @@ def start(name, base_image):
             f"> Starting new [{click.style(base_image, fg='yellow')}] Virtual Machine "
             f"{click.style(name, fg='yellow')}..."
         )
+        default_gateway = vm_config_network.default_gateway \
+            if vm_config_network and vm_config_network.default_gateway else 'Not set'
         print_info(f"Settings:\n"
                    f"=========\n"
                    f"Name: {name}\n"
@@ -94,7 +96,7 @@ def start(name, base_image):
                    f"Network:\n"
                    f"=========\n"
                    f"Default Gateway: "
-                   f"{vm_config_network.default_gateway if vm_config_network and vm_config_network.default_gateway else 'Not set'}\n"
+                   f"{default_gateway}\n"
                    f"Interfaces:\n"
                    f"{vm_config_network.interfaces if vm_config_network else 'Not set'}\n\n"
                    )

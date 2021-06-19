@@ -57,7 +57,8 @@ setuptools.setup(
     python_requires=">=3.6",
     packages=setuptools.find_packages(where="src"),
     package_dir={"malvm": "src/malvm"},
-    install_requires=["click", "inquirer", "pyyaml", "wmi"],
+    install_requires=["click", "inquirer", "pyyaml",
+                      'wmi; platform_system=="Windows"'],
     package_data={"malvm": DATA_FILES},
     entry_points={"console_scripts": ["malvm = malvm.__main__:main"]},
 )

@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from time import sleep
 from typing import Iterable, List, Optional
 
 from .....utils.exceptions import BaseImageExists
@@ -141,6 +142,11 @@ class VirtualBoxHypervisor(Hypervisor):
         subprocess.run(
             ["vagrant", "halt"], check=True,
         )
+        if vm_settings.hardening_configuration:
+            ...  # TODO
+            # log.info("Wait 3 seconds..")
+            # sleep(3)
+            # vm_characteristic_list = vm_settings.hardening_configuration.characteristics
 
     def initiate_first_boot(self, vm_name: str, vm_settings: VirtualMachineSettings):
         self.start_vm(vm_name)

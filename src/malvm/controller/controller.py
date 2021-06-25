@@ -103,7 +103,7 @@ class Controller(metaclass=SingletonMeta):
         if characteristic:
             yield from action_on_characteristic(characteristic, action)
         else:
-            raise ValueError("Characteristic was not found.")
+            raise ValueError(f"Characteristic {characteristic.slug} was not found.")
 
     def get_characteristic_list(self, include_sub_characteristics: bool = False,
                                 selected_runtime: Optional[Runtime] = Runtime.DEFAULT,

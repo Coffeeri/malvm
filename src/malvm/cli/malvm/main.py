@@ -77,7 +77,8 @@ def run_specific_fix(characteristic_slug):
     try:
         print_results(controller.apply_fix_get_results(characteristic_slug.upper()))
     except ValueError as error_value:
-        log.exception(error_value)
+        log.debug(error_value)
+        log.info(str(error_value))
 
 
 def run_all_fixes():

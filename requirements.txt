@@ -7,3 +7,4 @@ setuptools==47.1.1
 inquirer~=2.7.0
 pyyaml==5.3.1
 WMI==1.4.9
+py-dmidecode==0.1.0

@@ -109,6 +109,8 @@ def start(name, base_image):
 
 
 def get_post_boot_characteristic_list_of_vm(vm_settings: VirtualMachineSettings) -> Iterable[str]:
+    if not vm_settings.hardening_configuration:
+        return []
     vm_characteristic_list = vm_settings.hardening_configuration.characteristics
     loaded_post_boot_characteristics = [c.slug for c in
                                         controller.get_characteristic_list(include_sub_characteristics=True)]
@@ -118,6 +120,8 @@ def get_post_boot_characteristic_list_of_vm(vm_settings: VirtualMachineSettings)
 
 
 def get_pre_boot_characteristic_list_of_vm(vm_settings: VirtualMachineSettings) -> Iterable[str]:
+    if not vm_settings.hardening_configuration:
+        return []
     vm_characteristic_list = vm_settings.hardening_configuration.characteristics
     loaded_pre_boot_characteristics = [c.slug for c in
                                        controller.get_characteristic_list(include_sub_characteristics=True,

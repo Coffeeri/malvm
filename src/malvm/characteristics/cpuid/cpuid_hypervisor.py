@@ -6,22 +6,16 @@ Classes:
 import logging
 import subprocess
 
-from ..abstract_characteristic import (Characteristic,
-                                       CharacteristicAttributes, CheckResult,
-                                       CheckType, Runtime)
+from ..abstract_characteristic import CheckResult, CheckType, PreBootCharacteristic
 
 log = logging.getLogger()
 
 
-class CPUidHypervisorCharacteristic(Characteristic):
+class CPUidHypervisorCharacteristic(PreBootCharacteristic):
     """Checks and Fixes cpuid hypervisor bit in Virtualbox."""
 
     def __init__(self):
-        super().__init__(
-            "CPUID",
-            "Hypervisor bit in cpuid feature bits.",
-            CharacteristicAttributes(runtime=Runtime.PRE_BOOT),
-        )
+        super().__init__("CPUID", "Hypervisor bit in cpuid feature bits.")
 
     def fix(self) -> CheckResult:
         vm_name = self.environment.vm_name

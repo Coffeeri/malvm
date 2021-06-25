@@ -4,9 +4,7 @@ import re
 import subprocess
 import uuid
 
-from ..abstract_characteristic import (Characteristic,
-                                       CharacteristicAttributes, CheckResult,
-                                       CheckType, Runtime)
+from ..abstract_characteristic import CheckResult, CheckType, PreBootCharacteristic
 
 log = logging.getLogger()
 
@@ -18,15 +16,11 @@ def serial_randomize(start=0, string_length=10):
     return rand[start:string_length]
 
 
-class MacAddressCharacteristic(Characteristic):
+class MacAddressCharacteristic(PreBootCharacteristic):
     """Checks and Fixes the mac-address of the Vagrant NIC."""
 
     def __init__(self):
-        super().__init__(
-            "MACVB1",
-            "Randomize mac-address of vagrant NIC.",
-            CharacteristicAttributes(runtime=Runtime.PRE_BOOT),
-        )
+        super().__init__("MACVB1", "Randomize mac-address of vagrant NIC.")
 
     def fix(self) -> CheckResult:
         vm_name = self.environment.vm_name

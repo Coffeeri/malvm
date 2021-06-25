@@ -16,7 +16,7 @@ from .virtual_machine.hypervisor.virtualbox.vagrant import clean_malvm_data
 from .virtual_machine.vm_manager import VirtualMachineManager
 from ..characteristics.abstract_characteristic import (Characteristic,
                                                        CharacteristicBase,
-                                                       CheckResult, Runtime, PreBootEnvironment)
+                                                       CheckResult, Runtime, PreBootEnvironment, PreBootCharacteristic)
 from ..utils.helper_methods import get_config_root
 from ..utils.metaclasses import SingletonMeta
 
@@ -138,8 +138,8 @@ def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
             attribute = getattr(imported_module, i)
             if (
                     inspect.isclass(attribute)
-                    and issubclass(attribute, Characteristic)
-                    and attribute is not Characteristic
+                    and (issubclass(attribute, Characteristic) or issubclass(attribute, PreBootCharacteristic))
+                    and attribute is not Characteristic and attribute is not PreBootCharacteristic
             ):
                 setattr(sys.modules[__name__], name, attribute)
                 yield attribute()

@@ -61,7 +61,8 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     if characteristic_slug:
         run_specific_fix(characteristic_slug)
     else:
-        run_all_fixes()
+        if sys.platform == 'win32':
+            run_all_fixes()
         if vm_name:
             print_pre_boot_fix_results(vm_name)
     # Müssen wir Auge machen.

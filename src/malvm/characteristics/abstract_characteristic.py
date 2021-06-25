@@ -263,3 +263,8 @@ class LambdaCharacteristic(CharacteristicBase):
             Any: Stored value of object, used for check-/ fix-method.
         """
         return self.__value
+
+
+class PreBootCharacteristic(Characteristic):
+    def __init__(self, slug, description):
+        super().__init__(slug, description, CharacteristicAttributes(runtime=Runtime.PRE_BOOT))

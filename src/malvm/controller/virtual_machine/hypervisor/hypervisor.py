@@ -2,9 +2,9 @@
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
-from ....utils.metaclasses import SingletonMeta
-from ...config_loader import BaseImageSettings, VirtualMachineSettings
 from .virtualbox.packer import BoxConfiguration
+from ...config_loader import BaseImageSettings, VirtualMachineSettings
+from ....utils.metaclasses import SingletonMeta
 
 
 class Hypervisor(metaclass=SingletonMeta):

@@ -5,12 +5,12 @@ from typing import Optional
 
 import click
 
+from .utils import (print_characteristics, print_pre_boot_check_results,
+                    print_pre_boot_fix_results, print_results)
+from ..utils import print_info
 from ...controller import Controller
 from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import \
     get_existing_vagrant_files_paths_iterable
-from ..utils import print_info
-from .utils import (print_characteristics, print_pre_boot_check_results,
-                    print_pre_boot_fix_results, print_results)
 
 controller: Controller = Controller()
 log = logging.getLogger()

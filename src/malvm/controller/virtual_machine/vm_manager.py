@@ -4,12 +4,12 @@ import sys
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
-from ...utils.exceptions import BaseImageExists
-from ...utils.metaclasses import SingletonMeta
-from ..config_loader import BaseImageSettings, VirtualMachineSettings
 from .hypervisor.hypervisor import Hypervisor
 from .hypervisor.virtualbox.packer import PACKER_PATH, BoxConfiguration
 from .hypervisor.virtualbox.virtualbox import VirtualBoxHypervisor
+from ..config_loader import BaseImageSettings, VirtualMachineSettings
+from ...utils.exceptions import BaseImageExists
+from ...utils.metaclasses import SingletonMeta
 
 log = logging.getLogger()
 

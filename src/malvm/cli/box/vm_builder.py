@@ -7,15 +7,15 @@ from typing import Iterable
 
 import click
 import inquirer  # type: ignore
+
 from malvm.controller.virtual_machine.hypervisor.virtualbox.virtualbox import \
     create_snapshot
-
+from ..malvm.utils import print_pre_boot_fix_results
+from ..utils import print_info, print_warning
 from ...characteristics.abstract_characteristic import Runtime
 from ...controller import Controller
 from ...controller.config_loader import VirtualMachineSettings
 from ...utils.helper_methods import get_vm_malvm_package_file
-from ..malvm.utils import print_pre_boot_fix_results
-from ..utils import print_info, print_warning
 
 controller = Controller()
 log = logging.getLogger()

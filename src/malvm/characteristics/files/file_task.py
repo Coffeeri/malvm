@@ -7,11 +7,11 @@ Classes:
 from pathlib import Path
 from typing import Iterator, List
 
+from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import \
     read_json_file
 from ...utils.helper_methods import (check_path_not_exists, get_project_root,
                                      remove_path_with_success)
-from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 
 
 class FileVBCharacteristic(Characteristic):

@@ -6,10 +6,10 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
+from ....config_loader import VirtualMachinesType
 from .....utils.exceptions import VMNotExists
 from .....utils.helper_methods import (edit_key_in_json_file, get_config_root,
                                        remove_path_with_success)
-from ....config_loader import VirtualMachinesType
 
 log = logging.getLogger()
 

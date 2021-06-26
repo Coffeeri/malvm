@@ -4,18 +4,17 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from time import sleep
 from typing import Iterable, List, Optional
 
-from .....utils.exceptions import BaseImageExists
-from ....config_loader import (VirtualMachineNetworkSettings,
-                               VirtualMachineSettings)
-from ..hypervisor import Hypervisor
 from .packer import BoxConfiguration, PackerTemplate, generate_box_template
 from .vagrant import (add_vm_to_vagrant_files, get_vagrant_box_list,
                       get_vagrant_files_folder_path, get_vm_id_by_vm_name,
                       get_vm_names_list, remove_vbox_vm_and_data,
                       upload_file_to_vm)
+from ..hypervisor import Hypervisor
+from ....config_loader import (VirtualMachineNetworkSettings,
+                               VirtualMachineSettings)
+from .....utils.exceptions import BaseImageExists
 
 log = logging.getLogger()
 

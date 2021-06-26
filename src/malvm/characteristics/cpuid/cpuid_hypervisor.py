@@ -22,7 +22,7 @@ class CPUidHypervisorCharacteristic(PreBootCharacteristic):
         if vm_name:
             log.debug(f"Run VBoxManage modifyvm {vm_name} --paravirtprovider none")
             subprocess.run(
-                ["VBoxManage", "modifyvm", vm_name, "--paravirtprovider", "none"],
+                ["VBoxManage", "modifyvm", vm_name, "--paravirtprovider", "legacy"],
                 check=True,
             )
         return self.check()
@@ -38,5 +38,5 @@ class CPUidHypervisorCharacteristic(PreBootCharacteristic):
                 stdout=subprocess.PIPE,
                 check=True,
             )
-            is_fixed = 'paravirtprovider="none"' in result.stdout.decode("utf-8").split("\n")
+            is_fixed = 'paravirtprovider="legacy"' in result.stdout.decode("utf-8").split("\n")
         yield self, CheckType(self.description, is_fixed)

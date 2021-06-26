@@ -38,7 +38,5 @@ class CPUidHypervisorCharacteristic(PreBootCharacteristic):
                 stdout=subprocess.PIPE,
                 check=True,
             )
-            is_fixed = 'paravirtprovider="none"' in result.stdout.decode("utf-8").split(
-                "\n"
-            )
+            is_fixed = 'paravirtprovider="none"' in result.stdout.decode("utf-8").split("\n")
         yield self, CheckType(self.description, is_fixed)

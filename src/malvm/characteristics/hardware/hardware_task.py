@@ -29,5 +29,14 @@ class DMIHardwareCharacteristic(PreBootCharacteristic):
 
     def check(self) -> CheckResult:
         """Checks if dmi hardware modification were executed."""
-        # TODO
-        yield self, CheckType(self.description, True)
+        vm_name = self.environment.vm_name
+        is_fixed: bool = False
+        if vm_name:
+            log.debug(f"Run VBoxManage getextradata {vm_name} enumerate.")
+            result = subprocess.run(
+                ["VBoxManage", "getextradata", vm_name, "enumerate"],
+                stdout=subprocess.PIPE,
+                check=True,
+            )
+            is_fixed = len(result.stdout.decode("utf-8").split("\n")) > 3
+        yield self, CheckType(self.description, is_fixed)

@@ -4,10 +4,11 @@ import sys
 from pathlib import Path
 
 from ..abstract_characteristic import (CheckResult, CheckType, PreBootCharacteristic)
-from ...utils.helper_methods import get_config_root
+from ...utils.helper_methods import get_config_root, get_project_root
 
 log = logging.getLogger()
-DATA_FOLDER = get_config_root() / "data"
+TARGET_SCRIPT_DIR = get_config_root() / "data"
+DATA_DIR = Path(get_project_root() / "data/")
 
 
 class DMIHardwareCharacteristic(PreBootCharacteristic):
@@ -19,12 +20,12 @@ class DMIHardwareCharacteristic(PreBootCharacteristic):
     def fix(self) -> CheckResult:
         vm_name = self.environment.vm_name
         hardware_script_generation_script = str(Path(__file__).parent / "generate_hardware_shell_script.py")
-        if not (DATA_FOLDER / "hardware_fix_script.sh").is_file():
+        if not (TARGET_SCRIPT_DIR / "hardware_fix_script.sh").is_file():
             print("[!] Sudo access needed to create hardware_shell_script")
-            print(sys.executable)
             subprocess.call(
-                ["sudo", sys.executable, hardware_script_generation_script, str(DATA_FOLDER), str(DATA_FOLDER)])
-        subprocess.run(["bash", str(DATA_FOLDER / "hardware_fix_script.sh"), vm_name], check=True)
+                ["sudo", sys.executable, hardware_script_generation_script, str(TARGET_SCRIPT_DIR),
+                 str(DATA_DIR)])
+        subprocess.run(["bash", str(TARGET_SCRIPT_DIR / "hardware_fix_script.sh"), vm_name], check=True)
         return self.check()
 
     def check(self) -> CheckResult:

@@ -1,5 +1,6 @@
 # credits to https://github.com/nsmfoo/antivmdetection/blob/master/antivmdetect.py and
 # https://github.com/Cisco-Talos/vboxhardening/
+# https://github.com/hfiref0x/VBoxHardenedLoader/ Copyright (c) 2014 - 2020, VBoxHardenedLoader authors
 import argparse
 import os
 import re
@@ -31,8 +32,14 @@ parser.add_argument('data_path',
 args = parser.parse_args()
 if not Path(args.dest).is_dir() or not Path(args.data_path).is_dir():
     sys.exit(1)
+
 HARDWARE_FIX_SHELL_SCRIPT = str(args.dest + "/hardware_fix_script.sh")
 DSDT_FILE = str(args.data_path + "/DSDT_SLIC.bin")
+ACPI_DSDT_FILE = str(args.data_path + "/ACPI-DSDT-new.bin")
+ACPI_SSDT_FILE = str(args.data_path + "/ACPI-SSDT1-new.bin")
+VIDEO_FILE = str(args.data_path + "/vgabios386.bin")
+PCBIOS_FILE = str(args.data_path + "/pcbios386.bin")
+PXE_FILE = str(args.data_path + "/pxerom.bin")
 
 if os.geteuid() != 0:
     print("Script need root access.")
@@ -281,6 +288,18 @@ for k, v in disk_dmi.items():
         logfile.write(
             'VBoxManage setextradata "$1" VBoxInternal/Devices/piix3ide/0/Config/PrimaryMaster/' + k + '\t\'' + v + '\'\n')
 
+# CD-Drive
+# logfile.write(
+#     'VBoxManage setextradata "$1" "VBoxInternal/Devices/piix3ide/0/Config/Port1/ModelNumber" "HL-DT-ST DVDRAM GUE2P"\t\n')
+# logfile.write('VBoxManage setextradata "$1" "VBoxInternal/Devices/piix3ide/0/Config/Port1/FirmwareRevision" "AS01"\t\n')
+# logfile.write(
+#     'VBoxManage setextradata "$1" "VBoxInternal/Devices/piix3ide/0/Config/Port1/SerialNumber" "KLHH54G4324"\t\n')
+# logfile.write(
+#     'VBoxManage setextradata "$1" "VBoxInternal/Devices/piix3ide/0/Config/Port1/ATAPIVendorId" "Slimtype"\t\n')
+# logfile.write(
+#     'VBoxManage setextradata "$1" "VBoxInternal/Devices/piix3ide/0/Config/Port1/ATAPIProductId" "DVDRAM GUE2P"\t\n')
+# logfile.write('VBoxManage setextradata "$1" "VBoxInternal/Devices/piix3ide/0/Config/Port1/ATAPIRevision" "AS02"\t\n')
+
 logfile.write('else\n')
 for k, v in disk_dmi.items():
     if '** No value to retrieve **' in v:
@@ -289,9 +308,18 @@ for k, v in disk_dmi.items():
     else:
         logfile.write(
             'VBoxManage setextradata "$1" VBoxInternal/Devices/ahci/0/Config/Port0/' + k + '\t\'' + v + '\'\n')
-logfile.write('fi\n')
 
-# removed CD-Drive
+# CD-Drive
+
+# logfile.write(
+#     'VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/ModelNumber" "HL-DT-ST DVDRAM GUE2P"\t\n')
+# logfile.write('VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/FirmwareRevision" "AS01"\t\n')
+# logfile.write('VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/SerialNumber" "KLHH54G4324"\t\n')
+# logfile.write('VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/ATAPIVendorId" "Slimtype"\t\n')
+# logfile.write(
+#     'VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/ATAPIProductId" "DVDRAM GUE2P"\t\n')
+# logfile.write('VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/ATAPIRevision" "AS02"\t\n')
+logfile.write('fi\n')
 
 # # Get and write DSDT image to file - removed since DSDT file of my device is too big >64kb
 # print('[*] Creating a DSDT file...')
@@ -310,7 +338,7 @@ try:
         logfile.write(
             'if [ ! -f "' + DSDT_FILE + '" ]; then echo "[WARNING] Unable to find the DSDT file!"; fi\t\n')
         logfile.write(
-            'VBoxManage setextradata "$1" "VBoxInternal/Devices/acpi/0/Config/CustomTable"\t "$PWD"/' + DSDT_FILE + '\n')
+            'VBoxManage setextradata "$1" VBoxInternal/Devices/acpi/0/Config/CustomTable ' + DSDT_FILE + '\t\n')
 except:
     print('[WARNING] Unable to create the DSDT dump')
     pass
@@ -359,4 +387,23 @@ while i <= 47:
                 logfile.write(
                     'VBoxManage setextradata "$1" VBoxInternal/CPUM/HostCPUID/' + e + '/' + r + '  0x' + rebrand + '\t\n')
             i = i + 4
+
+# needs patch of vbox
+# logfile.write(f'VBoxManage setextradata "$1" VBoxInternal/Devices/acpi/0/Config/DsdtFilePath {ACPI_DSDT_FILE}\t\n')
+# logfile.write(f'VBoxManage setextradata "$1" VBoxInternal/Devices/acpi/0/Config/SsdtFilePath {ACPI_SSDT_FILE}\t\n')
+logfile.write(f'VBoxManage setextradata "$1" VBoxInternal/Devices/vga/0/Config/BiosRom {VIDEO_FILE}\t\n')
+logfile.write(f'VBoxManage setextradata "$1" VBoxInternal/Devices/pcbios/0/Config/BiosRom {PCBIOS_FILE}\t\n')
+logfile.write(f'VBoxManage setextradata "$1" VBoxInternal/Devices/pcbios/0/Config/LanBootRom {PXE_FILE}\t\n')
+logfile.write('VBoxManage modifyvm "$1" --chipset ich9\t\n')
+logfile.write('VBoxManage modifyvm "$1" --hwvirtex on\t\n')
+logfile.write('VBoxManage modifyvm "$1" --vtxvpid on\t\n')
+logfile.write('VBoxManage modifyvm "$1" --vtxux on\t\n')
+logfile.write('VBoxManage modifyvm "$1" --apic on\t\n')
+logfile.write('VBoxManage modifyvm "$1" --pae on\t\n')
+logfile.write('VBoxManage modifyvm "$1" --longmode on\t\n')
+logfile.write('VBoxManage modifyvm "$1" --hpet on\t\n')
+logfile.write('VBoxManage modifyvm "$1" --nestedpaging on\t\n')
+logfile.write('VBoxManage modifyvm "$1" --largepages on\t\n')
+logfile.write('VBoxManage modifyvm "$1" --graphicscontroller vmsvga\t\n')
+logfile.write('VBoxManage modifyvm "$1" --mouse ps2\t\n')
 logfile.close()

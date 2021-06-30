@@ -238,14 +238,15 @@ def upload(src, dest, vm_name):
 
 
 @box.command("exec")
+@click.option('-e', '--elevated', default=False, is_flag=True)
 @click.argument("vm_name")
 @click.argument("command", nargs=-1)
-def exec_command_in_vm(vm_name, command):
+def exec_command_in_vm(elevated, vm_name, command):
     """Executes a command in an elevated shell inside a specified Virtual Machine."""
     command_with_args = " ".join(command)
     print_info(f"Executing in {vm_name}\n> {command_with_args}..")
     if controller.vm_manager.vm_exists(vm_name):
-        controller.vm_manager.exec_command(vm_name, command_with_args, elevated=True)
+        controller.vm_manager.exec_command(vm_name, command_with_args, elevated=elevated)
     else:
         print_info(f"VM {vm_name} does not exist.")
 

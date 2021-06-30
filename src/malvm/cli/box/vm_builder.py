@@ -240,7 +240,7 @@ def upload(src, dest, vm_name):
 @box.command("exec")
 @click.option('-e', '--elevated', default=False, is_flag=True)
 @click.argument("vm_name")
-@click.argument("command", nargs=-1)
+@click.argument("command", nargs=-1, required=True)
 def exec_command_in_vm(elevated, vm_name, command):
     """Executes a command in an elevated shell inside a specified Virtual Machine."""
     command_with_args = " ".join(command)

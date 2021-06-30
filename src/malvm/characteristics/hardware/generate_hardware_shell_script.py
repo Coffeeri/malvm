@@ -1,3 +1,9 @@
+"""This module is used to create a hardware modifier script.
+
+This python script need to run as root, to obtain dmi information.
+
+"""
+
 # credits to https://github.com/nsmfoo/antivmdetection/blob/master/antivmdetect.py and
 # https://github.com/Cisco-Talos/vboxhardening/
 # https://github.com/hfiref0x/VBoxHardenedLoader/ Copyright (c) 2014 - 2020, VBoxHardenedLoader authors
@@ -56,13 +62,13 @@ try:
             dmi_info['DmiBIOSVersion'] = "string:" + v['Version'].replace(" ", "")
             biosversion = v['BIOS Revision']
             dmi_info['DmiBIOSReleaseDate'] = "string:" + v['Release Date']
-except:
+except Exception:
     # This typo is deliberate, as a previous version of py-dmidecode contained a typo
     dmi_info['DmiBIOSReleaseDate'] = "string:" + v['Relase Date']
 
 try:
     dmi_info['DmiBIOSReleaseMajor'], dmi_info['DmiBIOSReleaseMinor'] = biosversion.split('.', 1)
-except:
+except Exception:
     dmi_info['DmiBIOSReleaseMajor'] = '** No value to retrieve **'
     dmi_info['DmiBIOSReleaseMinor'] = '** No value to retrieve **'
 
@@ -71,7 +77,7 @@ dmi_firmware = subprocess.getoutput("dmidecode t0")
 try:
     dmi_info['DmiBIOSFirmwareMajor'], dmi_info['DmiBIOSFirmwareMinor'] = re.search(
         "Firmware Revision: ([0-9A-Za-z. ]*)", dmi_firmware).group(1).split('.', 1)
-except:
+except Exception:
     dmi_info['DmiBIOSFirmwareMajor'] = '** No value to retrieve **'
     dmi_info['DmiBIOSFirmwareMinor'] = '** No value to retrieve **'
 
@@ -100,7 +106,7 @@ try:
             new_serial = serial_randomize(0, len(serial_number))
     else:
         new_serial = "** No value to retrieve **"
-except:
+except Exception:
     new_serial = "** No value to retrieve **"
 
 dmi_info['DmiBoardSerial'] = new_serial
@@ -109,14 +115,14 @@ dmi_info['DmiBoardSerial'] = new_serial
 dmi_board = subprocess.getoutput("dmidecode -t2")
 try:
     asset_tag = re.search("Asset Tag: ([0-9A-Za-z ]*)", dmi_board).group(1)
-except:
+except Exception:
     asset_tag = '** No value to retrieve **'
 
 dmi_info['DmiBoardAssetTag'] = "string:" + asset_tag
 
 try:
     loc_chassis = re.search("Location In Chassis: ([0-9A-Za-z ]*)", dmi_board).group(1)
-except:
+except Exception:
     loc_chassis = '** No value to retrieve **'
 
 dmi_info['DmiBoardLocInChass'] = "string:" + loc_chassis.replace(" ", "")
@@ -128,7 +134,7 @@ board_dict = {'Unknown': 1, 'Other': 2, 'Server Blade': 3, 'Connectivity Switch'
 try:
     board_type = re.search("Type: ([0-9A-Za-z ]+)", dmi_board).group(1)
     board_type = str(board_dict.get(board_type))
-except:
+except Exception:
     board_type = '** No value to retrieve **'
 
 dmi_info['DmiBoardBoardType'] = board_type
@@ -177,7 +183,7 @@ dmi_info['DmiChassisType'] = str(chassi_dict.get(dmi_info['DmiChassisType']))
 chassi = subprocess.getoutput("dmidecode -t3")
 try:
     dmi_info['DmiChassisAssetTag'] = "string:" + re.search("Asset Tag: ([0-9A-Za-z ]*)", chassi).group(1)
-except:
+except Exception:
     dmi_info['DmiChassisAssetTag'] = '** No value to retrieve **'
 
 # Create a new chassi serial number
@@ -192,12 +198,12 @@ try:
     for v in dmi.get(11):
         oem_ver = v['Strings']['3']
         oem_rev = v['Strings']['2']
-except:
+except Exception:
     pass
 try:
     dmi_info['DmiOEMVBoxVer'] = "string:" + oem_ver
     dmi_info['DmiOEMVBoxRev'] = "string:" + oem_rev
-except:
+except Exception:
     dmi_info['DmiOEMVBoxVer'] = '** No value to retrieve **'
     dmi_info['DmiOEMVBoxRev'] = '** No value to retrieve **'
 
@@ -230,15 +236,16 @@ if '/cow' in disk_name:
 try:
     if Path(disk_name).exists():
         disk_serial = subprocess.getoutput(
-            "smartctl -i " + disk_name + " | grep -o 'Serial Number:  [A-Za-z0-9_\+\/ .\"-]*' | awk '{print $3}'")
+            "smartctl -i " + disk_name + r" | grep -o 'Serial Number:  [A-Za-z0-9_\+\/ .\"-]*' | awk '{print $3}'")
         if 'SG_IO' in disk_serial or not disk_serial:
             print(
-                '[WARNING] Unable to acquire the disk serial number! Will add one, but please try to run this script on another machine instead..')
+                '[WARNING] Unable to acquire the disk serial number! Will add one, but please try to run this script '
+                'on another machine instead..')
             disk_serial = 'HUA721010KLA330'
 
         disk_dmi['SerialNumber'] = (serial_randomize(0, len(disk_serial)))
 
-        if (len(disk_dmi['SerialNumber']) > 20):
+        if len(disk_dmi['SerialNumber']) > 20:
             disk_dmi['SerialNumber'] = disk_dmi['SerialNumber'][:20]
 except OSError:
     print('Error reading system disk..')
@@ -247,11 +254,12 @@ except OSError:
 try:
     if Path(disk_name).exists():
         disk_fwrev = subprocess.getoutput(
-            "smartctl -i " + disk_name + " | grep -o 'Firmware Version: [A-Za-z0-9_\+\/ .\"-]*' | awk '{print $3}'")
+            "smartctl -i " + disk_name + r" | grep -o 'Firmware Version: [A-Za-z0-9_\+\/ .\"-]*' | awk '{print $3}'")
         disk_dmi['FirmwareRevision'] = "string:" + disk_fwrev
         if 'SG_IO' in disk_dmi['FirmwareRevision']:
             print(
-                '[WARNING] Unable to acquire the disk firmware revision! Will add one, but please try to run this script on another machine instead..')
+                '[WARNING] Unable to acquire the disk firmware revision! Will add one, but please try to run this '
+                'script on another machine instead..')
             disk_dmi['FirmwareRevision'] = 'LMP07L3Q'
             disk_dmi['FirmwareRevision'] = "string:" + (serial_randomize(0, len(disk_dmi['FirmwareRevision'])))
 except OSError:
@@ -261,12 +269,13 @@ except OSError:
 try:
     if Path(disk_name).exists():
         disk_modelno = subprocess.getoutput(
-            "smartctl -i " + disk_name + " | grep -o 'Model Family: [A-Za-z0-9_\+\/ .\"-]*' | awk '{print $3}'")
+            "smartctl -i " + disk_name + r" | grep -o 'Model Family: [A-Za-z0-9_\+\/ .\"-]*' | awk '{print $3}'")
         disk_dmi['ModelNumber'] = disk_modelno
 
         if 'SG_IO' in disk_dmi['ModelNumber'] or not disk_modelno:
             print(
-                '[WARNING] Unable to acquire the disk model number! Will add one, but please try to run this script on another machine instead..')
+                '[WARNING] Unable to acquire the disk model number! Will add one, but please try to run this script '
+                'on another machine instead..')
             disk_vendor = 'SAMSUNG'
             disk_vendor_part1 = 'F8E36628D278'
             disk_vendor_part1 = (serial_randomize(0, len(disk_vendor_part1)))
@@ -283,15 +292,18 @@ logfile.write('if [[ -z "$controller" ]]; then\n')
 for k, v in disk_dmi.items():
     if '** No value to retrieve **' in v:
         logfile.write(
-            '# VBoxManage setextradata "$1" VBoxInternal/Devices/piix3ide/0/Config/PrimaryMaster/' + k + '\t' + v + '\n')
+            '# VBoxManage setextradata "$1" '
+            'VBoxInternal/Devices/piix3ide/0/Config/PrimaryMaster/' + k + '\t' + v + '\n')
     else:
         logfile.write(
-            'VBoxManage setextradata "$1" VBoxInternal/Devices/piix3ide/0/Config/PrimaryMaster/' + k + '\t\'' + v + '\'\n')
+            'VBoxManage setextradata "$1" '
+            'VBoxInternal/Devices/piix3ide/0/Config/PrimaryMaster/' + k + '\t\'' + v + '\'\n')
 
 # CD-Drive
 # logfile.write(
-#     'VBoxManage setextradata "$1" "VBoxInternal/Devices/piix3ide/0/Config/Port1/ModelNumber" "HL-DT-ST DVDRAM GUE2P"\t\n')
-# logfile.write('VBoxManage setextradata "$1" "VBoxInternal/Devices/piix3ide/0/Config/Port1/FirmwareRevision" "AS01"\t\n')
+# 'VBoxManage setextradata "$1" "VBoxInternal/Devices/piix3ide/0/Config/Port1/ModelNumber" "HL-DT-ST DVDRAM GUE2P"\t\n')
+# logfile.write('VBoxManage setextradata "$1"
+# "VBoxInternal/Devices/piix3ide/0/Config/Port1/FirmwareRevision" "AS01"\t\n')
 # logfile.write(
 #     'VBoxManage setextradata "$1" "VBoxInternal/Devices/piix3ide/0/Config/Port1/SerialNumber" "KLHH54G4324"\t\n')
 # logfile.write(
@@ -314,7 +326,8 @@ for k, v in disk_dmi.items():
 # logfile.write(
 #     'VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/ModelNumber" "HL-DT-ST DVDRAM GUE2P"\t\n')
 # logfile.write('VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/FirmwareRevision" "AS01"\t\n')
-# logfile.write('VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/SerialNumber" "KLHH54G4324"\t\n')
+# logfile.write('VBoxManage setextradata "$1"
+# "VBoxInternal/Devices/ahci/0/Config/Port1/SerialNumber" "KLHH54G4324"\t\n')
 # logfile.write('VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/ATAPIVendorId" "Slimtype"\t\n')
 # logfile.write(
 #     'VBoxManage setextradata "$1" "VBoxInternal/Devices/ahci/0/Config/Port1/ATAPIProductId" "DVDRAM GUE2P"\t\n')
@@ -339,12 +352,12 @@ try:
             'if [ ! -f "' + DSDT_FILE + '" ]; then echo "[WARNING] Unable to find the DSDT file!"; fi\t\n')
         logfile.write(
             'VBoxManage setextradata "$1" VBoxInternal/Devices/acpi/0/Config/CustomTable ' + DSDT_FILE + '\t\n')
-except:
+except Exception:
     print('[WARNING] Unable to create the DSDT dump')
     pass
 
-acpi_dsdt = subprocess.getoutput('acpidump -s | grep DSDT | grep -o "\(([A-Za-z0-9].*)\)" | tr -d "()"')
-acpi_facp = subprocess.getoutput('acpidump -s | grep FACP | grep -o "\(([A-Za-z0-9].*)\)" | tr -d "()"')
+acpi_dsdt = subprocess.getoutput(r'acpidump -s | grep DSDT | grep -o "\(([A-Za-z0-9].*)\)" | tr -d "()"')
+acpi_facp = subprocess.getoutput(r'acpidump -s | grep FACP | grep -o "\(([A-Za-z0-9].*)\)" | tr -d "()"')
 
 if "option requires" in acpi_dsdt:
     acpi_error = subprocess.getoutput("lsb_release -r | awk {' print $2 '}")
@@ -385,7 +398,8 @@ while i <= 47:
             if len(cpu_brand[k:i]):
                 rebrand = subprocess.getoutput("echo -n '" + cpu_brand[k:i] + "' |od -A n -t x4 | sed 's/ //'")
                 logfile.write(
-                    'VBoxManage setextradata "$1" VBoxInternal/CPUM/HostCPUID/' + e + '/' + r + '  0x' + rebrand + '\t\n')
+                    'VBoxManage setextradata "$1" '
+                    'VBoxInternal/CPUM/HostCPUID/' + e + '/' + r + '  0x' + rebrand + '\t\n')
             i = i + 4
 
 # needs patch of vbox

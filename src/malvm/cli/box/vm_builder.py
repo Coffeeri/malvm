@@ -95,14 +95,21 @@ def start(name, base_image):
         # Maybe put pre & postboot characteristics into the vm_config/settings object.
         if vm_config.hardening_configuration:
             pre_boot_characteristic_list = get_pre_boot_characteristic_list_of_vm(vm_config)
+            log.info("Apply pre boot hardening..")
             print_pre_boot_fix_results(name, list(pre_boot_characteristic_list))
             log.info("Wait 3 seconds..")
             sleep(3)
+            log.info("Initial boot..")
             controller.vm_manager.initiate_first_boot(vm_name=name)
             post_boot_characteristic_list = get_post_boot_characteristic_list_of_vm(vm_config)
+            log.info("Apply hardening..")
             controller.vm_manager.fix_vm(vm_name=name, characteristics=post_boot_characteristic_list)
         else:
+            log.info("Initial boot..")
             controller.vm_manager.initiate_first_boot(vm_name=name)
+
+        log.info("Setup network configuration..")
+        controller.vm_manager.setup_network_configuration(vm_name=name)
         create_snapshot(vm_name=name, snapshot_name="clean-state")
 
     print_vm_cli_instruction(name)

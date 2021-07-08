@@ -22,7 +22,7 @@ class PnPDeviceCharacteristic(Characteristic):
     def fix(self) -> CheckResult:
         dev_man_view_path = get_data_dir() / "DevManView.exe"
         if dev_man_view_path.is_file():
-            subprocess.Popen([f'{str(dev_man_view_path.absolute())}', '/uninstall * "DEV_CAFE" * / use_wildcard'])
+            subprocess.Popen([f'{str(dev_man_view_path.absolute())}', '/uninstall "*DEV_CAFE*" / use_wildcard'])
         else:
             log.error(f"Path {dev_man_view_path.absolute()} does not exist.")
             raise FileNotFoundError(f"File {dev_man_view_path.absolute()} was not found.")
@@ -33,8 +33,12 @@ class PnPDeviceCharacteristic(Characteristic):
         if sys.platform == 'win32':
             import wmi
             wmi_interface = wmi.WMI()
-            query = "SELECT * FROM win32_pnpdevice"
-            for result in wmi_interface.query(query):
+            query_pnpdevice = "SELECT * FROM win32_pnpdevice"
+            query_pnpentity = "SELECT * FROM Win32_PnPEntity"
+            for result in wmi_interface.query(query_pnpdevice):
+                if "DEV_CAFE" in str(result):
+                    yield self, CheckType(self.description, False)
+            for result in wmi_interface.query(query_pnpentity):
                 if "DEV_CAFE" in str(result):
                     yield self, CheckType(self.description, False)
             yield self, CheckType(self.description, True)

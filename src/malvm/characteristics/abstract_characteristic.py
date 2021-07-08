@@ -177,6 +177,7 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
         super().__init__(slug, description, attributes)
         self.__slug = slug
         self.__description = description
+        self.is_fixed = False
 
     def check(self) -> CheckResult:
         """Checks if given characteristic is already satisfied."""

@@ -1,3 +1,5 @@
+"""This module contains a class for modifying the MAC address of the vagrant management NIC."""
+
 import logging
 import random
 import re
@@ -5,6 +7,7 @@ import subprocess
 import uuid
 
 from ..abstract_characteristic import CheckResult, CheckType, PreBootCharacteristic
+from ...utils.helper_methods import get_virtual_box_vminfo
 
 log = logging.getLogger()
 
@@ -14,6 +17,13 @@ def serial_randomize(start=0, string_length=10):
     rand = rand.upper()
     rand = re.sub('-', '', rand)
     return rand[start:string_length]
+
+
+def _modify_first_nic_mac_address(random_mac, vm_name):
+    subprocess.run(
+        ["VBoxManage", "modifyvm", vm_name, "--macaddress1", random_mac],
+        check=True,
+    )
 
 
 class MacAddressCharacteristic(PreBootCharacteristic):
@@ -30,10 +40,7 @@ class MacAddressCharacteristic(PreBootCharacteristic):
             random.randint(0, 255),
         )
         if vm_name:
-            subprocess.run(
-                ["VBoxManage", "modifyvm", vm_name, "--macaddress1", random_mac],
-                check=True,
-            )
+            _modify_first_nic_mac_address(random_mac, vm_name)
         return self.check()
 
     def check(self) -> CheckResult:
@@ -41,12 +48,7 @@ class MacAddressCharacteristic(PreBootCharacteristic):
         vm_name = self.environment.vm_name
         is_fixed: bool = True
         if vm_name:
-            log.debug(f"Run VBoxManage showvminfo {vm_name} --machinereadable")
-            result = subprocess.run(
-                ["VBoxManage", "showvminfo", vm_name, "--machinereadable"],
-                stdout=subprocess.PIPE,
-                check=True,
-            )
+            result = get_virtual_box_vminfo(vm_name)
             for entry in result.stdout.decode("utf-8").split("\n"):
                 if 'macaddress1="080027' in entry:
                     is_fixed = False

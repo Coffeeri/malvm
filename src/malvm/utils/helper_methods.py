@@ -1,6 +1,7 @@
 """This Module contains helper methods, used by an Package."""
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -69,3 +70,16 @@ def get_config_root() -> Path:
     if not config_path.exists():
         config_path.mkdir(parents=True)
     return config_path
+
+
+def get_virtual_box_vminfo(vm_name: str):
+    result = subprocess.run(
+        ["VBoxManage", "showvminfo", vm_name, "--machinereadable"],
+        stdout=subprocess.PIPE,
+        check=True,
+    )
+    return result
+
+
+def run_external_program_no_return(*args):
+    subprocess.run(args, check=True)

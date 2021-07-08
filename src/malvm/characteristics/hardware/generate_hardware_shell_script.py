@@ -3,10 +3,10 @@
 This python script need to run as root, to obtain dmi information.
 
 """
-
 # credits to https://github.com/nsmfoo/antivmdetection/blob/master/antivmdetect.py and
 # https://github.com/Cisco-Talos/vboxhardening/
 # https://github.com/hfiref0x/VBoxHardenedLoader/ Copyright (c) 2014 - 2020, VBoxHardenedLoader authors
+# pylint: skip-file
 import argparse
 import os
 import re
@@ -16,7 +16,7 @@ import time
 import uuid
 from pathlib import Path
 
-from dmidecode import DMIDecode
+from dmidecode import DMIDecode  # type: ignore
 
 
 def serial_randomize(start=0, string_length=10):
@@ -75,8 +75,9 @@ except Exception:
 # python-dmidecode does not currently reveal all values .. this is plan B
 dmi_firmware = subprocess.getoutput("dmidecode t0")
 try:
-    dmi_info['DmiBIOSFirmwareMajor'], dmi_info['DmiBIOSFirmwareMinor'] = re.search(
+    dmi_info['DmiBIOSFirmwareMajor'], dmi_info['DmiBIOSFirmwareMinor'] = re.search(  # type: ignore
         "Firmware Revision: ([0-9A-Za-z. ]*)", dmi_firmware).group(1).split('.', 1)
+
 except Exception:
     dmi_info['DmiBIOSFirmwareMajor'] = '** No value to retrieve **'
     dmi_info['DmiBIOSFirmwareMinor'] = '** No value to retrieve **'
@@ -114,14 +115,15 @@ dmi_info['DmiBoardSerial'] = new_serial
 # python-dmidecode does not reveal all values .. this is plan B
 dmi_board = subprocess.getoutput("dmidecode -t2")
 try:
-    asset_tag = re.search("Asset Tag: ([0-9A-Za-z ]*)", dmi_board).group(1)
+    asset_tag = re.search("Asset Tag: ([0-9A-Za-z ]*)", dmi_board).group(1)  # type: ignore
+
 except Exception:
     asset_tag = '** No value to retrieve **'
 
 dmi_info['DmiBoardAssetTag'] = "string:" + asset_tag
 
 try:
-    loc_chassis = re.search("Location In Chassis: ([0-9A-Za-z ]*)", dmi_board).group(1)
+    loc_chassis = re.search("Location In Chassis: ([0-9A-Za-z ]*)", dmi_board).group(1)  # type: ignore
 except Exception:
     loc_chassis = '** No value to retrieve **'
 
@@ -132,7 +134,7 @@ board_dict = {'Unknown': 1, 'Other': 2, 'Server Blade': 3, 'Connectivity Switch'
               'Processor Module': 6, 'I/O Module': 7, 'Memory Module': 8, 'Daughter board': 9, 'Motherboard': 10,
               'Processor/Memory Module': 11, 'Processor/IO Module': 12, 'Interconnect board': 13}
 try:
-    board_type = re.search("Type: ([0-9A-Za-z ]+)", dmi_board).group(1)
+    board_type = re.search("Type: ([0-9A-Za-z ]+)", dmi_board).group(1)  # type: ignore
     board_type = str(board_dict.get(board_type))
 except Exception:
     board_type = '** No value to retrieve **'
@@ -182,7 +184,8 @@ dmi_info['DmiChassisType'] = str(chassi_dict.get(dmi_info['DmiChassisType']))
 # python-dmidecode does not reveal all values .. this is plan B
 chassi = subprocess.getoutput("dmidecode -t3")
 try:
-    dmi_info['DmiChassisAssetTag'] = "string:" + re.search("Asset Tag: ([0-9A-Za-z ]*)", chassi).group(1)
+    dmi_info['DmiChassisAssetTag'] = "string:" + re.search("Asset Tag: ([0-9A-Za-z ]*)", chassi).group(  # type: ignore
+        1)
 except Exception:
     dmi_info['DmiChassisAssetTag'] = '** No value to retrieve **'
 
@@ -394,9 +397,10 @@ i = 4
 while i <= 47:
     for e in eax_values:
         for r in registers:
-            k = i - 4
-            if len(cpu_brand[k:i]):
-                rebrand = subprocess.getoutput("echo -n '" + cpu_brand[k:i] + "' |od -A n -t x4 | sed 's/ //'")
+            k = i - 4  # type: ignore
+            if len(cpu_brand[k:i]):  # type: ignore
+                rebrand = subprocess.getoutput(
+                    "echo -n '" + cpu_brand[k:i] + "' |od -A n -t x4 | sed 's/ //'")  # type: ignore
                 logfile.write(
                     'VBoxManage setextradata "$1" '
                     'VBoxInternal/CPUM/HostCPUID/' + e + '/' + r + '  0x' + rebrand + '\t\n')

@@ -1,4 +1,8 @@
-def test_init(example_vm_manager):
+from malvm.controller.virtual_machine.vm_manager import VirtualMachineManager
+
+
+def test_init():
+    example_vm_manager = VirtualMachineManager
     assert example_vm_manager
 
 # def test_get_config(example_controller):

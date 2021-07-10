@@ -5,7 +5,8 @@ import sys
 from pathlib import Path
 
 from ..abstract_characteristic import (CheckResult, CheckType, PreBootCharacteristic, Characteristic)
-from ...utils.helper_methods import get_config_root, get_project_root, run_external_program_no_return, get_data_dir
+from ...utils.helper_methods import get_config_root, get_project_root, run_external_program_no_return
+from ...utils.windows_devices import remove_windows_devices_by_wildcard, str_exists_in_wmi_queries_results
 
 log = logging.getLogger()
 TARGET_SCRIPT_DIR = get_config_root() / "data"
@@ -50,23 +51,16 @@ class VBoxDeviceRemoval(Characteristic):
         super().__init__("VBDev", "VirtualBox devices named *VBOX*")
 
     def fix(self) -> CheckResult:
-        dev_man_view_path = get_data_dir() / "DevManView.exe"
-        if dev_man_view_path.is_file():
-            subprocess.Popen([f'{str(dev_man_view_path.absolute())}', '/uninstall "*VBOX*" / use_wildcard'])
-        else:
-            log.error(f"Path {dev_man_view_path.absolute()} does not exist.")
-            raise FileNotFoundError(f"File {dev_man_view_path.absolute()} was not found.")
+        remove_windows_devices_by_wildcard("VBOX")
         return self.check()
 
     def check(self) -> CheckResult:
-        # pylint: disable=import-outside-toplevel
-        if sys.platform == 'win32':
-            import wmi
-            wmi_interface = wmi.WMI()
-            query_disk_drive = "SELECT * FROM win32_diskdrive"
-            for result in wmi_interface.query(query_disk_drive):
-                if "VBOX" in str(result):
-                    yield self, CheckType(self.description, False)
+        query_disk_drive = "SELECT * FROM win32_diskdrive"
+        vbox_dev_exists = str_exists_in_wmi_queries_results("VBOX", query_disk_drive)
+        if vbox_dev_exists is True:
             yield self, CheckType(self.description, True)
             return
-        yield self, CheckType("Skipped, malvm is not running on Windows.", False)
+        if vbox_dev_exists is None:
+            yield self, CheckType("Skipped, malvm is not running on Windows.", False)
+            return
+        yield self, CheckType(self.description, False)

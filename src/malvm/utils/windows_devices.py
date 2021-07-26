@@ -12,7 +12,7 @@ log = logging.getLogger()
 def remove_windows_devices_by_wildcard(pattern: str):
     dev_man_view_path = get_data_dir() / "DevManView.exe"
     if dev_man_view_path.is_file():
-        subprocess.Popen([f'{str(dev_man_view_path.absolute())}', f'/uninstall "*{pattern}*" / use_wildcard'])
+        subprocess.Popen([f'{str(dev_man_view_path.absolute())}', f'/uninstall "*{pattern}*" /use_wildcard'])
     else:
         log.error(f"Path {dev_man_view_path.absolute()} does not exist.")
         raise FileNotFoundError(f"File {dev_man_view_path.absolute()} was not found.")

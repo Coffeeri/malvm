@@ -2,7 +2,7 @@
 import logging
 import sys
 
-from malvm.cli.main import malvm
+from .cli import malvm
 
 log = logging.getLogger()
 

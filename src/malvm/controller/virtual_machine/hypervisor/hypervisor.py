@@ -2,9 +2,9 @@
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
-from ....utils.metaclasses import SingletonMeta
-from ...config_loader import BaseImageSettings, VirtualMachineSettings
 from .virtualbox.packer import BoxConfiguration
+from ...config_loader import BaseImageSettings, VirtualMachineSettings, VirtualMachineNetworkSettings
+from ....utils.metaclasses import SingletonMeta
 
 
 class Hypervisor(metaclass=SingletonMeta):
@@ -24,6 +24,9 @@ class Hypervisor(metaclass=SingletonMeta):
         raise NotImplementedError
 
     def initiate_first_boot(self, vm_name, vm_settings: VirtualMachineSettings):
+        raise NotImplementedError
+
+    def setup_network_configuration(self, vm_name, network_configuration: Optional[VirtualMachineNetworkSettings]):
         raise NotImplementedError
 
     def start_vm(self, vm_name):

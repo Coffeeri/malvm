@@ -177,6 +177,7 @@ class Characteristic(CharacteristicBase, metaclass=abc.ABCMeta):
         super().__init__(slug, description, attributes)
         self.__slug = slug
         self.__description = description
+        self.is_fixed = False
 
     def check(self) -> CheckResult:
         """Checks if given characteristic is already satisfied."""
@@ -263,3 +264,8 @@ class LambdaCharacteristic(CharacteristicBase):
             Any: Stored value of object, used for check-/ fix-method.
         """
         return self.__value
+
+
+class PreBootCharacteristic(Characteristic):
+    def __init__(self, slug, description):
+        super().__init__(slug, description, CharacteristicAttributes(runtime=Runtime.PRE_BOOT))

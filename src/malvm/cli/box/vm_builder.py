@@ -3,17 +3,19 @@ import logging
 import sys
 from pathlib import Path
 from time import sleep
+from typing import Iterable
 
 import click
 import inquirer  # type: ignore
-from malvm.controller.virtual_machine.hypervisor.virtualbox.virtualbox import \
-    create_snapshot
 
-from ...characteristics.abstract_characteristic import Runtime
-from ...controller import Controller
-from ...utils.helper_methods import get_vm_malvm_package_file
+
 from ..malvm.utils import print_pre_boot_fix_results
 from ..utils import print_info, print_warning
+from ...characteristics.abstract_characteristic import Runtime
+from ...controller import Controller
+from ...controller.config_loader import VirtualMachineSettings
+from ...controller.virtual_machine.hypervisor.virtualbox.virtualbox import create_snapshot
+from ...utils.helper_methods import get_vm_malvm_package_file
 
 controller = Controller()
 log = logging.getLogger()
@@ -69,78 +71,109 @@ def start(name, base_image):
         $ malvm box start win10-vm01
     """
     vm_config = controller.vm_manager.get_vm_config(name)
-    vm_config_network = controller.vm_manager.get_vm_config(name).network_configuration
-
     base_image = vm_config.base_image_name if not base_image else base_image
-    if not base_image and not controller.vm_manager.vm_exists(name):
+    vm_exists = controller.vm_manager.vm_exists(name)
+    if vm_exists:
+        print_info(f"Starting Virtual Machine {click.style(name, fg='yellow')}...")
+        controller.vm_manager.start_vm(name)
+    if not base_image and not vm_exists:
         log.error(f"Virtual Machine {name} does not exist")
         print_warning(f"You can create the Virtual Machine {name} with:\n\n"
                       f"{click.style(f'> malvm box start {name} YOUR_BASE_IMAGE', fg='yellow')}")
         sys.exit(1)
 
-    if base_image and not controller.vm_manager.vm_exists(vm_name=name):
+    if base_image and not vm_exists:
         print_info(
             f"> Starting new [{click.style(base_image, fg='yellow')}] Virtual Machine "
             f"{click.style(name, fg='yellow')}..."
         )
-        default_gateway = vm_config_network.default_gateway \
-            if vm_config_network and vm_config_network.default_gateway else 'Not set'
-        print_info(f"Settings:\n"
-                   f"=========\n"
-                   f"Name: {name}\n"
-                   f"Base image: {base_image}\n"
-                   f"Disk size: {vm_config.disk_size.strip().replace('GB', ' GB')}\n"
-                   f"Memory: {vm_config.memory} MB\n"
-                   f"Choco applications: {vm_config.choco_applications}\n"
-                   f"Python applications: {vm_config.pip_applications}\n\n"
-                   f"Network:\n"
-                   f"=========\n"
-                   f"Default Gateway: "
-                   f"{default_gateway}\n"
-                   f"Interfaces:\n"
-                   f"{vm_config_network.interfaces if vm_config_network else 'Not set'}\n\n"
-                   )
+        print_vm_settings(base_image, name, vm_config)
         controller.vm_manager.build_vm(name, base_image)
         log.info("Wait 3 seconds..")
         sleep(3)
         # TODO Refactor: remove preboot logic from View, currently malvm up does only exec build_vm(...)
+        # Maybe put pre & postboot characteristics into the vm_config/settings object.
         if vm_config.hardening_configuration:
-            vm_characteristic_list = vm_config.hardening_configuration.characteristics
-            loaded_pre_boot_characteristics = [c.slug for c in
-                                               controller.get_characteristic_list(include_sub_characteristics=True,
-                                                                                  selected_runtime=Runtime.PRE_BOOT)]
-            pre_boot_characteristic_list = filter(lambda c: c.upper() in loaded_pre_boot_characteristics,
-                                                  vm_characteristic_list)
+            pre_boot_characteristic_list = get_pre_boot_characteristic_list_of_vm(vm_config)
+            log.info("Apply pre boot hardening..")
             print_pre_boot_fix_results(name, list(pre_boot_characteristic_list))
             log.info("Wait 3 seconds..")
             sleep(3)
-            loaded_post_boot_characteristics = [c.slug for c in
-                                                controller.get_characteristic_list(include_sub_characteristics=True)]
-            post_boot_characteristic_list = filter(lambda c: c.upper() in loaded_post_boot_characteristics,
-                                                   vm_characteristic_list)
+            log.info("Initial boot..")
             controller.vm_manager.initiate_first_boot(vm_name=name)
+            post_boot_characteristic_list = get_post_boot_characteristic_list_of_vm(vm_config)
+            log.info("Apply hardening..")
             controller.vm_manager.fix_vm(vm_name=name, characteristics=post_boot_characteristic_list)
         else:
+            log.info("Initial boot..")
             controller.vm_manager.initiate_first_boot(vm_name=name)
-        create_snapshot(vm_name=name, snapshot_name="clean-state")
-    else:
-        print_info(f"Starting Virtual Machine {click.style(name, fg='yellow')}...")
-        controller.vm_manager.start_vm(name)
 
+        log.info("Setup network configuration..")
+        controller.vm_manager.setup_network_configuration(vm_name=name)
+        create_snapshot(vm_name=name, snapshot_name="clean-state")
+
+    print_vm_cli_instruction(name)
+
+
+def get_post_boot_characteristic_list_of_vm(vm_settings: VirtualMachineSettings) -> Iterable[str]:
+    if not vm_settings.hardening_configuration:
+        return []
+    vm_characteristic_list = vm_settings.hardening_configuration.characteristics
+    loaded_post_boot_characteristics = [c.slug for c in
+                                        controller.get_characteristic_list(include_sub_characteristics=True)]
+    post_boot_characteristic_list = filter(lambda c: c.upper() in loaded_post_boot_characteristics,
+                                           vm_characteristic_list)
+    return post_boot_characteristic_list
+
+
+def get_pre_boot_characteristic_list_of_vm(vm_settings: VirtualMachineSettings) -> Iterable[str]:
+    if not vm_settings.hardening_configuration:
+        return []
+    vm_characteristic_list = vm_settings.hardening_configuration.characteristics
+    loaded_pre_boot_characteristics = [c.slug for c in
+                                       controller.get_characteristic_list(include_sub_characteristics=True,
+                                                                          selected_runtime=Runtime.PRE_BOOT)]
+    pre_boot_characteristic_list = filter(lambda c: c.upper() in loaded_pre_boot_characteristics,
+                                          vm_characteristic_list)
+    return pre_boot_characteristic_list
+
+
+def print_vm_cli_instruction(vm_name: str):
     print_info(
 
-        f"VM {name} was started. "
+        f"VM {vm_name} was started. "
         f"A snapshot of the ´clean-state´ was saved.\n"
         f"Don't shutdown the VM, prefer to use these commands:\n\n"
-        f"Stop VM:  `malvm box stop {name}`\n"
-        f"Start VM: `malvm box start {name}`\n"
-        f"Reset VM: `malvm box reset {name}`\n"
-        f"Remove VM: `malvm box destroy {name}`\n\n"
+        f"Stop VM:  `malvm box stop {vm_name}`\n"
+        f"Start VM: `malvm box start {vm_name}`\n"
+        f"Reset VM: `malvm box reset {vm_name}`\n"
+        f"Remove VM: `malvm box destroy {vm_name}`\n\n"
         f"If you need to run `malvm fix` again in an elevated cmd, "
         f"please run on the host:\n"
-        f"`malvm box fix {name}`\n"
+        f"`malvm box fix {vm_name}`\n"
         f"This will run the malvm in an shell with elevated privileges."
     )
+
+
+def print_vm_settings(base_image: str, vm_name: str, vm_config: VirtualMachineSettings):
+    vm_config_network = vm_config.network_configuration
+    default_gateway = vm_config_network.default_gateway \
+        if vm_config_network and vm_config_network.default_gateway else 'Not set'
+    print_info(f"Settings:\n"
+               f"=========\n"
+               f"Name: {vm_name}\n"
+               f"Base image: {base_image}\n"
+               f"Disk size: {vm_config.disk_size.strip().replace('GB', ' GB')}\n"
+               f"Memory: {vm_config.memory} MB\n"
+               f"Choco applications: {vm_config.choco_applications}\n"
+               f"Python applications: {vm_config.pip_applications}\n\n"
+               f"Network:\n"
+               f"=========\n"
+               f"Default Gateway: "
+               f"{default_gateway}\n"
+               f"Interfaces:\n"
+               f"{vm_config_network.interfaces if vm_config_network else 'Not set'}\n\n"
+               )
 
 
 @box.command()
@@ -212,14 +245,15 @@ def upload(src, dest, vm_name):
 
 
 @box.command("exec")
+@click.option('-e', '--elevated', default=False, is_flag=True)
 @click.argument("vm_name")
-@click.argument("command", nargs=-1)
-def exec_command_in_vm(vm_name, command):
+@click.argument("command", nargs=-1, required=True)
+def exec_command_in_vm(elevated, vm_name, command):
     """Executes a command in an elevated shell inside a specified Virtual Machine."""
     command_with_args = " ".join(command)
     print_info(f"Executing in {vm_name}\n> {command_with_args}..")
     if controller.vm_manager.vm_exists(vm_name):
-        controller.vm_manager.exec_command(vm_name, command_with_args, elevated=True)
+        controller.vm_manager.exec_command(vm_name, command_with_args, elevated=elevated)
     else:
         print_info(f"VM {vm_name} does not exist.")
 

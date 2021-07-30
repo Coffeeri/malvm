@@ -12,11 +12,12 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional
 
 from .config_loader import get_malvm_configuration, setup_logging
-from .virtual_machine.hypervisor.virtualbox.vagrant import clean_malvm_data
+from .virtual_machine.hypervisor.virtualbox.vagrant import destroy_virtual_machines, delete_vagrantfiles_data, \
+    delete_vbox_folder, delete_vagrant_boxes, delete_malvm_data_paths
 from .virtual_machine.vm_manager import VirtualMachineManager
 from ..characteristics.abstract_characteristic import (Characteristic,
                                                        CharacteristicBase,
-                                                       CheckResult, Runtime, PreBootEnvironment)
+                                                       CheckResult, Runtime, PreBootEnvironment, PreBootCharacteristic)
 from ..utils.helper_methods import get_config_root
 from ..utils.metaclasses import SingletonMeta
 
@@ -103,7 +104,8 @@ class Controller(metaclass=SingletonMeta):
         if characteristic:
             yield from action_on_characteristic(characteristic, action)
         else:
-            raise ValueError("Characteristic was not found.")
+            characteristic_slug = characteristic.slug if characteristic else "???"
+            raise ValueError(f"Characteristic {characteristic_slug} was not found.")
 
     def get_characteristic_list(self, include_sub_characteristics: bool = False,
                                 selected_runtime: Optional[Runtime] = Runtime.DEFAULT,
@@ -138,8 +140,8 @@ def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
             attribute = getattr(imported_module, i)
             if (
                     inspect.isclass(attribute)
-                    and issubclass(attribute, Characteristic)
-                    and attribute is not Characteristic
+                    and (issubclass(attribute, Characteristic) or issubclass(attribute, PreBootCharacteristic))
+                    and attribute is not Characteristic and attribute is not PreBootCharacteristic
             ):
                 setattr(sys.modules[__name__], name, attribute)
                 yield attribute()
@@ -148,3 +150,12 @@ def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
 def get_sub_characteristics(characteristic: CharacteristicBase) -> Iterator[CharacteristicBase]:
     if characteristic.sub_characteristics:
         yield from characteristic.sub_characteristics.values()
+
+
+def clean_malvm_data(clean_paths: List[Path], clean_soft: bool):
+    destroy_virtual_machines()
+    delete_vagrantfiles_data()
+    delete_vbox_folder()
+    if not clean_soft:
+        delete_vagrant_boxes()
+        delete_malvm_data_paths(clean_paths)

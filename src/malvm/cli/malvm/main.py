@@ -5,12 +5,12 @@ from typing import Optional
 
 import click
 
+from .utils import (print_characteristics, print_pre_boot_check_results,
+                    print_pre_boot_fix_results, print_results)
+from ..utils import print_info
 from ...controller import Controller
 from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import \
     get_existing_vagrant_files_paths_iterable
-from ..utils import print_info
-from .utils import (print_characteristics, print_pre_boot_check_results,
-                    print_pre_boot_fix_results, print_results)
 
 controller: Controller = Controller()
 log = logging.getLogger()
@@ -61,7 +61,8 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
     if characteristic_slug:
         run_specific_fix(characteristic_slug)
     else:
-        run_all_fixes()
+        if sys.platform == 'win32':
+            run_all_fixes()
         if vm_name:
             print_pre_boot_fix_results(vm_name)
     # Müssen wir Auge machen.
@@ -76,7 +77,8 @@ def run_specific_fix(characteristic_slug):
     try:
         print_results(controller.apply_fix_get_results(characteristic_slug.upper()))
     except ValueError as error_value:
-        log.exception(error_value)
+        log.debug(error_value)
+        log.info(str(error_value))
 
 
 def run_all_fixes():

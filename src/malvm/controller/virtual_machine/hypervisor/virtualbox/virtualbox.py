@@ -6,15 +6,15 @@ import sys
 from pathlib import Path
 from typing import Iterable, List, Optional
 
-from .....utils.exceptions import BaseImageExists
-from ....config_loader import (VirtualMachineNetworkSettings,
-                               VirtualMachineSettings)
-from ..hypervisor import Hypervisor
 from .packer import BoxConfiguration, PackerTemplate, generate_box_template
 from .vagrant import (add_vm_to_vagrant_files, get_vagrant_box_list,
                       get_vagrant_files_folder_path, get_vm_id_by_vm_name,
                       get_vm_names_list, remove_vbox_vm_and_data,
                       upload_file_to_vm)
+from ..hypervisor import Hypervisor
+from ....config_loader import (VirtualMachineNetworkSettings,
+                               VirtualMachineSettings)
+from .....utils.exceptions import BaseImageExists
 
 log = logging.getLogger()
 
@@ -24,7 +24,7 @@ def install_choco_applications(choco_applications: Optional[List[str]], vm_name:
         vm_id = get_vm_id_by_vm_name(vm_name)
         for application in choco_applications:
             log.info(f"Installing {application}...")
-            run_command_in_vm(vm_id, f"choco install {application} -y", True)
+            run_command_in_vm(vm_id, f"choco install {application} -y", elevated=True)
 
 
 def install_pip_applications(pip_applications: Optional[List[str]], vm_name: str):
@@ -32,36 +32,35 @@ def install_pip_applications(pip_applications: Optional[List[str]], vm_name: str
         vm_id = get_vm_id_by_vm_name(vm_name)
         for application in pip_applications:
             log.info(f"Installing {application}...")
-            run_command_in_vm(vm_id, f"pip install --no-input {application} ", True)
+            run_command_in_vm(vm_id, f"pip install --no-input {application} ")
 
 
-def run_command_in_vm(vm_id: str, command: str, elevated: bool = False):
+def run_command_in_vm(vm_id: str, command: str, elevated: bool = False, timeout=20):
     try:
         if elevated:
-            subprocess.run(
-                ["vagrant", "winrm", "-e", "-c", command, vm_id], check=True,
-            )
+            subprocess.run(["vagrant", "winrm", "-e", "-c", command, vm_id], check=True, timeout=timeout)
         else:
-            subprocess.run(
-                ["vagrant", "winrm", "-c", command, vm_id], check=True,
-            )
-    except subprocess.CalledProcessError as error:
+            subprocess.run(["vagrant", "winrm", "-c", command, vm_id], check=True, timeout=timeout)
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
         log.debug(str(error))
 
 
 def _set_dns_server_in_vm(dns_server: Optional[List[str]], vm_name: str):
     if dns_server:
+        log.info("Set DNS server.")
         vm_id = get_vm_id_by_vm_name(vm_name)
         run_command_in_vm(vm_id,
-                          f"Set-DnsClientServerAddress -InterfaceIndex 12 -ServerAddresses "
+
+                          r"Set-DnsClientServerAddress -InterfaceIndex $(Get-NetAdapter | Where-object {$_.Name -like "
+                          r"'Ethernet 2' } | Select-Object -ExpandProperty InterfaceIndex) -ServerAddresses "
                           f"(\"{dns_server[0]}\",\"{dns_server[1]}\")",
                           elevated=True)
 
 
 def _set_default_gateway_in_vm(default_gateway: Optional[str], vm_name: str):
     if default_gateway:
-        vm_id = get_vm_id_by_vm_name(vm_name)
         log.info(f"Setting {default_gateway} as default gateway.")
+        vm_id = get_vm_id_by_vm_name(vm_name)
         run_command_in_vm(vm_id, "route DELETE -p 0.0.0.0", elevated=True)
         run_command_in_vm(vm_id,
                           "reg delete HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\PersistentRoutes "
@@ -70,10 +69,10 @@ def _set_default_gateway_in_vm(default_gateway: Optional[str], vm_name: str):
         run_command_in_vm(vm_id, f"route add -p 0.0.0.0 mask 0.0.0.0 {default_gateway}", elevated=True)
 
 
-def _setup_network(network_configuration: Optional[VirtualMachineNetworkSettings], vm_name: str):
-    if network_configuration:
-        _set_default_gateway_in_vm(network_configuration.default_gateway, vm_name)
-        _set_dns_server_in_vm(network_configuration.dns_server, vm_name)
+def _disable_management_interface(vm_name: str):
+    log.info("Disable management interface")
+    vm_id = get_vm_id_by_vm_name(vm_name)
+    run_command_in_vm(vm_id, "wmic path win32_networkadapter where index=1 call disable", elevated=True, timeout=10)
 
 
 def _prepare_vagrantfile(vagrantfile_path, vm_name):
@@ -112,7 +111,22 @@ def create_snapshot(vm_name: str, snapshot_name: str, vm_id=None):
     )
 
 
+def expand_disk(vm_name):
+    log.info("Expand disk to full size.")
+    vm_id = get_vm_id_by_vm_name(vm_name)
+    run_command_in_vm(vm_id,
+                      "$drive_letter='C'; $size=(Get-PartitionSupportedSize -DriveLetter $drive_letter); "
+                      "Resize-Partition -DriveLetter $drive_letter -Size $size.SizeMax")
+
+
 class VirtualBoxHypervisor(Hypervisor):
+
+    def setup_network_configuration(self, vm_name, network_configuration: Optional[VirtualMachineNetworkSettings]):
+        if network_configuration:
+            _set_dns_server_in_vm(network_configuration.dns_server, vm_name)
+            _set_default_gateway_in_vm(network_configuration.default_gateway, vm_name)
+            # if network_configuration.interfaces:
+            #     _disable_management_interface(vm_name)
 
     def build_base_image(self, config: BoxConfiguration):
         if not self.__base_image_exists(config.vagrant_box_name):
@@ -144,6 +158,7 @@ class VirtualBoxHypervisor(Hypervisor):
 
     def initiate_first_boot(self, vm_name: str, vm_settings: VirtualMachineSettings):
         self.start_vm(vm_name)
+        expand_disk(vm_name)
         # if vm_settings.hardening_configuration:
         #     log.debug(f"Running malvm fix on {vm_name}.")
         #     # TODO filter pre boot
@@ -151,7 +166,6 @@ class VirtualBoxHypervisor(Hypervisor):
         #         subprocess.run(
         #             ["vagrant", "winrm", "-e", "-c", f"malvm fix {characteristic}"], check=True,
         #         )
-        _setup_network(vm_settings.network_configuration, vm_name)
         # create_snapshot(vm_name, "clean-state")
 
     def upload_file(self, vm_name: str, local_file_path: Path, remote_file_path: str):

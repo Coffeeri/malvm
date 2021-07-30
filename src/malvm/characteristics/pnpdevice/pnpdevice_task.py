@@ -4,11 +4,9 @@ Classes:
     PnPDeviceCharacteristic: Removes plug and play devices named *DEV_CAFE* with DevManView.exe.
 """
 import logging
-import subprocess
-import sys
 
 from ..abstract_characteristic import Characteristic, CheckResult, CheckType
-from ...utils.helper_methods import get_data_dir
+from ...utils.windows_devices import remove_windows_devices_by_wildcard, str_exists_in_wmi_queries_results
 
 log = logging.getLogger()
 
@@ -20,23 +18,17 @@ class PnPDeviceCharacteristic(Characteristic):
         super().__init__("PnPDev", "PnPDevices named *DEV_CAFE*")
 
     def fix(self) -> CheckResult:
-        dev_man_view_path = get_data_dir() / "DevManView.exe"
-        if dev_man_view_path.is_file():
-            subprocess.Popen([f'{str(dev_man_view_path.absolute())}', '/uninstall * "DEV_CAFE" * / use_wildcard'])
-        else:
-            log.error(f"Path {dev_man_view_path.absolute()} does not exist.")
-            raise FileNotFoundError(f"File {dev_man_view_path.absolute()} was not found.")
+        remove_windows_devices_by_wildcard("DEV_CAFE")
         return self.check()
 
     def check(self) -> CheckResult:
-        # pylint: disable=import-outside-toplevel
-        if sys.platform == 'win32':
-            import wmi
-            wmi_interface = wmi.WMI()
-            query = "SELECT * FROM win32_pnpdevice"
-            for result in wmi_interface.query(query):
-                if "DEV_CAFE" in str(result):
-                    yield self, CheckType(self.description, False)
+        query_pnpdevice = "SELECT * FROM win32_pnpdevice"
+        query_pnpentity = "SELECT * FROM Win32_PnPEntity"
+        pnp_dev_exists = str_exists_in_wmi_queries_results("DEV_CAFE", query_pnpdevice, query_pnpentity)
+        if pnp_dev_exists is True:
             yield self, CheckType(self.description, True)
             return
-        yield self, CheckType("Skipped, malvm is not running on Windows.", False)
+        if pnp_dev_exists is None:
+            yield self, CheckType("Skipped, malvm is not running on Windows.", False)
+            return
+        yield self, CheckType(self.description, False)

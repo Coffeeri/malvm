@@ -84,12 +84,10 @@
     "value": "11/11/11"
   },
   {
-    "slug": "MACVB1",
-    "action": "change",
+    "slug": "RVB013",
+    "action": "remove",
     "hypervisor": "VirtualBox",
-    "key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\0001",
-    "parameter": "NetworkAddress",
-    "value": "9C79F0ECA4AF"
+    "key": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxVideo"
   }
 ]
 

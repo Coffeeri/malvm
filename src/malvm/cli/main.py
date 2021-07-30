@@ -1,9 +1,9 @@
 """This module is the entrypoint for the commandline."""
 import click
 
-from .. import __version__
 from .box.vm_builder import box
 from .malvm.main import check, clean, fix, show, up
+from .. import __version__
 
 
 @click.group()

@@ -11,8 +11,8 @@ from malvm.characteristics.abstract_characteristic import (
     CheckResult,
     CheckType,
 )
-from malvm.controller.controller import Controller
-from malvm.controller.virtual_machine.vm_manager import VirtualMachineManager
+
+# from malvm.controller import Controller
 
 correct_malvm_config = """
 logging:
@@ -41,24 +41,7 @@ virtual_machines:
 """
 
 
-@pytest.fixture
-def example_vm_manager():
-    return VirtualMachineManager()
 
-
-@pytest.fixture
-def example_controller(example_characteristic) -> Controller:
-    controller = Controller()
-    controller.add_characteristic(example_characteristic)
-    return controller
-
-
-@pytest.fixture
-def example_controller_good_config(tmp_path, example_characteristic) -> Controller:
-    write_configuration(tmp_path, correct_malvm_config)
-    controller = Controller()
-    controller.add_characteristic(example_characteristic)
-    return controller
 
 
 @pytest.fixture

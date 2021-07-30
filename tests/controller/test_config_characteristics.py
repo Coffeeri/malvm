@@ -1,7 +1,7 @@
 import pytest
 from malvm.controller.config_loader import parse_malvm_yaml_config
 
-from tests.conftest import write_configuration
+from ..conftest import write_configuration
 
 correct_hardening_malvm_config = """
 logging:

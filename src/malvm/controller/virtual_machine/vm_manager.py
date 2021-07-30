@@ -4,12 +4,12 @@ import sys
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
-from ...utils.exceptions import BaseImageExists
-from ...utils.metaclasses import SingletonMeta
-from ..config_loader import BaseImageSettings, VirtualMachineSettings
 from .hypervisor.hypervisor import Hypervisor
 from .hypervisor.virtualbox.packer import PACKER_PATH, BoxConfiguration
 from .hypervisor.virtualbox.virtualbox import VirtualBoxHypervisor
+from ..config_loader import BaseImageSettings, VirtualMachineSettings
+from ...utils.exceptions import BaseImageExists
+from ...utils.metaclasses import SingletonMeta
 
 log = logging.getLogger()
 
@@ -86,6 +86,10 @@ class VirtualMachineManager(metaclass=SingletonMeta):
         vm_settings = self.__vms_config.get(vm_name, self.__get_default_vm_setting())
         if vm_settings:
             self.__hypervisor.initiate_first_boot(vm_name, vm_settings)
+
+    def setup_network_configuration(self, vm_name):
+        network_configuration = self.get_vm_config(vm_name).network_configuration
+        self.__hypervisor.setup_network_configuration(vm_name, network_configuration)
 
     def start_vm(self, vm_name: str):
         self.__hypervisor.start_vm(vm_name)

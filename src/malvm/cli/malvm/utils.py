@@ -4,10 +4,10 @@ from typing import Iterator, List, Tuple
 
 import click
 
+from ..utils import print_info
 from ...characteristics.abstract_characteristic import (CharacteristicBase,
                                                         CheckType, PreBootEnvironment)
 from ...controller import Controller
-from ..utils import print_info
 
 controller: Controller = Controller()
 

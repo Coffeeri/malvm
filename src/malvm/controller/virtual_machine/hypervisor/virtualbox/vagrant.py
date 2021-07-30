@@ -8,8 +8,7 @@ from typing import Any, Dict, Iterable, List, Tuple
 
 from .....utils.exceptions import VMNotExists
 from .....utils.helper_methods import (edit_key_in_json_file, get_config_root,
-                                       remove_path_with_success)
-from ....config_loader import VirtualMachinesType
+                                       remove_path_with_success, read_json_file)
 
 log = logging.getLogger()
 
@@ -19,15 +18,6 @@ def delete_vagrant_boxes():
     subprocess.run(
         ["vagrant", "box", "remove", "malvm-win-10", "--all"], check=True,
     )
-
-
-def clean_malvm_data(clean_paths: List[Path], clean_soft: bool):
-    destroy_virtual_machines()
-    delete_vagrantfiles_data()
-    delete_vbox_folder()
-    if not clean_soft:
-        delete_vagrant_boxes()
-        delete_malvm_data_paths(clean_paths)
 
 
 def delete_vbox_folder():
@@ -62,6 +52,7 @@ def remove_vbox_vm_and_data(vm_name: str):
     if vm_id:
         destroy_virtual_machine(vm_id)
     remove_path_with_success(str(get_vagrant_files_folder_path() / vm_name))
+    remove_path_with_success(str(Path.home() / f"VirtualBox VMs/{vm_name}"))
     remove_vm_from_vagrant_files(vm_name)
 
 
@@ -108,15 +99,9 @@ def get_vm_status() -> List[Dict[str, str]]:
     return malvm_vm_status_purged
 
 
-def filter_existing_vms_from_config(vms_config: VirtualMachinesType) -> VirtualMachinesType:
-    existing_vms = get_vm_names_list()
-    return {vm_name: vm_config for vm_name, vm_config in vms_config.items() if vm_name not in existing_vms}
-
-
-def read_json_file(path: Path) -> Any:
-    """Returns json of a given file."""
-    with path.open(mode="r") as json_file:
-        return json.load(json_file)
+# def filter_existing_vms_from_config(vms_config: VirtualMachinesType) -> VirtualMachinesType:
+#     existing_vms = get_vm_names_list()
+#     return {vm_name: vm_config for vm_name, vm_config in vms_config.items() if vm_name not in existing_vms}
 
 
 def remove_vm_from_vagrant_files(vm_name: str):

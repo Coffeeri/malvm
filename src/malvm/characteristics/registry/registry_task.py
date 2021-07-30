@@ -28,7 +28,7 @@ try:
         REG_SZ,
         QueryValueEx,
         CreateKey,
-        SetValueEx,
+        SetValueEx, HKEY_CURRENT_USER,
     )
 except ModuleNotFoundError:
     pass
@@ -120,6 +120,10 @@ def split_key(key: str) -> Tuple[int, str]:
     if key.startswith("HKEY_LOCAL_MACHINE\\"):
         key_base = HKEY_LOCAL_MACHINE
         key_path = key_path.replace("HKEY_LOCAL_MACHINE\\", "")
+    elif key.startswith("HKCU:\\"):
+        key_base = HKEY_CURRENT_USER
+        key_path = key_path.replace("HKCU:\\", "")
+
     return key_base, key_path
 
 

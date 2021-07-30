@@ -9,7 +9,6 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
 
 import yaml
 
-from ..cli.utils import print_info
 from ..utils.helper_methods import get_config_root, get_data_dir
 
 log = logging.getLogger()
@@ -130,7 +129,6 @@ def get_malvm_configuration() -> MalvmConfigurationSettings:
     if not yaml_config_path:
         log.error("No configfile `malvm_config.yml` was found. Default template configuration will be loaded instead.")
         yaml_config_path = load_default_template_configuration()
-        print_info(f"Configfile {yaml_config_path.absolute()} was created and loaded.")
     if is_configuration_file_valid(yaml_config_path):
         return parse_malvm_yaml_config(yaml_config_path)
     raise MisconfigurationException("The configuration is wrong configured, please look at the template configuration "

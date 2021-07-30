@@ -10,9 +10,7 @@ from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Tuple, Union
 
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
-from ...controller.virtual_machine.hypervisor.virtualbox.vagrant import \
-    read_json_file
-from ...utils.helper_methods import get_project_root
+from ...utils.helper_methods import get_project_root, read_json_file
 
 log = logging.getLogger()
 

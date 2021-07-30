@@ -7,10 +7,9 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, NamedTuple
 
-from .vagrant import read_json_file
 from ....config_loader import BaseImageSettings, VirtualMachineSettings
 from .....utils.helper_methods import (get_config_root, get_data_dir,
-                                       get_vm_malvm_package_file)
+                                       get_vm_malvm_package_file, read_json_file)
 
 log = logging.getLogger()
 

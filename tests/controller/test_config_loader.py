@@ -8,8 +8,8 @@ from malvm.controller.config_loader import is_configuration_file_valid, \
     parse_malvm_yaml_config, get_malvm_configuration, TEMPLATE_CONFIG_PATH_SUFFIX_YAML, \
     get_malvm_configuration_file_path, setup_logging, get_logging_config_template, insert_user_conf_in_logging_conf, \
     MisconfigurationException
-from malvm.controller.virtual_machine.hypervisor.virtualbox.vagrant import get_vm_names_list, \
-    filter_existing_vms_from_config
+# from malvm.controller.virtual_machine.hypervisor.virtualbox.vagrant import get_vm_names_list, \
+#    filter_existing_vms_from_config
 import malvm.controller.virtual_machine.hypervisor.virtualbox.vagrant as vagrant_helper
 from ..conftest import correct_malvm_config, write_configuration
 
@@ -787,30 +787,30 @@ def test_insert_user_config_into_logging_config_no_logging(tmp_path, monkeypatch
     assert "logfile" not in logging_conf["handlers"]
 
 
-def test_filter_existing_vms_from_config_no_pre_existing_vms(tmp_path, monkeypatch):
-    yaml_path = write_configuration(tmp_path, correct_malvm_config)
-    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
-    monkeypatch.setattr(vagrant_helper, "get_vm_ids_dict", lambda: {})
-    malvm_conf = get_malvm_configuration()
-    pre_existing_vms = get_vm_names_list()
-    filtered_vms = filter_existing_vms_from_config(malvm_conf.virtual_machines)
-
-    assert pre_existing_vms == []
-    assert filtered_vms == malvm_conf.virtual_machines
-
-
-def test_filter_existing_vms_from_config_with_pre_existing_vms(tmp_path, monkeypatch):
-    yaml_path = write_configuration(tmp_path, correct_malvm_config)
-    monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
-    monkeypatch.setattr(vagrant_helper, "get_vm_ids_dict", lambda: {"fkieVM": "test_id"})
-    malvm_conf = get_malvm_configuration()
-    pre_existing_vms = get_vm_names_list()
-    filtered_vms = filter_existing_vms_from_config(malvm_conf.virtual_machines)
-    malvm_conf.virtual_machines.pop("fkieVM")
-    vm_config_with_no_fkieVM = malvm_conf.virtual_machines
-
-    assert pre_existing_vms == ["fkieVM"]
-    assert filtered_vms == vm_config_with_no_fkieVM
+# def test_filter_existing_vms_from_config_no_pre_existing_vms(tmp_path, monkeypatch):
+#     yaml_path = write_configuration(tmp_path, correct_malvm_config)
+#     monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+#     monkeypatch.setattr(vagrant_helper, "get_vm_ids_dict", lambda: {})
+#     malvm_conf = get_malvm_configuration()
+#     pre_existing_vms = get_vm_names_list()
+#     filtered_vms = filter_existing_vms_from_config(malvm_conf.virtual_machines)
+#
+#     assert pre_existing_vms == []
+#     assert filtered_vms == malvm_conf.virtual_machines
+#
+#
+# def test_filter_existing_vms_from_config_with_pre_existing_vms(tmp_path, monkeypatch):
+#     yaml_path = write_configuration(tmp_path, correct_malvm_config)
+#     monkeypatch.setattr(config_loader, "CONFIG_PATH_SUFFIX_YAML", yaml_path)
+#     monkeypatch.setattr(vagrant_helper, "get_vm_ids_dict", lambda: {"fkieVM": "test_id"})
+#     malvm_conf = get_malvm_configuration()
+#     pre_existing_vms = get_vm_names_list()
+#     filtered_vms = filter_existing_vms_from_config(malvm_conf.virtual_machines)
+#     malvm_conf.virtual_machines.pop("fkieVM")
+#     vm_config_with_no_fkieVM = malvm_conf.virtual_machines
+#
+#     assert pre_existing_vms == ["fkieVM"]
+#     assert filtered_vms == vm_config_with_no_fkieVM
 
 
 def test_unsupported_template(tmp_path, monkeypatch):

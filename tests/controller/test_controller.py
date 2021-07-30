@@ -166,3 +166,10 @@ def test_get_pre_boot_characteristic_list(example_controller, example_pre_boot_c
 def test_check_unknown_characteristic(example_controller):
     with pytest.raises(ValueError):
         [x for x in example_controller.get_check_results("random_slug")]
+
+
+@pytest.fixture
+def example_controller(example_characteristic) -> Controller:
+    controller = Controller()
+    controller.add_characteristic(example_characteristic)
+    return controller

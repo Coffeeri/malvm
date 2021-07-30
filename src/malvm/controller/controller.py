@@ -12,7 +12,8 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional
 
 from .config_loader import get_malvm_configuration, setup_logging
-from .virtual_machine.hypervisor.virtualbox.vagrant import clean_malvm_data
+from .virtual_machine.hypervisor.virtualbox.vagrant import destroy_virtual_machines, delete_vagrantfiles_data, \
+    delete_vbox_folder, delete_vagrant_boxes, delete_malvm_data_paths
 from .virtual_machine.vm_manager import VirtualMachineManager
 from ..characteristics.abstract_characteristic import (Characteristic,
                                                        CharacteristicBase,
@@ -149,3 +150,12 @@ def load_characteristics_by_path(path: str) -> Iterator[Characteristic]:
 def get_sub_characteristics(characteristic: CharacteristicBase) -> Iterator[CharacteristicBase]:
     if characteristic.sub_characteristics:
         yield from characteristic.sub_characteristics.values()
+
+
+def clean_malvm_data(clean_paths: List[Path], clean_soft: bool):
+    destroy_virtual_machines()
+    delete_vagrantfiles_data()
+    delete_vbox_folder()
+    if not clean_soft:
+        delete_vagrant_boxes()
+        delete_malvm_data_paths(clean_paths)

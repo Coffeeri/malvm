@@ -83,3 +83,9 @@ def get_virtual_box_vminfo(vm_name: str):
 
 def run_external_program_no_return(*args):
     subprocess.run(args, check=True)
+
+
+def read_json_file(path: Path) -> Any:
+    """Returns json of a given file."""
+    with path.open(mode="r") as json_file:
+        return json.load(json_file)

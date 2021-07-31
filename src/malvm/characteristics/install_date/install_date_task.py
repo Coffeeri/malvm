@@ -29,14 +29,14 @@ class OSInstallDate(Characteristic):
         ptime = calc_ptime()
 
         command_task_cur_vers = f"New-ItemProperty " \
-                                rf"-Path \"HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\" " \
+                                rf"-Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' " \
                                 f"-Name \"InstallDate\" " \
                                 f"-Value \"{hex(int(ptime))}\" " \
                                 f"-PropertyType \"DWord\" " \
                                 f"-force"
 
         command_task_iexplorer_date = f"New-ItemProperty " \
-                                      fr"-Path \"HKCU:\SOFTWARE\Microsoft\Internet Explorer\SQM\" " \
+                                      fr"-Path 'HKCU:\SOFTWARE\Microsoft\Internet Explorer\SQM' " \
                                       f"-Name \"InstallDate\" " \
                                       f"-Value \"{hex(int(ptime))}\" " \
                                       f"-PropertyType \"DWord\" " \

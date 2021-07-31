@@ -7,7 +7,7 @@ import logging
 import platform
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Tuple, Union
+from typing import Dict, List, NamedTuple, Optional, Tuple, Union, Any
 
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 from ...utils.helper_methods import get_project_root, read_json_file
@@ -28,7 +28,7 @@ try:
         REG_SZ,
         QueryValueEx,
         CreateKey,
-        SetValueEx,
+        SetValueEx, HKEY_CURRENT_USER,
     )
 except ModuleNotFoundError:
     pass
@@ -59,7 +59,7 @@ class RegistryTask(NamedTuple):
     hypervisor: str
     key: str
     parameter: Optional[str]
-    value: Optional[str]
+    value: Optional[Any]
 
 
 def check_registry_key(task: RegistryTask) -> bool:
@@ -120,6 +120,10 @@ def split_key(key: str) -> Tuple[int, str]:
     if key.startswith("HKEY_LOCAL_MACHINE\\"):
         key_base = HKEY_LOCAL_MACHINE
         key_path = key_path.replace("HKEY_LOCAL_MACHINE\\", "")
+    elif key.startswith("HKCU:\\"):
+        key_base = HKEY_CURRENT_USER
+        key_path = key_path.replace("HKCU:\\", "")
+
     return key_base, key_path
 
 

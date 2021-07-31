@@ -269,4 +269,25 @@ def snapshot(vm_name, snapshot_name):
     else:
         print_info(f"VM {vm_name} does not exist.")
 
+
 # def restore(..):....
+
+
+@box.command()
+@click.argument("vm_name")
+@click.argument("path")
+def update(vm_name, path):
+    """Updates malvm package by providing a malvm.tar.gz file."""
+    if not (Path(path).exists() and Path(path).is_file() and Path(path).name.endswith(".tar.gz")):
+        print_info("Path does not exist or is not a packaged file `malvm.tar.gz`.")
+        return
+    if controller.vm_manager.vm_exists(vm_name):
+        dest_path = "C:/tmp/malvm.tar.gz"
+        print_info("Uninstalling old malvm version..")
+        controller.vm_manager.exec_command(vm_name, "py -m pip uninstall -y malvm", elevated=True)
+        print_info("Upload new malvm version..")
+        controller.vm_manager.upload_file(vm_name, Path(path), dest_path)
+        print_info("Install new malvm version..")
+        controller.vm_manager.exec_command(vm_name, f"py -m pip install {dest_path}", elevated=True)
+    else:
+        print_info(f"VM {vm_name} does not exist.")

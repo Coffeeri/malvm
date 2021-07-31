@@ -8,12 +8,6 @@
     "value": "1.11.1"
   },
   {
-    "slug": "RVB002",
-    "action": "remove",
-    "hypervisor": "VirtualBox",
-    "key": "HKEY_LOCAL_MACHINE\\HARDWARE\\ACPI\\FADT\\VBOX__"
-  },
-  {
     "slug": "RVB003",
     "action": "remove",
     "hypervisor": "VirtualBox",

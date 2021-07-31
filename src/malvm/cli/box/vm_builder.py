@@ -282,7 +282,7 @@ def update(vm_name, path):
         print_info("Path does not exist or is not a packaged file `malvm.tar.gz`.")
         return
     if controller.vm_manager.vm_exists(vm_name):
-        dest_path = f"C:/tmp/malvm.tar.gz"
+        dest_path = "C:/tmp/malvm.tar.gz"
         print_info("Uninstalling old malvm version..")
         controller.vm_manager.exec_command(vm_name, "py -m pip uninstall -y malvm", elevated=True)
         print_info("Upload new malvm version..")

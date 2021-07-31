@@ -11,11 +11,11 @@ from ..registry.registry_task import check_registry_key_value, RegistryTask, Reg
 
 
 def calc_ptime():
-    format = '%m/%d/%Y %I:%M %p'
+    date_format = '%m/%d/%Y %I:%M %p'
     start = "8/6/2018 5:30 PM"
     end = time.strftime("%m/%d/%Y %I:%M %p")
-    stime = time.mktime(time.strptime(start, format))
-    etime = time.mktime(time.strptime(end, format))
+    stime = time.mktime(time.strptime(start, date_format))
+    etime = time.mktime(time.strptime(end, date_format))
     return stime + 0.05 * (etime - stime)
 
 
@@ -29,23 +29,21 @@ class OSInstallDate(Characteristic):
         ptime = calc_ptime()
 
         command_task_cur_vers = f"New-ItemProperty " \
-                                f"-Path \"HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\" " \
+                                rf"-Path \"HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\" " \
                                 f"-Name \"InstallDate\" " \
                                 f"-Value \"{hex(int(ptime))}\" " \
                                 f"-PropertyType \"DWord\" " \
                                 f"-force"
 
         command_task_iexplorer_date = f"New-ItemProperty " \
-                                      f"-Path \"HKCU:\SOFTWARE\Microsoft\Internet Explorer\SQM\" " \
+                                      fr"-Path \"HKCU:\SOFTWARE\Microsoft\Internet Explorer\SQM\" " \
                                       f"-Name \"InstallDate\" " \
                                       f"-Value \"{hex(int(ptime))}\" " \
                                       f"-PropertyType \"DWord\" " \
                                       f"-force"
 
-        print(command_task_cur_vers)
-        print(command_task_iexplorer_date)
-        subprocess.run(["powershell", "-Command", command_task_cur_vers])
-        subprocess.run(["powershell", "-Command", command_task_iexplorer_date])
+        subprocess.run(["powershell", "-Command", command_task_cur_vers], check=False)
+        subprocess.run(["powershell", "-Command", command_task_iexplorer_date], check=False)
         return self.check()
 
     def check(self) -> CheckResult:
@@ -53,17 +51,17 @@ class OSInstallDate(Characteristic):
         task_cur_vers = RegistryTask(slug="CURVERS",
                                      action=RegistryAction.CHANGE,
                                      hypervisor="VBOX",
-                                     key="HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+                                     key=r"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion",
                                      parameter="InstallDate",
-                                     value=str(hex(int(ptime)))
+                                     value=int(ptime)
                                      )
         task_iexplorer_date = RegistryTask(slug="CURVERS",
                                            action=RegistryAction.CHANGE,
                                            hypervisor="VBOX",
-                                           key="HKCU:\SOFTWARE\Microsoft\Internet Explorer\SQM",
+                                           key=r"HKCU:\SOFTWARE\Microsoft\Internet Explorer\SQM",
                                            parameter="InstallDate",
-                                           value=str(hex(int(ptime)))
+                                           value=int(ptime)
                                            )
         result_cur_vers = check_registry_key_value(task_cur_vers)
-        result_iexplorer_date = check_registry_key_value(task_iexplorer_date)
+        result_iexplorer_date = check_registry_key_value(task_iexplorer_date)  #
         yield self, CheckType(self.description, all([result_cur_vers, result_iexplorer_date]))

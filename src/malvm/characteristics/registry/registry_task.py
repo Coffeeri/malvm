@@ -7,7 +7,7 @@ import logging
 import platform
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Tuple, Union
+from typing import Dict, List, NamedTuple, Optional, Tuple, Union, Any
 
 from ..abstract_characteristic import Characteristic, LambdaCharacteristic
 from ...utils.helper_methods import get_project_root, read_json_file
@@ -59,7 +59,7 @@ class RegistryTask(NamedTuple):
     hypervisor: str
     key: str
     parameter: Optional[str]
-    value: Optional[str]
+    value: Optional[Any]
 
 
 def check_registry_key(task: RegistryTask) -> bool:

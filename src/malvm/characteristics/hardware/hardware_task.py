@@ -142,8 +142,8 @@ class FADTRegistry(Characteristic):
         result_bool_three = str_to_bool(subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\FADT\DELL'"))
         result_bool_four = str_to_bool(
             subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\FADT\DELL\CBX3___'"))
-        result_bool_five = str_to_bool(
-            subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\FADT\DELL\CBX3___\01072009'"))
+        # result_bool_five = str_to_bool(
+        #     subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\FADT\DELL\CBX3___\01072009'"))
         yield self, CheckType(self.description,
                               all([not result_bool_one, not result_bool_two, result_bool_three,
-                                   result_bool_four, result_bool_five]))
+                                   result_bool_four]))

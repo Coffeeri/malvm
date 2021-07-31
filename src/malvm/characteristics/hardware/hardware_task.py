@@ -64,3 +64,45 @@ class VBoxDeviceRemoval(Characteristic):
             yield self, CheckType("Skipped, malvm is not running on Windows.", False)
             return
         yield self, CheckType(self.description, False)
+
+
+def str_to_bool(boolean_str: str) -> bool:
+    return boolean_str.lower() in ("yes", "true", "t", "1")
+
+
+class DSDTRegistry(Characteristic):
+    """Fixes DSDT entries in the registry."""
+
+    def __init__(self) -> None:
+        super().__init__("DSDT", "Fixes DSDT entries in the registry.")
+
+    def fix(self) -> CheckResult:
+        command_copy = r"Copy-Item -Path HKLM:\HARDWARE\ACPI\DSDT\VBOX__ " \
+                       r"-Destination HKLM:\HARDWARE\ACPI\DSDT\DELL__ -Recurse;" \
+                       r"Copy-Item -Path HKLM:\HARDWARE\ACPI\DSDT\DELL__\VBOXBIOS " \
+                       r"-Destination HKLM:\HARDWARE\ACPI\DSDT\DELL__\CBX3___ -Recurse;" \
+                       r"Copy-Item -Path HKLM:\HARDWARE\ACPI\DSDT\DELL__\CBX3___\00000002 " \
+                       r"-Destination HKLM:\HARDWARE\ACPI\DSDT\DELL__\CBX3___\01072009 -Recurse"
+
+        command_remove = r"Remove-Item -Path HKLM:\HARDWARE\ACPI\DSDT\VBOX__ -Recurse; " \
+                         r"Remove-Item -Path HKLM:\HARDWARE\ACPI\DSDT\DELL__\VBOXBIOS -Recurse; " \
+                         r"Remove-Item -Path HKLM:\HARDWARE\ACPI\DSDT\DELL__\CBX3___\00000002 -Recurse"
+        subprocess.run(["powershell", "-Command", command_copy], check=False)
+        subprocess.run(["powershell", "-Command", command_remove], check=False)
+
+        return self.check()
+
+    def check(self) -> CheckResult:
+        result_bool_one = str_to_bool(subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\DSDT\VBOX__'"))
+        result_bool_two = str_to_bool(
+            subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\DSDT\DELL__\VBOXBIOS'"))
+        result_bool_three = str_to_bool(
+            subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\DSDT\DELL__\CBX3___\00000002'"))
+        result_bool_four = str_to_bool(subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\DSDT\DELL__'"))
+        result_bool_five = str_to_bool(
+            subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\DSDT\DELL__\CBX3___'"))
+        result_bool_six = str_to_bool(
+            subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\DSDT\DELL__\CBX3___\01072009'"))
+        yield self, CheckType(self.description,
+                              all([not result_bool_one, not result_bool_two, not result_bool_three, result_bool_four,
+                                   result_bool_five, result_bool_six]))

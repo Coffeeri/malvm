@@ -8,11 +8,11 @@ import subprocess
 from ..abstract_characteristic import Characteristic, CheckResult, CheckType
 
 
-class DacType(Characteristic):
-    """Changes the os install date to an older one."""
+class DACType(Characteristic):
+    """Renames the DACType of Oracle Corporation."""
 
     def __init__(self) -> None:
-        super().__init__("DAC", "Renames the dac")
+        super().__init__("DAC", "Renames the DACType of Oracle Corporation.")
 
     def fix(self) -> CheckResult:
         dactype_one = r"$DacType = ((Get-ItemProperty " \

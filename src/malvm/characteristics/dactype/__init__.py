@@ -1,2 +1,2 @@
 """This package includes all classes representing DACType characteristics."""
-from .dactype_task import DacType  # noqa: F401
+from .dactype_task import DACType  # noqa: F401

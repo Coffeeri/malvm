@@ -194,7 +194,7 @@ class VirtualBoxHypervisor(Hypervisor):
         )
 
     def reset_vm(self, vm_name: str):
-        revert_snapshot(vm_name, "clean_state")
+        revert_snapshot(vm_name, "clean-state")
 
     def destroy_vm(self, vm_name: str):
         remove_vbox_vm_and_data(vm_name)

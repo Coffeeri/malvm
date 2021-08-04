@@ -63,7 +63,7 @@ for ($x=0; $x -le $amount; $x++) {\r\n
         with tmp_script_path.open(mode="w") as file_descriptor:
             file_descriptor.write(task)
         subprocess.run(["powershell", tmp_script_path.name], check=False)
-        tmp_script_path.unlink(missing_ok=True)
+        tmp_script_path.unlink()
         return self.check()
 
     def check(self) -> CheckResult:

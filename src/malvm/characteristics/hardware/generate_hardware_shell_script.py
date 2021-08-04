@@ -41,8 +41,8 @@ if not Path(args.dest).is_dir() or not Path(args.data_path).is_dir():
 
 HARDWARE_FIX_SHELL_SCRIPT = str(args.dest + "/hardware_fix_script.sh")
 DSDT_FILE = str(args.data_path + "/DSDT_SLIC.bin")
-ACPI_DSDT_FILE = str(args.data_path + "/ACPI-DSDT-new.bin")
-ACPI_SSDT_FILE = str(args.data_path + "/ACPI-SSDT1-new.bin")
+# ACPI_DSDT_FILE = str(args.data_path + "/ACPI-DSDT.bin")
+# ACPI_SSDT_FILE = str(args.data_path + "/ACPI-SSDT1.bin")
 VIDEO_FILE = str(args.data_path + "/vgabios386.bin")
 PCBIOS_FILE = str(args.data_path + "/pcbios386.bin")
 PXE_FILE = str(args.data_path + "/pxerom.bin")
@@ -220,6 +220,9 @@ bash = """ if [ $# -eq 0 ]
     exit
 fi """
 logfile.write(bash + '\n')
+
+logfile.write('VBoxManage setextradata "$1" "VBoxInternal/CPUM/EnableHVP" 0\t\n')
+logfile.write('VBoxManage setextradata "$1" "VBoxInternal/TM/TSCMode" RealTSCOffset\t\n')
 
 for k, v in sorted(dmi_info.items()):
     if '** No value to retrieve **' in v:
@@ -406,7 +409,7 @@ while i <= 47:
                     'VBoxInternal/CPUM/HostCPUID/' + e + '/' + r + '  0x' + rebrand + '\t\n')
             i = i + 4
 
-# needs patch of vbox
+# Needs virtualbox patch see: https://github.com/hfiref0x/VBoxHardenedLoader
 # logfile.write(f'VBoxManage setextradata "$1" VBoxInternal/Devices/acpi/0/Config/DsdtFilePath {ACPI_DSDT_FILE}\t\n')
 # logfile.write(f'VBoxManage setextradata "$1" VBoxInternal/Devices/acpi/0/Config/SsdtFilePath {ACPI_SSDT_FILE}\t\n')
 logfile.write(f'VBoxManage setextradata "$1" VBoxInternal/Devices/vga/0/Config/BiosRom {VIDEO_FILE}\t\n')

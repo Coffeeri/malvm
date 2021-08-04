@@ -106,3 +106,83 @@ class DSDTRegistry(Characteristic):
         yield self, CheckType(self.description,
                               all([not result_bool_one, not result_bool_two, not result_bool_three, result_bool_four,
                                    result_bool_five, result_bool_six]))
+
+
+class FADTRegistry(Characteristic):
+    """Fixes FADT entries in the registry."""
+
+    def __init__(self) -> None:
+        super().__init__("FADT", "Fixes FADT entries in the registry.")
+
+    def fix(self) -> CheckResult:
+        command = r"$version = (Get-WmiObject win32_operatingsystem).version;" \
+                  r"if ($version -like '10.0*') {" \
+                  r"$oddity = 'HKLM:\HARDWARE\ACPI\FADT\' + " \
+                  r"(Get-ChildItem 'HKLM:\HARDWARE\ACPI\FADT' -Name);" \
+                  r"if ($oddity -ne 'HKLM:\HARDWARE\ACPI\FADT\DELL') {" \
+                  r"Invoke-Expression ('Copy-Item -Path ' + $oddity + " \
+                  r"' -Destination HKLM:\HARDWARE\ACPI\FADT\DELL -Recurse');" \
+                  r"Invoke-Expression ('Remove-Item -Path ' + $oddity + ' -Recurse')};" \
+                  r"Copy-Item -Path HKLM:\HARDWARE\ACPI\FADT\DELL\VBOXFACP " \
+                  r"-Destination HKLM:\HARDWARE\ACPI\FADT\DELL\CBX3___ -Recurse;" \
+                  r"Remove-Item -Path HKLM:\HARDWARE\ACPI\FADT\*\VBOXFACP -Recurse;" \
+                  r"Copy-Item -Path HKLM:\HARDWARE\ACPI\FADT\DELL\CBX3___\00000001 " \
+                  r"-Destination HKLM:\HARDWARE\ACPI\FADT\DELL\CBX3___\01072009 -Recurse;" \
+                  r"Remove-Item -Path HKLM:\HARDWARE\ACPI\FADT\*\CBX3___\\00000001 -Recurse;}"
+
+        subprocess.run(["powershell", "-Command", command], check=False)
+
+        return self.check()
+
+    def check(self) -> CheckResult:
+        result_bool_one = str_to_bool(
+            subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\FADT\*\VBOXFACP'"))
+        result_bool_two = str_to_bool(
+            subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\FADT\*\CBX3___\\00000001'"))
+        result_bool_three = str_to_bool(subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\FADT\DELL'"))
+        result_bool_four = str_to_bool(
+            subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\FADT\DELL\CBX3___'"))
+        # result_bool_five = str_to_bool(
+        #     subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\FADT\DELL\CBX3___\01072009'"))
+        yield self, CheckType(self.description,
+                              all([not result_bool_one, not result_bool_two, result_bool_three,
+                                   result_bool_four]))
+
+
+class RSDTRegistry(Characteristic):
+    """Fixes RSDT entries in the registry."""
+
+    def __init__(self) -> None:
+        super().__init__("RSDT", "Fixes RSDT entries in the registry.")
+
+    def fix(self) -> CheckResult:
+        command = r"if ($version -like '10.0*') {" \
+                  r"$noproblem = 'HKLM:\HARDWARE\ACPI\RSDT\' + (Get-ChildItem 'HKLM:\HARDWARE\ACPI\RSDT' -Name);" \
+                  r"if ($noproblem  -ne 'HKLM:\HARDWARE\ACPI\RSDT\DELL') {" \
+                  r"Invoke-Expression ('Copy-Item -Path ' + $noproblem + ' " \
+                  r"-Destination HKLM:\HARDWARE\ACPI\RSDT\DELL -Recurse');" \
+                  r"Invoke-Expression ('Remove-Item -Path ' + $noproblem + ' -Recurse');};" \
+                  r"$cinnamon = 'HKLM:\HARDWARE\ACPI\RSDT\' + (Get-ChildItem 'HKLM:\HARDWARE\ACPI\RSDT' -Name);" \
+                  r"$the_mero = 'HKLM:\HARDWARE\ACPI\RSDT\' + " \
+                  r"(Get-ChildItem 'HKLM:\HARDWARE\ACPI\RSDT' -Name) + '\' + (Get-ChildItem $cinnamon -Name);" \
+                  r"Invoke-Expression ('Copy-Item -Path ' + $the_mero + ' " \
+                  r"-Destination HKLM:\HARDWARE\ACPI\RSDT\DELL\CBX3___ -Recurse');" \
+                  r"Invoke-Expression ('Remove-Item -Path ' + $the_mero + ' -Recurse');" \
+                  r"Copy-Item -Path HKLM:\HARDWARE\ACPI\RSDT\DELL\CBX3___\00000001 " \
+                  r"-Destination HKLM:\HARDWARE\ACPI\RSDT\DELL\CBX3___\01072009 -Recurse;" \
+                  r"Remove-Item -Path HKLM:\HARDWARE\ACPI\RSDT\*\CBX3___\0000001 -Recurse;}"
+
+        subprocess.run(["powershell", "-Command", command], check=False)
+
+        return self.check()
+
+    def check(self) -> CheckResult:
+        # result_bool_one = str_to_bool(
+        #     subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\RSDT\*\CBX3___\0000001'"))
+        # result_bool_two = str_to_bool(
+        #    subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\RSDT\DELL\CBX3___'"))
+        result_bool_three = str_to_bool(
+            subprocess.getoutput(r"powershell Test-Path 'HKLM:\HARDWARE\ACPI\RSDT\VBOX__'"))
+
+        yield self, CheckType(self.description,
+                              all([not result_bool_three]))

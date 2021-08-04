@@ -20,8 +20,8 @@ class CPUidHypervisorCharacteristic(PreBootCharacteristic):
     def fix(self) -> CheckResult:
         vm_name = self.environment.vm_name
         if vm_name:
-            log.debug(f"Run VBoxManage modifyvm {vm_name} --paravirtprovider legacy")
-            run_external_program_no_return("VBoxManage", "modifyvm", vm_name, "--paravirtprovider", "legacy")
+            log.debug(f"Run VBoxManage modifyvm {vm_name} --paravirtprovider none")
+            run_external_program_no_return("VBoxManage", "modifyvm", vm_name, "--paravirtprovider", "none")
         return self.check()
 
     def check(self) -> CheckResult:
@@ -30,5 +30,5 @@ class CPUidHypervisorCharacteristic(PreBootCharacteristic):
         vm_name = self.environment.vm_name
         if vm_name:
             result = get_virtual_box_vminfo(vm_name)
-            self.is_fixed = 'paravirtprovider="legacy"' in result.stdout.decode("utf-8").split("\n")
+            self.is_fixed = 'paravirtprovider="none"' in result.stdout.decode("utf-8").split("\n")
         yield self, CheckType(self.description, self.is_fixed)

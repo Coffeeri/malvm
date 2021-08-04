@@ -221,8 +221,8 @@ bash = """ if [ $# -eq 0 ]
 fi """
 logfile.write(bash + '\n')
 
-logfile.write(f'VBoxManage setextradata "$1" "VBoxInternal/CPUM/EnableHVP" 0\t\n')
-logfile.write(f'VBoxManage setextradata "$1" "VBoxInternal/TM/TSCMode" RealTSCOffset\t\n')
+logfile.write('VBoxManage setextradata "$1" "VBoxInternal/CPUM/EnableHVP" 0\t\n')
+logfile.write('VBoxManage setextradata "$1" "VBoxInternal/TM/TSCMode" RealTSCOffset\t\n')
 
 for k, v in sorted(dmi_info.items()):
     if '** No value to retrieve **' in v:

@@ -73,7 +73,7 @@ def fix(characteristic_slug: str, vm_name: Optional[str]) -> None:
         sys.exit(0)
 
 
-def run_specific_fix(characteristic_slug):
+def run_specific_fix(characteristic_slug: str):
     try:
         print_results(controller.apply_fix_get_results(characteristic_slug.upper()))
     except ValueError as error_value:

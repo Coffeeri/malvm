@@ -55,7 +55,7 @@ class OSInstallDate(Characteristic):
                                      parameter="InstallDate",
                                      value=int(ptime)
                                      )
-        task_iexplorer_date = RegistryTask(slug="CURVERS",
+        task_iexplorer_date = RegistryTask(slug="IESQM",
                                            action=RegistryAction.CHANGE,
                                            hypervisor="VBOX",
                                            key=r"HKCU:\SOFTWARE\Microsoft\Internet Explorer\SQM",

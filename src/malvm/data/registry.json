@@ -90,6 +90,22 @@
     "key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography",
     "parameter": "MachineGuid",
     "value": "2bf97edd-6057-4e03-b19d-5d76f27a71f5"
+  },
+  {
+    "slug": "RVB015",
+    "action": "change",
+    "hypervisor": "VirtualBox",
+    "key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
+    "parameter": "ProductName",
+    "value": "Windows 10 Enterprise"
+  },
+  {
+    "slug": "RVB016",
+    "action": "change",
+    "hypervisor": "VirtualBox",
+    "key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows NT\\CurrentVersion",
+    "parameter": "ProductName",
+    "value": "Windows 10 Enterprise"
   }
 ]
 

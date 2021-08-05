@@ -17,6 +17,9 @@ class RandomFiles(Characteristic):
 
     def fix(self) -> CheckResult:
         # pylint: disable=anomalous-backslash-in-string
+        check_result = self.check()
+        if list(check_result)[0][1].check_status:
+            return check_result
         task = """
 # RandomDate function\r\n
 function RandomDate {\r\n

@@ -1,18 +1,14 @@
-"""This module contains classes for characteristics of OS install date.
-
-Classes:
-    OSInstallDate: Changes the os install date to an older one.
-"""
+"""This module contains classes for characteristics of VideoDacType."""
 import subprocess
 
 from ..abstract_characteristic import Characteristic, CheckResult, CheckType
 
 
-class DACType(Characteristic):
-    """Renames the DACType of Oracle Corporation."""
+class VideoDacType(Characteristic):
+    """Renames the DacType of Oracle Corporation."""
 
     def __init__(self) -> None:
-        super().__init__("DAC", "Renames the DACType of Oracle Corporation.")
+        super().__init__("DAC", "Renames the DacType of Oracle Corporation.")
 
     def fix(self) -> CheckResult:
         dactype_one = r"$DacType = ((Get-ItemProperty " \

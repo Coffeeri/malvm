@@ -1,10 +1,10 @@
 <div align="center">
-<img src="https://gitlab.com/uploads/-/system/project/avatar/18734431/computer.png" align="center" width="150" alt="Project icon">
+<img src="documentation/logo.png" align="center" width="150" alt="Project icon"><br \>
+<sup><sub><sub><a href="https://www.freepik.com/">Icon by Freepik</a></sub></sup></sup>
+
 <h1>malvm</h1>
 <h4>Build non detectable Virtual Machines for malware analysis.</h4>
 <h4>We currently only support Linux!</h4>
-
-![pipeline](https://gitlab.com/shk_fkie/analysevm/badges/master/pipeline.svg "Pipeline")
 </div>
 
 
